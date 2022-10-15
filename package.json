@@ -1,0 +1,28 @@
+{
+  "name": "cognito-srp-helper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "start": "tsc && node dist/app.js",
+    "format": "prettier 'src/**/*.ts' --write"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^5.40.0",
+    "@typescript-eslint/parser": "^5.40.0",
+    "eslint": "^8.25.0",
+    "prettier": "^2.7.1",
+    "typescript": "^4.8.4"
+  },
+  "dependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/jsbn": "^1.2.30",
+    "@types/node": "^18.11.0",
+    "crypto-js": "^4.1.1",
+    "jsbn": "^1.1.0"
+  }
+}
