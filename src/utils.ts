@@ -64,8 +64,6 @@ export const padHex = (bigInt: BigInteger): string => {
   return hexStr;
 };
 
-throw new Error("foobar");
-
 export const randomBytes = (nBytes: number): Buffer => {
   const bytes = Buffer.from(
     CryptoJS.lib.WordArray.random(nBytes).toString(),
