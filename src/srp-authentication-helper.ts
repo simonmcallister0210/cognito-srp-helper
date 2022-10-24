@@ -24,8 +24,6 @@ export class SRPAuthenticationHelper {
     this.password = password;
     this.poolId = poolId.split("_")[1];
     this.timestamp = this.getNowString();
-    console.log("this.smallA"); // TODO: DEBUG
-    console.log(this.smallA.toString(16)); // TODO: DEBUG
   }
 
   // AWS Cognito SRP calls require a specific timestamp format: ddd MMM D HH:mm:ss UTC YYYY
