@@ -140,23 +140,4 @@ describe("getPasswordSignature", () => {
     );
     expect(passwordClaimSignature).not.toEqual(SERVER_SIGNATURE);
   });
-
-  // const srpAuthenticationHelper = new SRPAuthenticationHelper(
-  //   username,
-  //   password,
-  //   poolId
-  // );
-  // const usernamePasswordHash = `${poolId}${username}:${password}`;
-
-  // const salt = new BigInteger("aaaaaa", 16);
-  // const x = new BigInteger(hexHash(padHex(salt) + usernamePasswordHash), 16);
-  // const v = G.modPow(x, N);
-  // const smallB = 123;
-  // // Server B = kv + gb
-  // const largeB = K.multiply(v).add(G.pow(smallB));
-  // const u =
-
-  // const largeA = new BigInteger(srpAuthenticationHelper.getEphemeralKey(), 16);
-  // const secret = (largeA.multiply(v).pow(u)).pow(b);
-  // const key =
 });
