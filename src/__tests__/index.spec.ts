@@ -1,5 +1,4 @@
 import { BigInteger } from "jsbn";
-import { N, G, K } from "../constants";
 import { SRPAuthenticationHelper } from "../srp-authentication-helper";
 
 // Client credentials
