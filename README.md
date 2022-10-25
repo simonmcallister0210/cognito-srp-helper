@@ -8,7 +8,7 @@ Password verification using custom authentication flow:
 import CognitoSrpHelper from "cognito-srp-helper";
 import { CognitoIdentityServiceProvider } from 'aws-sdk';
 
-// Initialise helper with user's credential and Cognito pool ID
+// Initialise helper with user's credentials and Cognito pool ID
 const cognitoSrpHelper = new CognitoSrpHelper(
     username,
     password,
@@ -20,16 +20,16 @@ const cognito = CognitoIdentityServiceProvider({
 
 // Initiate password verification with challenge SRP_A
 const initiateAuthResponse = await cognito.initiateAuth({
-        AuthFlow: 'CUSTOM_AUTH',
-        AuthParameters: {
-            CHALLENGE_NAME: 'SRP_A',
-            PASSWORD: password,
-            // SRP_A generated when CognitoSrpHelper is initialised
-            SRP_A: cognitoSrpHelper.getEphemeralKey(),
-            USERNAME: username,
-        },
-        ClientId: clientId,
-    });
+    AuthFlow: 'CUSTOM_AUTH',
+    AuthParameters: {
+        CHALLENGE_NAME: 'SRP_A',
+        PASSWORD: password,
+        // SRP_A generated when CognitoSrpHelper is initialised
+        SRP_A: cognitoSrpHelper.getEphemeralKey(),
+        USERNAME: username,
+    },
+    ClientId: clientId,
+});
 
 // Extract secret values, and use them to generate PASSWORD_CLAIM_SIGNATURE
 const { SALT, SECRET_BLOCK, SRP_B } = initiateAuthResponse.ChallengeParameters;
@@ -41,17 +41,17 @@ const passwordClaimSignature = cognitoSrpHelper.getPasswordSignature(
 
 // Verify password with passwordClaimSignature 
 const respondToAuthChallengeResponse = await cognito.respondToAuthChallenge({
-        ChallengeName: 'PASSWORD_VERIFIER',
-        ChallengeResponses: {
-            PASSWORD_CLAIM_SECRET_BLOCK: SECRET_BLOCK,
-            PASSWORD_CLAIM_SIGNATURE: passwordClaimSignature,
-            // TIMESTAMP generated when CognitoSrpHelper is initialised
-            TIMESTAMP: cognitoSrpHelper.getTimeStamp(),
-            USERNAME: username,
-        },
-        ClientId: clientId,
-        Session: initiateAuthResponse.Session,
-    })
+    ChallengeName: 'PASSWORD_VERIFIER',
+    ChallengeResponses: {
+        PASSWORD_CLAIM_SECRET_BLOCK: SECRET_BLOCK,
+        PASSWORD_CLAIM_SIGNATURE: passwordClaimSignature,
+        // TIMESTAMP generated when CognitoSrpHelper is initialised
+        TIMESTAMP: cognitoSrpHelper.getTimeStamp(),
+        USERNAME: username,
+    },
+    ClientId: clientId,
+    Session: initiateAuthResponse.Session,
+})
 
 // . . . continue custom authentication flow
 ```
