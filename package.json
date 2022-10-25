@@ -7,7 +7,7 @@
     "build": "tsc",
     "build:watch": "tsc --watch",
     "format": "prettier 'src/**/*.ts' --write",
-    "lint": "eslint . --ext .ts",
+    "lint": "eslint src/ --ext .ts",
     "start": "tsc && node dist/app.js",
     "test": "jest src/",
     "prepare": "husky install"
