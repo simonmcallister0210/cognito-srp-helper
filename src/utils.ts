@@ -10,7 +10,7 @@ export const hash = (buf: Buffer | string): string => {
 };
 
 export const hexHash = (hexStr: string): string => {
-  const hexHash = hash(Buffer.from(hexStr, "hex"));
+  const hexHash = hash(Buffer.from(hexStr, 'hex'));
   return hexHash;
 };
 
