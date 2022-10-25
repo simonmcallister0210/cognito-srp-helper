@@ -1,4 +1,4 @@
-# 🔑 Cognito SRP Helper
+# 🔐 Cognito SRP Helper
 
 ## Usage
 
