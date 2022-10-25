@@ -70,15 +70,11 @@ const respondToAuthChallengeResponse = await cognito.respondToAuthChallenge({
 
 *CognitoSrpHelper*
 
----
-
 ## `getEphemeralKey`
 
 **Returns**:
 
 *string*
-
----
 
 ## `getPasswordSignature`
 
@@ -93,8 +89,6 @@ const respondToAuthChallengeResponse = await cognito.respondToAuthChallenge({
 **Returns**:
 
 *string*
-
----
 
 ## `getTimeStamp`
 
