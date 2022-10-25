@@ -69,10 +69,12 @@ describe("getPasswordSignature", () => {
 
   beforeAll(() => {
     mockGenerateSmallA = jest.spyOn(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       SRPAuthenticationHelper.prototype as any,
       "generateSmallA"
     );
     mockGetNowString = jest.spyOn(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       SRPAuthenticationHelper.prototype as any,
       "getNowString"
     );
