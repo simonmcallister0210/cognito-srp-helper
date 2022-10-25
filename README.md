@@ -1,3 +1,5 @@
+# 🔑 Cognito SRP Helper
+
 ## Usage
 
 Password verification using custom authentication flow:
@@ -54,8 +56,6 @@ const respondToAuthChallengeResponse = await cognito.respondToAuthChallenge({
 // . . . continue custom authentication flow
 ```
 
----
-
 ## API
 
 ### `__constructor`
@@ -82,7 +82,7 @@ Provides the client ephemeral key SRP_A needed to initiate authentication. The k
 
 ### `getPasswordSignature`
 
-Generates the password required for PASSWORD_CLAIM_SIGNATURE in respondToAuthChallenge. The signature is generated using the secret values returned from initiateAuth. 
+Generates the signature required for PASSWORD_CLAIM_SIGNATURE in respondToAuthChallenge. The signature is generated using the secret values returned from initiateAuth. 
 
 **Parameters**:
 
@@ -103,8 +103,6 @@ Provides a timestamp in the specific format required for Cognito: *DDD MMM DD HH
 **Returns**:
 
 *string*
-
----
 
 ## See Also
 
