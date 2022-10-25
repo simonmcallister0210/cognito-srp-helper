@@ -10,11 +10,11 @@ export const hash = (buf: Buffer | string): string => {
 };
 
 export const hexHash = (hexStr: string): string => {
-  const hexHash = hash(Buffer.from(hexStr, 'hex'));
+  const hexHash = hash(Buffer.from(hexStr, "hex"));
   return hexHash;
 };
 
-export const padHex = (bigInt: BigInteger): string => {
+export const padHex = (bigInt: BigInteger): any => {
   if (!(bigInt instanceof BigInteger)) {
     throw new Error("Not a BigInteger");
   }
