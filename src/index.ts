@@ -1,5 +1,6 @@
-import { SrpAuthenticationHelper } from "./srp-authentication-helper";
+import { CognitoSrpHelper } from "./cognito-srp-helper";
 
+export * from "./cognito-srp-helper";
 export * from "./constants";
 export * from "./utils";
-export default SrpAuthenticationHelper;
+export default CognitoSrpHelper;

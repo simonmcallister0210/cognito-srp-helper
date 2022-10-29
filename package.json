@@ -1,7 +1,7 @@
 {
   "name": "cognito-srp-helper",
   "version": "1.0.0",
-  "description": "",
+  "description": "A helper for SRP authentication in AWS Cognito",
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",

@@ -19,7 +19,7 @@ import { hash, hexHash, padHex, randomBytes } from "./utils";
  * `respondToAuthChallenge`. All of these values can be aquired through this
  * class by using a username, password, and pool ID.
  */
-export class SrpAuthenticationHelper {
+export class CognitoSrpHelper {
   // AWS Cognito SRP calls require a specific timestamp format: ddd MMM D HH:mm:ss UTC YYYY
   private getCognitoTimeStamp(): string {
     const now = new Date();
@@ -247,4 +247,4 @@ export class SrpAuthenticationHelper {
   }
 }
 
-export default SrpAuthenticationHelper;
+export default CognitoSrpHelper;

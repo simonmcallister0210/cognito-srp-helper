@@ -1,6 +1,6 @@
 import { BigInteger } from "jsbn";
 
-import SrpAuthenticationHelper from "../srp-authentication-helper";
+import CognitoSrpHelper from "../cognito-srp-helper";
 import { ClientSession, ServerSession } from "../types";
 
 // Client credentials
@@ -29,20 +29,20 @@ const LARGE_B =
 const PASSWORD_SIGNATURE = "kwIHDQhgaEvhSiRrKwMluwp5M/+sk2r6ttDlwrYAQuQ=";
 
 describe("SrpAuthenticationHelper", () => {
-  const srpAuthenticationHelper = new SrpAuthenticationHelper();
+  const srpAuthenticationHelper = new CognitoSrpHelper();
 
   describe("createClientSession", () => {
     it("should produce the correct client session", () => {
       // Give indeterministic functions deterministic output
       jest
         .spyOn(
-          SrpAuthenticationHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           "generateSmallA"
         )
         .mockImplementationOnce(() => SMALL_A);
       jest
         .spyOn(
-          SrpAuthenticationHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           "getCognitoTimeStamp"
         )
         .mockImplementationOnce(() => TIMESTAMP);
@@ -201,13 +201,13 @@ describe("SrpAuthenticationHelper", () => {
       // Give indeterministic functions deterministic output
       jest
         .spyOn(
-          SrpAuthenticationHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           "generateSmallA"
         )
         .mockImplementation(() => SMALL_A);
       jest
         .spyOn(
-          SrpAuthenticationHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
           "getCognitoTimeStamp"
         )
         .mockImplementation(() => TIMESTAMP);
