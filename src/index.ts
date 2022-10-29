@@ -1,5 +1,5 @@
-import { SRPAuthenticationHelper } from "./srp-authentication-helper";
+import { SrpAuthenticationHelper } from "./srp-authentication-helper";
 
 export * from "./constants";
 export * from "./utils";
-export default SRPAuthenticationHelper;
+export default SrpAuthenticationHelper;

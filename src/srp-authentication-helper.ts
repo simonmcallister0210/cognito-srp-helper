@@ -1,66 +1,46 @@
 import CryptoJS, { HmacSHA256 } from "crypto-js";
 import { BigInteger } from "jsbn";
+
 import { INFO_BITS, G, N, K } from "./constants";
+import { ClientSession, ServerSession } from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
- * Helper class for SRP authentication in AWS Cognito. When using the `initiateAuth` or
- * `respondToAuthChallenge` SDK functions for SRP you need to generate values for `SRP_A` and
- * `PASSWORD_CLAIM_SIGNATURE` AuthParam, and can generate these values using the `getEphemeralKey` and
- * `getPasswordSignature` respectively
+ * Helper class used to perform calculations required for SRP authentication in
+ * AWS Cognito. This is required any time you call initiateAuth with the
+ * `USER_SRP_AUTH` authentication flow:
+ * @see https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-authentication-flow.html#Built-in-authentication-flow-and-challenges
+ *
+ * or `CUSTOM_AUTH` authentication flow if you also require password verification:
+ * @see https://docs.aws.amazon.com/cognito/latest/developerguide/amazon-cognito-user-pools-authentication-flow.html#Using-SRP-password-verification-in-custom-authentication-flow
+ *
+ * To perform SRP authentication using these two flows we need the `SRP_A`,
+ * `TIMESTAMP`, and `PASSWORD_CLAIM_SIGNATURE` values for `initiateAuth` and
+ * `respondToAuthChallenge`. All of these values can be aquired through this
+ * class by using a username, password, and pool ID.
  */
-export class SRPAuthenticationHelper {
-  private smallA: BigInteger;
-  private largeA: BigInteger;
-  private username: string;
-  private password: string;
-  private poolId: string;
-  private timestamp: string;
-
-  constructor(username: string, password: string, poolId: string) {
-    this.smallA = this.generateSmallA();
-    this.largeA = this.calculateLargeA(this.smallA);
-    this.username = username;
-    this.password = password;
-    this.poolId = poolId.split("_")[1];
-    this.timestamp = this.getNowString();
-  }
-
+export class SrpAuthenticationHelper {
   // AWS Cognito SRP calls require a specific timestamp format: ddd MMM D HH:mm:ss UTC YYYY
-  private getNowString(): string {
-    const monthNames = [
-      "Jan",
-      "Feb",
-      "Mar",
-      "Apr",
-      "May",
-      "Jun",
-      "Jul",
-      "Aug",
-      "Sep",
-      "Oct",
-      "Nov",
-      "Dec",
-    ];
-    const weekNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  private getCognitoTimeStamp(): string {
     const now = new Date();
-    const weekDay = weekNames[now.getUTCDay()];
-    const month = monthNames[now.getUTCMonth()];
-    const day = now.getUTCDate();
-    const hours =
-      now.getUTCHours() < 10 ? `0${now.getUTCHours()}` : `${now.getUTCHours()}`;
-    const minutes =
-      now.getUTCMinutes() < 10
-        ? `0${now.getUTCMinutes()}`
-        : `${now.getUTCMinutes()}`;
-    const seconds =
-      now.getUTCSeconds() < 10
-        ? `0${now.getUTCSeconds()}`
-        : `${now.getUTCSeconds()}`;
+
+    const locale = "en-US";
+    const timeZone = "UTC";
+
+    const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
+    const day = now.toLocaleString(locale, { day: "2-digit", timeZone });
+    const month = now.toLocaleString(locale, { month: "short", timeZone });
     const year = now.getUTCFullYear();
+    const time = now.toLocaleString(locale, {
+      hour: "numeric",
+      hour12: false,
+      minute: "numeric",
+      second: "numeric",
+      timeZone,
+    });
+
     // ddd MMM D HH:mm:ss UTC YYYY
-    const dateNow = `${weekDay} ${month} ${day} ${hours}:${minutes}:${seconds} UTC ${year}`;
-    return dateNow;
+    return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
   }
 
   private generateSmallA(): BigInteger {
@@ -69,6 +49,7 @@ export class SRPAuthenticationHelper {
     const randomBigInt = new BigInteger(hexRandom, 16);
 
     // There is no need to do randomBigInt.mod(N - 1) as N (3072-bit) is > 128 bytes (1024-bit)
+
     return randomBigInt;
   }
 
@@ -121,33 +102,127 @@ export class SRPAuthenticationHelper {
     return x;
   }
 
-  /** Get SRP_A value */
-  public getEphemeralKey = (): string => this.largeA.toString(16);
+  /**
+   * Creates the required data needed to initiate SRP authentication with AWS
+   * Cognito. The public session key `largeA` is passed to `SRP_A` in the
+   * initiateAuth call. The rest of the values are used later to compute the
+   * `PASSWORD_CLAIM_SIGNATURE` when responding to a `PASSWORD_VERIFICATION`
+   * challenge with `respondToAuthChallenge`
+   *
+   * @param username The user's AWS Cognito username
+   * @param password The user's AWS Cognito password
+   * @param poolId The ID of the AWS Cognito user pool the user belongs to
+   */
+  public createClientSession(
+    username?: string,
+    password?: string,
+    poolId?: string
+  ): ClientSession {
+    // Assert parameters exist
+    if (!username)
+      throw new ReferenceError(
+        `Client session could not be initialised because username is missing or falsy`
+      );
+    if (!password)
+      throw new ReferenceError(
+        `Client session could not be initialised because password is missing or falsy`
+      );
+    if (!poolId)
+      throw new ReferenceError(
+        `Client session could not be initialised because poolId is missing or falsy`
+      );
 
-  /** Get TIMESTAMP value */
-  public getTimeStamp = (): string => this.timestamp;
+    // Client credentials
+    const poolIdNumber = poolId.split("_")[1];
+    const usernamePassword = `${poolIdNumber}${username}:${password}`;
+    const passwordHash = hash(usernamePassword);
+    // Client session keys
+    const smallA = this.generateSmallA();
+    const largeA = this.calculateLargeA(smallA);
+    // Cognito unique timestamp
+    const timestamp = this.getCognitoTimeStamp();
 
-  /** Get PASSWORD_CLAIM_SIGNATURE value */
-  public getPasswordSignature = (
-    serverEphemeralKey: string,
-    serverSecretBlock: string,
-    serverSalt: string
-  ): string => {
-    const usernamePassword = `${this.poolId}${this.username}:${this.password}`;
-    const usernamePasswordHash = hash(usernamePassword);
+    return {
+      largeA: largeA.toString(16),
+      passwordHash,
+      poolId: poolIdNumber,
+      smallA: smallA.toString(16),
+      timestamp,
+      username,
+    };
+  }
+
+  /**
+   * Asserts and bundles the SRP authentication values retrieved from Cognito
+   * into a single object that can be passed into `createServerSession`
+   *
+   * @param largeB The server's (Cognito's) public session key
+   * @param salt Value paired with user's password to ensure it's unqiue
+   * @param secret A secret value used to authenticate our verification request
+   */
+  public createServerSession(
+    largeB?: string,
+    salt?: string,
+    secret?: string
+  ): ServerSession {
+    // Assert parameters exist
+    if (!largeB)
+      throw new ReferenceError(
+        `Server session could not be initialised because largeB is missing or falsy`
+      );
+    if (!salt)
+      throw new ReferenceError(
+        `Server session could not be initialised because salt is missing or falsy`
+      );
+    if (!secret)
+      throw new ReferenceError(
+        `Server session could not be initialised because secret is missing or falsy`
+      );
+
+    return {
+      largeB,
+      salt,
+      secret,
+    };
+  }
+
+  /**
+   * Computes the password signature to determine whether the password provided
+   * by the user is correct or not. This signature is passed to
+   * `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
+   *
+   * @param clientSession Client session object containing user credentials,
+   * session keys, and timestamp
+   * @param serverSession Server session object containing public session key,
+   * salt, and secret
+   */
+  public computePasswordSignature(
+    clientSession: ClientSession,
+    serverSession: ServerSession
+  ): string {
+    // Assert parameters exist
+    if (!clientSession)
+      throw new ReferenceError(
+        `Server session could not be initialised because clientSession is missing or falsy`
+      );
+    if (!serverSession)
+      throw new ReferenceError(
+        `Server session could not be initialised because serverSession is missing or falsy`
+      );
+
+    const { username, poolId, passwordHash, smallA, largeA, timestamp } =
+      clientSession;
+    const { largeB, salt, secret } = serverSession;
 
     const u = this.calculateU(
-      this.largeA,
-      new BigInteger(serverEphemeralKey, 16)
+      new BigInteger(largeA, 16),
+      new BigInteger(largeB, 16)
     );
-    const x = this.calculateX(
-      new BigInteger(serverSalt, 16),
-      usernamePasswordHash
-    );
+    const x = this.calculateX(new BigInteger(salt, 16), passwordHash);
     const s = this.calculateS(
       x,
-      new BigInteger(serverEphemeralKey, 16),
-      this.smallA,
+      new BigInteger(largeB, 16),
+      new BigInteger(smallA, 16),
       u
     );
     const hkdf = this.computeHkdf(
@@ -158,10 +233,10 @@ export class SRPAuthenticationHelper {
     const key = CryptoJS.lib.WordArray.create(hkdf);
     const message = CryptoJS.lib.WordArray.create(
       Buffer.concat([
-        Buffer.from(this.poolId, "utf8"),
-        Buffer.from(this.username, "utf8"),
-        Buffer.from(serverSecretBlock, "base64"),
-        Buffer.from(this.timestamp, "utf8"),
+        Buffer.from(poolId, "utf8"),
+        Buffer.from(username, "utf8"),
+        Buffer.from(secret, "base64"),
+        Buffer.from(timestamp, "utf8"),
       ])
     );
     const signatureString = CryptoJS.enc.Base64.stringify(
@@ -169,5 +244,7 @@ export class SRPAuthenticationHelper {
     );
 
     return signatureString;
-  };
+  }
 }
+
+export default SrpAuthenticationHelper;
