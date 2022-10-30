@@ -76,7 +76,7 @@ const respondToAuthChallengeResponse = await cognito
 
 ### `createClientSession`
 
-Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key `largeA` is passed to `SRP_A` in the initiateAuth call, `timestamp` is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the `PASSWORD_CLAIM_SIGNATURE` when responding to a `PASSWORD_VERIFICATION` challenge with `respondToAuthChallenge`
+Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key _largeA_ is passed to _SRP_A_ in the initiateAuth call, _timestamp_ is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the _PASSWORD_CLAIM_SIGNATURE_ when responding to a _PASSWORD_VERIFICATION_ challenge with _respondToAuthChallenge_
 
 **Parameters**
 
@@ -92,7 +92,7 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 ### `createServerSession`
 
-Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into `createServerSession`
+Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createServerSession
 
 **Parameters**:
 
@@ -108,7 +108,7 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 ### `computePasswordSignature`
 
-Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
+Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to _PASSWORD_CLAIM_SIGNATURE_ in a _respondToAuthChallenge_ call
 
 **Parameters**:
 
@@ -118,7 +118,7 @@ Computes the password signature to determine whether the password provided by th
 
 **Returns**:
 
-`passwordSignature` - _string_
+`passwordSignature` - _string_ - The password signature to pass to _PASSWORD_CLAIM_SIGNATURE_
 
 ## See Also
 
