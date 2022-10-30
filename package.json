@@ -12,7 +12,7 @@
     "test": "jest src/",
     "prepare": "husky install"
   },
-  "author": "",
+  "author": "Simon McAllister",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^29.2.0",
