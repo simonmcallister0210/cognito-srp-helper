@@ -4,6 +4,3 @@
 npm run lint
 npm run format
 npm test
-
-# re-stage files after they've been formatted
-git diff --name-only --cached | xargs git add

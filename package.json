@@ -2,6 +2,8 @@
   "name": "cognito-srp-helper",
   "version": "1.0.0",
   "description": "A helper for SRP authentication in AWS Cognito",
+  "author": "Simon McAllister",
+  "license": "ISC",
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",
@@ -12,18 +14,23 @@
     "test": "jest src/",
     "prepare": "husky install"
   },
-  "author": "Simon McAllister",
-  "license": "ISC",
+  "lint-staged": {
+    "*.{js,ts}": [
+      "npm run lint",
+      "npm run format"
+    ]
+  },
   "devDependencies": {
     "@types/jest": "^29.2.0",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.0",
     "eslint": "^8.25.0",
+    "husky": "^8.0.0",
     "jest": "^29.2.1",
+    "lint-staged": "^13.0.3",
     "prettier": "^2.7.1",
     "ts-jest": "^29.0.3",
-    "typescript": "^4.8.4",
-    "husky": "^8.0.0"
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "@types/crypto-js": "3.1.47",

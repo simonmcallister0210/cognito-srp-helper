@@ -6,7 +6,7 @@ Using the CognitoIdentityServiceProvider from the AWS SDK, we can authenticate a
 
 - [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js) - Cognito Identity SDK, which also implements the SRP logic for you. This is [what Amplify uses under the hood](https://github.com/aws-amplify/amplify-js/blob/main/packages/amazon-cognito-identity-js/src/AuthenticationHelper.js). The problem with this package is the setup and interface. To setup you either have to download the bundle via NPM and include it via a HTML script tag, or you bundle the package yourself with webpack, which isn't ideal if you don't want to mess with the build config of your project. The interface of the project is also different to the standard [AWS Cognito SDK](https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_Operations.html). If you're already using the standard SDK it may clutter your code if you have to refer to another seperate SDK to interact with Cognito
 
-This package will implement the SRP logic for you, without the need to stray away from the AWS SDK
+This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK
 
 ## Usage
 
