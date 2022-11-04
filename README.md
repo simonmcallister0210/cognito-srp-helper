@@ -40,18 +40,18 @@ const initiateAuthResponse = await cognito
   })
   .promise();
 
-// Create a server session
+// Create a cognito session
 const { SALT, SECRET_BLOCK, SRP_B } = initiateAuthResponse.ChallengeParameters;
-const serverSession = cognitoSrpHelper.createServerSession(
+const cognitoSession = cognitoSrpHelper.createCognitoSession(
   SRP_B,
   SALT,
   SECRET_BLOCK
 );
 
-// Use the client and server session to calculate password claim
+// Use the client and cognito session to calculate password claim
 const passwordSignature = cognitoSrpHelper.computePasswordSignature(
   clientSession,
-  serverSession
+  cognitoSession
 );
 
 // Verify password with passwordSignature
@@ -59,7 +59,7 @@ const respondToAuthChallengeResponse = await cognito
   .respondToAuthChallenge({
     ChallengeName: "PASSWORD_VERIFIER",
     ChallengeResponses: {
-      PASSWORD_CLAIM_SECRET_BLOCK: serverSession.secret, // Pass the secret from server session
+      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Pass the secret from cogntio session
       PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Pass signature we calculated before
       TIMESTAMP: clientSession.timestamp, // Pass the timestamp from client session
       USERNAME: username,
@@ -88,15 +88,15 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 **Returns**:
 
-`clientSession` - _ClientSession_ - An object containing client details for a SRP authentication request
+`clientSession` - _ClientSession_ - An object containing client session details for a SRP authentication request
 
-### `createServerSession`
+### `createCognitoSession`
 
-Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createServerSession
+Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSession
 
 **Parameters**:
 
-`largeB` - _string_ - The server's (Cognito's) public session key
+`largeB` - _string_ - The Cognito public session key
 
 `salt` - _string_ - Value paired with user's password to ensure it's unqiue
 
@@ -104,7 +104,7 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 **Returns**:
 
-`serverSession` - _ServerSession_ - An object containing server details required to complete our SRP authentication request
+`cognitoSession` - _CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
 
 ### `computePasswordSignature`
 
@@ -114,7 +114,7 @@ Computes the password signature to determine whether the password provided by th
 
 `clientSession` - _ClientSession_ - Client session object containing user credentials, session keys, and timestamp
 
-`serverSession` - _ServerSession_ - Server session object containing public session key, salt, and secret
+`cognitoSession` - _CognitoSession_ - Cognito session object containing public session key, salt, and secret
 
 **Returns**:
 

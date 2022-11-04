@@ -14,7 +14,7 @@ export type ClientSession = {
 };
 
 /**
- * Server session object. After initiating SRP authentication with AWS
+ * Cognito session object. After initiating SRP authentication with AWS
  * Cognito using the data provided by `ClientSession`, Cognito will return
  * three values that we can use to compute the signature for our password.
  */

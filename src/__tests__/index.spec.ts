@@ -1,3 +1,4 @@
+import { faker } from "@faker-js/faker";
 import { BigInteger } from "jsbn";
 
 import CognitoSrpHelper from "../cognito-srp-helper";
@@ -5,28 +6,30 @@ import { ClientSession, CognitoSession } from "../types";
 
 // Client credentials
 const USERNAME = "username";
-const POOL_ID = "region_123456";
-const POOL_ID_NUMBER = "123456";
 const PASSWORD = "password";
+const POOL_ID = "eu-west-2_bBpjKlyj6";
+const POOL_ID_NUMBER = "bBpjKlyj6";
 const PASSWORD_HASH =
-  "cbe3fab1fb0777b94dcecabfd1fe0f7b81f0b149653ad8f48777f464d8328fd3";
+  "266629fd96baf8f433a4f01562eea59dd99a721dac75ae600e06bc697b2016ff";
 
 // Fixed values for when we want output to be deterministic
-const SMALL_A = new BigInteger("abcdef", 16);
+const SMALL_A = new BigInteger("abcdef0123456789", 16);
 const LARGE_A = new BigInteger(
-  "e77795671bb953820871b1bb1060d3c4633cb8038970499149be98f02d14775c1d2fa030b033a04b681092c9295cae0f9cc59a2b427e4847eaa5df2db1af2a21f6b1f18789322de94e0389d834a4a232c83d1121f631c920d8699f74cd484f7750e991bbf05086e2542dc7a7728ce0b9a37e2a1383a7451fe5c2b0dea93aae608418cb66dc0154af53bf9188c5ecaac40b53dff29f4ed1f5d07e196bb6baf301deb518495c6fb9efe0b9dcf6c98da5b9a547eef82bde73d4b70cd50ecefd3c4c0b0addd48009837a4e867c7c9c22dc2f49134522e5c3cada6d8b5b68b2e97a4fb26fc2f45b55d490ed687e84b9022811a779667307d2cdb2d4a3a7585900c14b66abfb659fa20d8ca87cf27852a4d89ed8985fb52dded77c719a42561e13ae0a5261e927041f7a47526a59ad67931243007a27cc116661e7149be1d006c8712293c38170ee8486244799b14e06946fdd0d42ba060b83ebca9da8f8632daa62208c832d53806625d050b8b1cee9b3c2770117d1be0cb948320a2fcc1bc1f7f899",
+  "362be8c4c29e414549c30c6679ddbb556c27717d80c8feec68257bf5edcd855fbd23590841c1f792dd24a09243c00d4fbb8cc8047fbe1c95da7b467d29269d2db462c6268f10ef5a3c23f71865a54bae6e48523e6a7a9b65d115c66a2f5b4ec5b7384c9796dc6b2d422ea630e1821104ab05cb4a4f292f991d771be4fdba39bc6ff8dce0f0addaaaf172d908d08544d573a2222f1e198caf65f5e6445848ed23b5bbfff0b5bc00ca54b2831a200577220cfe4f5de20b66baffbfc8d3a16af6f6a7a590e0764ccdf918daf922df1ed0a695702c9bd63a69b09b4c2fb8a3bffee5f89744639607e1920ee006d81f09cba7682e75be5b407fb5cb1f706c0dbf7a9325b5c56ea53333ba1aecab647beae4b2b44c0912814609560fda8d86e6aff0b2317e339d2d3b422069d8e68fca8a39c43acb360d4285bb2dd076bb58b41e07be255f349537adaae3bf5260b2c7e066fb77904ebcee5005cc367f926482f9b405952f50e1182049ac49847a048fca4fbe13c6538eea38132c9bc43c9b05690bb7",
   16
 );
-const TIMESTAMP = "Sun Oct 23 17:02:22 UTC 2022";
+const TIMESTAMP = "Tue Feb 1 03:04:05 UTC 2000";
+const TIMESTAMP_EPOCH = 1667515512;
 
-// Server values (generated with the above client credentials, and b = 123456)
-const SALT = "1234567890abcdef";
-const SECRET = "secret";
+// Cognito values (generated with the above client credentials, and b = 123456)
+const SALT = "8f6a1dad94d7b82c5e3031d21a251b0f";
+const SECRET =
+  "F+iU1RhIMWd3K64Qg+J/eud+WYMsW1tDULDQ4boHjzgdNFiBSKFX3BvoMHZJ2MjKv6nKMRgjifbx5sjdrBi2n+Nat+9E1QD0rzeJ2l2oOeVXruiwItacGO5AjM9PU1sFtZu4N13oNbsx9DUY7diIB+ksKz8LjxJV4FP055O1OJzEGbSY+RHAw3d3HsY2xsE9Zy6bD5FpSrONwKZWWUpZXSexPiDHzGIcRyBBYXwOKAJ+1pCtZW/Jg+MuW6hiYfTMEGk8vr/35TmiAHjYRe1urxElaa+fJi41j1tpX5FhrHfNp3WmuVj6cWJwkhZ/GKGL000lwsXDEY83C2v2czpjP1VwyDf2UPxI1BNPMVjCWZx5V/9D5SniPUWCNpwyh+ZSCVvRJxQitMcV0klswY36itXXn7OCurUjgqViUIBPbrVDcbuZ49tR4UoHlQXNzsmzXwlGwyHvNUHjNAT/6/qAAtmHwJbT6GZzceN1g+33P0Eq2BIWxj16pnhPKykrGuvIV3TpcL9FY0CcTKqozRfC2pOWenT08md++uq39z9OP+wA/7Fjt1ceLOiDcRhEW0xhoBqu/3V7RDNDUqV2bLH7rEq7Q5PCGhsRu8h9crUbVtNOUrna/o7HmRy0XiBQdjLP7Xe6uASNZAAso4eUZce0oc2LIpHvAx6BK8cw8rp2Pcg+ZnC0HgcpBEF6sHJEcH4GmZNJ10c/exITniVKSJkP1C8iPqulNug6OMmSav3WpMvj/qb/t8JPNqbePj99fANkteG7JPUY9LoE/wsBDIeYEA4lZ4HvKZw9g8RbltYNmOQAa6K4XXI0AEspx1+TT5A+cJl48BPk+f46SCThCzK/8N9XHaerojUqu4EWW1l5c+WRaOCdvo/HQidTn1VQJ6lcyJwcuyoxy7MlESMfs1G9rgehHbYjWNxoUwX/AwFfNzS/7dMENhDFx+ZUsT0wgrn+iMhfJJPHG4lt0N/R6JjQ8IOgaUZ7CZdrL7pQxA5v0eqWwZ/cYJVAI+mGLez1ldYQRvZkw0dOkpCjCDrw7ZTKnsyRLDE6KyyNT+ykJq7aGyAHb5nxualN0B8OnqY1hh+tZ5xTOh9jlnvBo7dwfsbZpjsGGLiMLbc411cT+FUONrlPdK9wDEZdQ8jcys4PfeCzcju/VnNEbbv1EuxG5bIWGApSOVf04p2/0bBWn8VJkKoCsC9+QhV2KwTRfCLZWloYIc/N1QuzXf328m9FG3vihrXvkgcxxsSbUjMb4QhR7DkYIN6kWsguBOVTybdTi4vlNqFzX8bJtK3uQNKC98yYzZjR40HFOydBJjLckUandwu1blgqM3IwlmYWMiPcFx2SGQRIufq8hLOhyE12ulT9KI4c2D+yLn7hASICW/3z7LgfuWq6j1FDVlmSqM00C8wZ84DzT056HLETpWpl1Gh3QRJPkReqRKlY0Bqrk5koMfmRuGht/WnyXxs0gSAkWFOevpvYopyHBhMTdc7DlGE70QcRJiBeuJkKNOoih+lOkHGFof5xnFWzaZkuouBZFntSn4xZxEAb1Tl56k1b8oCIHLvrsnlqxMHfNYlnQUO+gnhFgDc6AlyQCtc6+wlulggchkPFMgjlaN/w6h3N9697ksRnySNMNAkCx+VgP+qbgn24pGYWWtlCWWpsdkxU6OzpFQwBchqBw9LUB5MyqjwWLssMxlJxg0KgXnRNfwv5jd0sAE5KvT4vFCt0FA==";
 const LARGE_B =
-  "38964bd8b8d8a178fe983f0a184f7bf574b7650dddae5c28e65593471d1d4cdec34cb8939da30f510adc155af488720943d00c2c035678cf71c423024260ff298d740f90980225d451a71bc1c2fc0470cf607eeb0e650c2d3a99a85b89251172d1be77e791ebaa0df1769f9dc428f3aac5ada6fdd48be67714dec364a539e8cca38fcca440c3da5d365d4dda215eedf592a42ad2d40be9608cb34728dc896119e7f5bbcb9e97e62afc40e10a2aaffbd8de4a8e6b6e525af9bff792ff0fa5b42852af2bf6dd9fcca6b09fefa73ef3ec08f55e3abf3a7ea039b6a9da9e9fcf4c42329546cd9793fd6236d56e08e93f5085b6cbeb364140af8700bc75de8ff15b1a21a952cf752dd823aa2b5d31d0914dbabc5e0c37c80c15dea0242b3848be60276c77e8036a93f445f053429d4968ff6c02ff720f604ae31c455f049e407b2e227960a85e055658445d6288c3a5aff5ec2dde317fff6031828441dd735c3d0caa9cd5972c2c3f5f585fa6fdf35127cfd179c9789de0bfda95b198dee194f4e6284ae1220163cc3072c015c94471ce173f5def81faa48a95078b4b4b4348b95bc9";
+  "a2a9be7148a622a87b92513959336c923ab748fdde47e1eae8e0b4495bfc950e65a4c2cf09ac9ab38c85dbc31100bda601bb44d03d8c8a47770cdace442bea4c30ac83df807c2d2dfd6d8b449178c4c558108d141bdd79f8695d40ce25d77b1d7715a53b0022782b71105710e476b484e7c01d9625eafe4d50aff1808712d4c2636a7bb83b008fb8f398d79c5dfe59074ee0df3240253e5719c18b343f49ef5d975d89e2c481628eadca30a90ab6c41d7b9308aa6f6fc618813393ace0f52562f51f26c3fc3160e9dc99f78e9bc22758eeb7f22c137a962de99a66feb7a23e179a599813c8431c364ee193b64eef9bca04117ceba50140bafe1a0aea262c0b9bcde235866da2f1c174063d685ad67f231fcef7dca62a327f6cf2279b5fa17383acd1868629d75523e87e14cdb214ea14ce6d47228e350e4d1d451a1238886d6b3dae1d59b79321ab740c995b28c6e03a61cf76383ce1906f86389927d3575e751cfe4ab50c1eef52dd79aee69512b88f237bd74d04e8cc72d0ab94c0ad934f26";
 
 // given the above inputs, this is the correct signature that Cognito is expecting
-const PASSWORD_SIGNATURE = "kwIHDQhgaEvhSiRrKwMluwp5M/+sk2r6ttDlwrYAQuQ=";
+const PASSWORD_SIGNATURE = "AmaS40dQC4mBIgVaKNkAvWpYBmHUi/gv/XKVVCr8xyE=";
 
 describe("SrpAuthenticationHelper", () => {
   const srpAuthenticationHelper = new CognitoSrpHelper();
@@ -77,19 +80,68 @@ describe("SrpAuthenticationHelper", () => {
       expect(clientSession1).not.toEqual(clientSession2);
     });
 
-    it("should produce session values that conform to the format required by Cognito", () => {
-      const clientSession = srpAuthenticationHelper.createClientSession(
-        USERNAME,
-        PASSWORD,
-        POOL_ID
-      );
-      expect(clientSession.passwordHash).toMatch(/[A-Fa-f0-9]/);
-      expect(clientSession.smallA).toMatch(/[A-Fa-f0-9]{16}/);
-      expect(clientSession.largeA).toMatch(/[A-Fa-f0-9]{64}/);
-      expect(clientSession.timestamp).toMatch(
-        /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] [0-9]{2}:[0-9]{2}:[0-9]{2} UTC [0-9]{4}/
-      );
-    });
+    // new Array(20).fill(faker.internet.userName()),
+    // new Array(20).fill(faker.internet.password()),
+    // new Array(20).fill(
+    //   `${faker.datatype.string(9)}_${faker.datatype.string(9)}`
+    // ),
+
+    it.each([
+      ...Array.from({ length: 10 }, () => [
+        faker.internet.userName(),
+        faker.internet.password(),
+        `${faker.datatype.string(9)}_${faker.datatype.string(9)}`,
+      ]),
+      ...Array.from({ length: 10 }, () => [
+        faker.internet.email(),
+        faker.internet.password(),
+        `${faker.datatype.string(9)}_${faker.datatype.string(9)}`,
+      ]),
+    ])(
+      "should produce password hash that conform to the format required by Cognito, with credentials: %p %p %p",
+      (username, password, poolId) => {
+        const clientSession = srpAuthenticationHelper.createClientSession(
+          username,
+          password,
+          poolId
+        );
+        expect(clientSession.passwordHash).toMatch(/[A-Fa-f0-9]{64}/);
+      }
+    );
+
+    it.each([...Array(20).keys()])(
+      "should produce session keys that conform to the format required by Cognito",
+      () => {
+        const clientSession = srpAuthenticationHelper.createClientSession(
+          USERNAME,
+          PASSWORD,
+          POOL_ID
+        );
+        expect(clientSession.smallA).toMatch(/^[A-Fa-f0-9]+$/);
+        expect(clientSession.largeA).toMatch(/^[A-Fa-f0-9]+$/);
+      }
+    );
+
+    it.each([
+      ...faker.date.betweens(
+        "1000-01-01T00:00:00.000Z",
+        "9999-01-01T00:00:00.000Z",
+        20
+      ),
+    ])(
+      "should produce session timestamp that conform to the format required by Cognito, with timestamp: %p",
+      (epoch) => {
+        jest.useFakeTimers().setSystemTime(new Date(epoch));
+        const clientSession = srpAuthenticationHelper.createClientSession(
+          USERNAME,
+          PASSWORD,
+          POOL_ID
+        );
+        expect(clientSession.timestamp).toMatch(
+          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] [0-9]{2}:[0-9]{2}:[0-9]{2} UTC [0-9]{4}/
+        );
+      }
+    );
 
     it("should throw ReferenceError if any parameters are falsy", () => {
       expect(() => {

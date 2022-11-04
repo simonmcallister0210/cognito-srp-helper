@@ -28,14 +28,14 @@ export class CognitoSrpHelper {
     const timeZone = "UTC";
 
     const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
-    const day = now.toLocaleString(locale, { day: "2-digit", timeZone });
+    const day = now.toLocaleString(locale, { day: "numeric", timeZone });
     const month = now.toLocaleString(locale, { month: "short", timeZone });
     const year = now.getUTCFullYear();
     const time = now.toLocaleString(locale, {
-      hour: "numeric",
+      hour: "2-digit",
       hour12: false,
-      minute: "numeric",
-      second: "numeric",
+      minute: "2-digit",
+      second: "2-digit",
       timeZone,
     });
 
@@ -168,15 +168,15 @@ export class CognitoSrpHelper {
     // Assert parameters exist
     if (!largeB)
       throw new ReferenceError(
-        `Server session could not be initialised because largeB is missing or falsy`
+        `Cognito session could not be initialised because largeB is missing or falsy`
       );
     if (!salt)
       throw new ReferenceError(
-        `Server session could not be initialised because salt is missing or falsy`
+        `Cognito session could not be initialised because salt is missing or falsy`
       );
     if (!secret)
       throw new ReferenceError(
-        `Server session could not be initialised because secret is missing or falsy`
+        `Cognito session could not be initialised because secret is missing or falsy`
       );
 
     return {
@@ -193,7 +193,7 @@ export class CognitoSrpHelper {
    *
    * @param clientSession Client session object containing user credentials,
    * session keys, and timestamp
-   * @param cognitoSession Server session object containing public session key,
+   * @param cognitoSession Cognito session object containing public session key,
    * salt, and secret
    */
   public computePasswordSignature(
@@ -203,11 +203,11 @@ export class CognitoSrpHelper {
     // Assert parameters exist
     if (!clientSession)
       throw new ReferenceError(
-        `Server session could not be initialised because clientSession is missing or falsy`
+        `Cognito session could not be initialised because clientSession is missing or falsy`
       );
     if (!cognitoSession)
       throw new ReferenceError(
-        `Server session could not be initialised because cognitoSession is missing or falsy`
+        `Cognito session could not be initialised because cognitoSession is missing or falsy`
       );
 
     const { username, poolId, passwordHash, smallA, largeA, timestamp } =
