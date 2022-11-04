@@ -18,7 +18,7 @@ export type ClientSession = {
  * Cognito using the data provided by `ClientSession`, Cognito will return
  * three values that we can use to compute the signature for our password.
  */
-export type ServerSession = {
+export type CognitoSession = {
   largeB: string;
   salt: string;
   secret: string;

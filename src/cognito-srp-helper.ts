@@ -2,7 +2,7 @@ import CryptoJS, { HmacSHA256 } from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
-import { ClientSession, ServerSession } from "./types";
+import { ClientSession, CognitoSession } from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
@@ -154,17 +154,17 @@ export class CognitoSrpHelper {
 
   /**
    * Asserts and bundles the SRP authentication values retrieved from Cognito
-   * into a single object that can be passed into `createServerSession`
+   * into a single object that can be passed into `createCognitoSession`
    *
-   * @param largeB The server's (Cognito's) public session key
+   * @param largeB The Cognito public session key
    * @param salt Value paired with user's password to ensure it's unqiue
    * @param secret A secret value used to authenticate our verification request
    */
-  public createServerSession(
+  public createCognitoSession(
     largeB?: string,
     salt?: string,
     secret?: string
-  ): ServerSession {
+  ): CognitoSession {
     // Assert parameters exist
     if (!largeB)
       throw new ReferenceError(
@@ -193,26 +193,26 @@ export class CognitoSrpHelper {
    *
    * @param clientSession Client session object containing user credentials,
    * session keys, and timestamp
-   * @param serverSession Server session object containing public session key,
+   * @param cognitoSession Server session object containing public session key,
    * salt, and secret
    */
   public computePasswordSignature(
     clientSession: ClientSession,
-    serverSession: ServerSession
+    cognitoSession: CognitoSession
   ): string {
     // Assert parameters exist
     if (!clientSession)
       throw new ReferenceError(
         `Server session could not be initialised because clientSession is missing or falsy`
       );
-    if (!serverSession)
+    if (!cognitoSession)
       throw new ReferenceError(
-        `Server session could not be initialised because serverSession is missing or falsy`
+        `Server session could not be initialised because cognitoSession is missing or falsy`
       );
 
     const { username, poolId, passwordHash, smallA, largeA, timestamp } =
       clientSession;
-    const { largeB, salt, secret } = serverSession;
+    const { largeB, salt, secret } = cognitoSession;
 
     const u = this.calculateU(
       new BigInteger(largeA, 16),
