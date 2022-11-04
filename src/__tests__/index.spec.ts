@@ -19,7 +19,6 @@ const LARGE_A = new BigInteger(
   16
 );
 const TIMESTAMP = "Tue Feb 1 03:04:05 UTC 2000";
-const TIMESTAMP_EPOCH = 1667515512;
 
 // Cognito values (generated with the above client credentials, and b = 123456)
 const SALT = "8f6a1dad94d7b82c5e3031d21a251b0f";
