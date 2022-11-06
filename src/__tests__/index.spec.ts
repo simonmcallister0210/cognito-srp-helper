@@ -86,12 +86,12 @@ describe("SrpAuthenticationHelper", () => {
     // ),
 
     it.each([
-      ...Array.from({ length: 10 }, () => [
+      ...Array.from({ length: 3 }, () => [
         faker.internet.userName(),
         faker.internet.password(),
-        `${faker.datatype.string(9)}_${faker.datatype.string(9)}`,
+        `eu-west-2_${faker.datatype.string(9)}`,
       ]),
-      ...Array.from({ length: 10 }, () => [
+      ...Array.from({ length: 3 }, () => [
         faker.internet.email(),
         faker.internet.password(),
         `${faker.datatype.string(9)}_${faker.datatype.string(9)}`,
@@ -108,7 +108,7 @@ describe("SrpAuthenticationHelper", () => {
       }
     );
 
-    it.each([...Array(20).keys()])(
+    it.each([...Array(3).keys()])(
       "should produce session keys that conform to the format required by Cognito",
       () => {
         const clientSession = srpAuthenticationHelper.createClientSession(
@@ -125,7 +125,7 @@ describe("SrpAuthenticationHelper", () => {
       ...faker.date.betweens(
         "1000-01-01T00:00:00.000Z",
         "9999-01-01T00:00:00.000Z",
-        20
+        3
       ),
     ])(
       "should produce session timestamp that conform to the format required by Cognito, with timestamp: %p",
@@ -142,57 +142,26 @@ describe("SrpAuthenticationHelper", () => {
       }
     );
 
-    it("should throw ReferenceError if any parameters are falsy", () => {
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          undefined,
-          undefined,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          undefined,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          undefined,
-          PASSWORD,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          undefined,
-          undefined,
-          POOL_ID
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          PASSWORD,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          undefined,
-          PASSWORD,
-          POOL_ID
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          undefined,
-          POOL_ID
-        );
-      }).toThrow(ReferenceError);
-    });
+    it.each([
+      [undefined, undefined, undefined],
+      [USERNAME, undefined, undefined],
+      [undefined, PASSWORD, undefined],
+      [undefined, undefined, POOL_ID],
+      [USERNAME, PASSWORD, undefined],
+      [undefined, PASSWORD, POOL_ID],
+      [USERNAME, undefined, POOL_ID],
+    ])(
+      "should throw ReferenceError if any parameters are falsy",
+      (username, password, poolId) => {
+        expect(() => {
+          srpAuthenticationHelper.createClientSession(
+            username,
+            password,
+            poolId
+          );
+        }).toThrow(ReferenceError);
+      }
+    );
   });
 
   describe("createCognitoSession", () => {
@@ -210,49 +179,22 @@ describe("SrpAuthenticationHelper", () => {
       expect(clientSession).toEqual(expected);
     });
 
-    it("should throw ReferenceError if any parameters are falsy", () => {
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(
-          undefined,
-          undefined,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(
-          LARGE_B,
-          undefined,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(
-          undefined,
-          SALT,
-          undefined
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(
-          undefined,
-          undefined,
-          SECRET
-        );
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(LARGE_B, SALT, undefined);
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(undefined, SALT, SECRET);
-      }).toThrow(ReferenceError);
-      expect(() => {
-        srpAuthenticationHelper.createCognitoSession(
-          LARGE_B,
-          undefined,
-          SECRET
-        );
-      }).toThrow(ReferenceError);
-    });
+    it.each([
+      [undefined, undefined, undefined],
+      [LARGE_B, undefined, undefined],
+      [undefined, SALT, undefined],
+      [undefined, undefined, SECRET],
+      [LARGE_B, SALT, undefined],
+      [undefined, SALT, SECRET],
+      [LARGE_B, undefined, SECRET],
+    ])(
+      "should throw ReferenceError if any parameters are falsy",
+      (largeB, salt, secret) => {
+        expect(() => {
+          srpAuthenticationHelper.createCognitoSession(largeB, salt, secret);
+        }).toThrow(ReferenceError);
+      }
+    );
   });
 
   describe("computePasswordSignature", () => {
