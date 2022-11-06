@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "A helper for SRP authentication in AWS Cognito",
   "author": "Simon McAllister",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "main": "dist/app.js",
   "scripts": {
     "build": "tsc",

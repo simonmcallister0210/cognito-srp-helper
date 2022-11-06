@@ -1,3 +1,14 @@
+/*!
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+  CHANGES:
+  The constants below are removed from AuthenticationHelper class, and wrapped
+  in BigInteger constructors, or built-in NodeJS Buffer
+*/
+
 import { BigInteger } from "jsbn";
 import { hexHash, padHex } from "./utils";
 

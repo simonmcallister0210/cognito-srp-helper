@@ -1,3 +1,15 @@
+/*!
+ * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+  CHANGES:
+  The Amplify implementation uses callbacks. This implementation move the logic
+  into synchronous functions. It also wraps logic used to calculate password
+  signature into its own function
+*/
+
 import CryptoJS, { HmacSHA256 } from "crypto-js";
 import { BigInteger } from "jsbn";
 
