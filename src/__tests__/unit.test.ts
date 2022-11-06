@@ -30,7 +30,7 @@ const LARGE_B =
 // given the above inputs, this is the correct signature that Cognito is expecting
 const PASSWORD_SIGNATURE = "AmaS40dQC4mBIgVaKNkAvWpYBmHUi/gv/XKVVCr8xyE=";
 
-describe("SrpAuthenticationHelper", () => {
+describe("SrpAuthenticationHelper unit tests", () => {
   const srpAuthenticationHelper = new CognitoSrpHelper();
 
   describe("createClientSession", () => {
