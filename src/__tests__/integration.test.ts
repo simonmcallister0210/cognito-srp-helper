@@ -18,10 +18,6 @@ describe("SrpAuthenticationHelper integration tests", () => {
     cognitoSrpHelper = new CognitoSrpHelper();
   });
 
-  //   test("Cognito custom authentication flow", async () => {
-  //     // ...
-  //   });
-
   test("Cognito SRP authentication flow", async () => {
     // Create client session
     const clientSession = cognitoSrpHelper.createClientSession(
