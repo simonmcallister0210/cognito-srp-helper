@@ -65,7 +65,6 @@ const respondToAuthChallengeResponse = await cognito
       USERNAME: username,
     },
     ClientId: clientId,
-    Session: initiateAuthResponse.Session,
   })
   .promise();
 
