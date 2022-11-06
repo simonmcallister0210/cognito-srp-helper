@@ -237,92 +237,61 @@ describe("SrpAuthenticationHelper", () => {
       expect(passwordSignature).toEqual(PASSWORD_SIGNATURE);
     });
 
-    it("should not produce the correct password signature if any client session parameters are wrong", () => {
-      const clientSessionWrongUsername =
-        srpAuthenticationHelper.createClientSession(
-          "wrong_username",
-          PASSWORD,
-          POOL_ID
+    it.each([
+      ["wrong_username", PASSWORD, POOL_ID],
+      [USERNAME, "wrong_password", POOL_ID],
+      [USERNAME, PASSWORD, "wrong_poolid"],
+      ["wrong_username", "wrong_password", POOL_ID],
+      [USERNAME, "wrong_password", "wrong_poolid"],
+      ["wrong_username", PASSWORD, "wrong_poolid"],
+      ["wrong_username", "wrong_password", "wrong_poolid"],
+    ])(
+      "should not produce the correct password signature if any client session parameters are wrong, with client credentials: %p %p %p",
+      (username, password, poolId) => {
+        const clientSessionWrong = srpAuthenticationHelper.createClientSession(
+          username,
+          password,
+          poolId
         );
-      const clientSessionWrongPassword =
-        srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          "wrong_password",
-          POOL_ID
+        const cognitoSession = srpAuthenticationHelper.createCognitoSession(
+          LARGE_B,
+          SALT,
+          SECRET
         );
-      const clientSessionWrongPoolId =
-        srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          PASSWORD,
-          "wrong_poolid"
-        );
-      const cognitoSession = srpAuthenticationHelper.createCognitoSession(
-        LARGE_B,
-        SALT,
-        SECRET
-      );
-      const passwordSignatureWrongUsername =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSessionWrongUsername,
-          cognitoSession
-        );
-      const passwordSignatureWrongPassword =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSessionWrongPassword,
-          cognitoSession
-        );
-      const passwordSignatureWrongPoolId =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSessionWrongPoolId,
-          cognitoSession
-        );
-      expect(passwordSignatureWrongUsername).not.toEqual(PASSWORD_SIGNATURE);
-      expect(passwordSignatureWrongPassword).not.toEqual(PASSWORD_SIGNATURE);
-      expect(passwordSignatureWrongPoolId).not.toEqual(PASSWORD_SIGNATURE);
-    });
+        const passwordSignature =
+          srpAuthenticationHelper.computePasswordSignature(
+            clientSessionWrong,
+            cognitoSession
+          );
+        expect(passwordSignature).not.toEqual(PASSWORD_SIGNATURE);
+      }
+    );
 
-    it("should not produce the correct password signature if any cognito session parameters are wrong", () => {
-      const clientSession = srpAuthenticationHelper.createClientSession(
-        USERNAME,
-        PASSWORD,
-        POOL_ID
-      );
-      const cognitoSessionWrongLargeB =
-        srpAuthenticationHelper.createCognitoSession(
-          "abcdef1234567890",
-          SALT,
-          SECRET
+    it.each([
+      ["1a79eb", SALT, SECRET],
+      [LARGE_B, "5a17", SECRET],
+      [LARGE_B, SALT, "5ec7e7"],
+      ["1a79eb", "5a17", SECRET],
+      [LARGE_B, "5a17", "5ec7e7"],
+      ["1a79eb", SALT, "5ec7e7"],
+      ["1a79eb", "5a17", "5ec7e7"],
+    ])(
+      "should not produce the correct password signature if any cognito session parameters are wrong, with cognito values: %p %p %p",
+      (largeB, salt, secret) => {
+        const clientSession = srpAuthenticationHelper.createClientSession(
+          USERNAME,
+          PASSWORD,
+          POOL_ID
         );
-      const cognitoSessionWrongSalt =
-        srpAuthenticationHelper.createCognitoSession(
-          LARGE_B,
-          "abcdef1234567890",
-          SECRET
-        );
-      const cognitoSessionWrongSecret =
-        srpAuthenticationHelper.createCognitoSession(
-          LARGE_B,
-          SALT,
-          "abcdef1234567890"
-        );
-      const passwordSignatureWrongLargeB =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSession,
-          cognitoSessionWrongLargeB
-        );
-      const passwordSignatureWrongSalt =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSession,
-          cognitoSessionWrongSalt
-        );
-      const passwordSignatureWrongSecret =
-        srpAuthenticationHelper.computePasswordSignature(
-          clientSession,
-          cognitoSessionWrongSecret
-        );
-      expect(passwordSignatureWrongLargeB).not.toEqual(PASSWORD_SIGNATURE);
-      expect(passwordSignatureWrongSalt).not.toEqual(PASSWORD_SIGNATURE);
-      expect(passwordSignatureWrongSecret).not.toEqual(PASSWORD_SIGNATURE);
-    });
+        const cognitoSessionWrong =
+          srpAuthenticationHelper.createCognitoSession(largeB, salt, secret);
+        const passwordSignature =
+          srpAuthenticationHelper.computePasswordSignature(
+            clientSession,
+            cognitoSessionWrong
+          );
+        expect(passwordSignature).not.toEqual(PASSWORD_SIGNATURE);
+      }
+    );
   });
 });
