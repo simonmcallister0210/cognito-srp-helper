@@ -45,13 +45,14 @@ export class CognitoSrpHelper {
     const year = now.getUTCFullYear();
     const time = now.toLocaleString(locale, {
       hour: "2-digit",
-      hour12: false,
+      hourCycle: "h23",
       minute: "2-digit",
       second: "2-digit",
       timeZone,
     });
 
     // ddd MMM D HH:mm:ss UTC YYYY
+    // EEE MMM d HH:mm:ss z yyyy in English
     return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
   }
 
