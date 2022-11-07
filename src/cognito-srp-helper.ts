@@ -5,9 +5,11 @@
 
 /*
   CHANGES:
-  The Amplify implementation uses callbacks. This implementation move the logic
-  into synchronous functions. It also wraps logic used to calculate password
-  signature into its own function
+  The Amplify implementation uses callbacks. This implementation moves logic
+  into synchronous functions. It wraps logic used to calculate password
+  signature into its own function. The timestamp function has been re-worked
+  using toLocaleString. All SRP related functions have been placed inside the
+  CognitoSrpHelper class.
 */
 
 import CryptoJS, { HmacSHA256 } from "crypto-js";

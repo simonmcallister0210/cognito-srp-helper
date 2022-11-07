@@ -79,12 +79,6 @@ describe("SrpAuthenticationHelper unit tests", () => {
       expect(clientSession1).not.toEqual(clientSession2);
     });
 
-    // new Array(20).fill(faker.internet.userName()),
-    // new Array(20).fill(faker.internet.password()),
-    // new Array(20).fill(
-    //   `${faker.datatype.string(9)}_${faker.datatype.string(9)}`
-    // ),
-
     it.each([
       ...Array.from({ length: 3 }, () => [
         faker.internet.userName(),

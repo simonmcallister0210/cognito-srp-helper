@@ -1,12 +1,12 @@
 # 🔐 Cognito SRP Helper
 
-Using the CognitoIdentityServiceProvider from the AWS SDK, we can authenticate a user using SRP (secure remote password). SRP can be used for basic password verification using the USER_SRP_AUTH or CUSTOM_AUTH flow. The problem here (and the reason this project exists) is that the SRP logic needs to be implemented by the developer, and there aren't a lot of libraries available to do this for you. The options that are available include:
+Using the CognitoIdentityServiceProvider from the AWS SDK, we can authenticate a user without sending their password to the server. This is done through SRP (secure remote password). SRP can be used for password verification using the USER_SRP_AUTH or CUSTOM_AUTH flow. The problem here (and the reason this project exists) is that the SRP logic needs to be implemented by the developer, and there aren't many libraries available to do this for you. The options that are available include:
 
 - [Warrant](https://github.com/capless/warrant) - A Python library that implements the SRP logic for you. This solution works well, but there isn't a JavaScript version we can use with the AWS SDK
 
 - [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js) - Cognito Identity SDK, which also implements the SRP logic for you. This is [what Amplify uses under the hood](https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js). The problem with this package is the setup and interface. To setup you either have to download the bundle via NPM and include it via a HTML script tag, or you bundle the package yourself with webpack, which isn't ideal if you don't want to mess with the build config of your project. The interface of the project is also different to the standard [AWS Cognito SDK](https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_Operations.html). If you're already using the standard SDK it may clutter your code if you have to refer to another seperate SDK to interact with Cognito
 
-This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK
+This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK. It mimics the official AWS SRP implementation from [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js), but improves on it by removing the need for callbacks, and removing its internal state, making more readable, testable, and re-usable
 
 ## Usage
 
@@ -75,7 +75,7 @@ const respondToAuthChallengeResponse = await cognito
 
 ### `createClientSession`
 
-Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key _largeA_ is passed to _SRP_A_ in the initiateAuth call, _timestamp_ is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the _PASSWORD_CLAIM_SIGNATURE_ when responding to a _PASSWORD_VERIFICATION_ challenge with _respondToAuthChallenge_
+Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key largeA is passed to SRP_A in the initiateAuth call, timestamp is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the PASSWORD_CLAIM_SIGNATURE when responding to a PASSWORD_VERIFICATION challenge with respondToAuthChallenge
 
 **Parameters**
 
@@ -87,7 +87,7 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 **Returns**:
 
-`clientSession` - _ClientSession_ - An object containing client session details for a SRP authentication request
+_ClientSession_ - An object containing client session details for a SRP authentication request
 
 ### `createCognitoSession`
 
@@ -103,11 +103,11 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 **Returns**:
 
-`cognitoSession` - _CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
+_CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
 
 ### `computePasswordSignature`
 
-Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to _PASSWORD_CLAIM_SIGNATURE_ in a _respondToAuthChallenge_ call
+Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to PASSWORD_CLAIM_SIGNATURE in a respondToAuthChallenge call
 
 **Parameters**:
 
@@ -117,7 +117,7 @@ Computes the password signature to determine whether the password provided by th
 
 **Returns**:
 
-`passwordSignature` - _string_ - The password signature to pass to _PASSWORD_CLAIM_SIGNATURE_
+_string_ - The password signature to pass to PASSWORD_CLAIM_SIGNATURE
 
 ## See Also
 
