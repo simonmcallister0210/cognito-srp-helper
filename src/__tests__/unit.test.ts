@@ -122,6 +122,9 @@ describe("SrpAuthenticationHelper unit tests", () => {
     );
 
     it.each([
+      "1000-01-01T01:02:03.000Z", // 'wide' hours
+      "1000-01-01T24:00:00.000Z", // 24th hour
+      "1000-01-01T00:00:00.000Z", // 0th hour
       ...faker.date.betweens(
         "1000-01-01T00:00:00.000Z",
         "9999-01-01T00:00:00.000Z",
@@ -137,7 +140,7 @@ describe("SrpAuthenticationHelper unit tests", () => {
           POOL_ID
         );
         expect(clientSession.timestamp).toMatch(
-          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] [0-9]{2}:[0-9]{2}:[0-9]{2} UTC [0-9]{4}/
+          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{4}/
         );
       }
     );
