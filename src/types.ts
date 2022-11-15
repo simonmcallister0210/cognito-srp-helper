@@ -10,7 +10,6 @@ export type ClientSession = {
   passwordHash: string;
   smallA: string;
   largeA: string;
-  timestamp: string;
 };
 
 /**

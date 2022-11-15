@@ -19,6 +19,7 @@ const LARGE_A = new BigInteger(
   16
 );
 const TIMESTAMP = "Tue Feb 1 03:04:05 UTC 2000";
+const TIMESTAMP_EPOCH_MS = 949374245000;
 
 // Cognito values (generated with the above client credentials, and b = 123456)
 const SALT = "8f6a1dad94d7b82c5e3031d21a251b0f";
@@ -42,12 +43,6 @@ describe("SrpAuthenticationHelper unit tests", () => {
           "generateSmallA"
         )
         .mockImplementationOnce(() => SMALL_A);
-      jest
-        .spyOn(
-          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          "getCognitoTimeStamp"
-        )
-        .mockImplementationOnce(() => TIMESTAMP);
 
       const clientSession = srpAuthenticationHelper.createClientSession(
         USERNAME,
@@ -59,7 +54,6 @@ describe("SrpAuthenticationHelper unit tests", () => {
         passwordHash: PASSWORD_HASH,
         poolId: POOL_ID_NUMBER,
         smallA: SMALL_A.toString(16),
-        timestamp: TIMESTAMP,
         username: USERNAME,
       };
       expect(clientSession).toEqual(expected);
@@ -80,11 +74,13 @@ describe("SrpAuthenticationHelper unit tests", () => {
     });
 
     it.each([
+      // 3 usernames
       ...Array.from({ length: 3 }, () => [
         faker.internet.userName(),
         faker.internet.password(),
         `eu-west-2_${faker.datatype.string(9)}`,
       ]),
+      // 3 emails
       ...Array.from({ length: 3 }, () => [
         faker.internet.email(),
         faker.internet.password(),
@@ -112,30 +108,6 @@ describe("SrpAuthenticationHelper unit tests", () => {
         );
         expect(clientSession.smallA).toMatch(/^[A-Fa-f0-9]+$/);
         expect(clientSession.largeA).toMatch(/^[A-Fa-f0-9]+$/);
-      }
-    );
-
-    it.each([
-      "1000-01-01T01:02:03.000Z", // 'wide' hours
-      "1000-01-01T24:00:00.000Z", // 24th hour
-      "1000-01-01T00:00:00.000Z", // 0th hour
-      ...faker.date.betweens(
-        "1000-01-01T00:00:00.000Z",
-        "9999-01-01T00:00:00.000Z",
-        3
-      ),
-    ])(
-      "should produce session timestamp that conform to the format required by Cognito, with timestamp: %p",
-      (epoch) => {
-        jest.useFakeTimers().setSystemTime(new Date(epoch));
-        const clientSession = srpAuthenticationHelper.createClientSession(
-          USERNAME,
-          PASSWORD,
-          POOL_ID
-        );
-        expect(clientSession.timestamp).toMatch(
-          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{4}/
-        );
       }
     );
 
@@ -194,6 +166,40 @@ describe("SrpAuthenticationHelper unit tests", () => {
     );
   });
 
+  describe("createTimestamp", () => {
+    it("should produce the correct timestamp", () => {
+      jest.useFakeTimers().setSystemTime(new Date(TIMESTAMP_EPOCH_MS));
+
+      const timestamp = srpAuthenticationHelper.createTimestamp();
+      expect(timestamp).toEqual(TIMESTAMP);
+
+      jest.useRealTimers();
+    });
+
+    it.each([
+      "1000-01-01T01:02:03.000Z", // 'wide' hours
+      "1000-01-01T24:00:00.000Z", // 24th hour
+      "1000-01-01T00:00:00.000Z", // 0th hour
+      ...faker.date.betweens(
+        "1000-01-01T00:00:00.000Z",
+        "9999-01-01T00:00:00.000Z",
+        3
+      ),
+    ])(
+      "should produce timestamps that conform to the format required by Cognito, with timestamp: %p",
+      (epoch) => {
+        jest.useFakeTimers().setSystemTime(new Date(epoch));
+
+        const timestamp = srpAuthenticationHelper.createTimestamp();
+        expect(timestamp).toMatch(
+          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{4}/
+        );
+
+        jest.useRealTimers();
+      }
+    );
+  });
+
   describe("computePasswordSignature", () => {
     beforeAll(() => {
       // Give indeterministic functions deterministic output
@@ -203,16 +209,12 @@ describe("SrpAuthenticationHelper unit tests", () => {
           "generateSmallA"
         )
         .mockImplementation(() => SMALL_A);
-      jest
-        .spyOn(
-          CognitoSrpHelper.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-          "getCognitoTimeStamp"
-        )
-        .mockImplementation(() => TIMESTAMP);
+      jest.useFakeTimers().setSystemTime(new Date(TIMESTAMP_EPOCH_MS));
     });
 
     afterAll(() => {
       jest.clearAllMocks();
+      jest.useRealTimers();
     });
 
     it("should produce the correct password signature", () => {
@@ -226,10 +228,12 @@ describe("SrpAuthenticationHelper unit tests", () => {
         SALT,
         SECRET
       );
+      const timestamp = srpAuthenticationHelper.createTimestamp();
       const passwordSignature =
         srpAuthenticationHelper.computePasswordSignature(
           clientSession,
-          cognitoSession
+          cognitoSession,
+          timestamp
         );
       expect(passwordSignature).toEqual(PASSWORD_SIGNATURE);
     });
@@ -255,10 +259,12 @@ describe("SrpAuthenticationHelper unit tests", () => {
           SALT,
           SECRET
         );
+        const timestamp = srpAuthenticationHelper.createTimestamp();
         const passwordSignature =
           srpAuthenticationHelper.computePasswordSignature(
             clientSessionWrong,
-            cognitoSession
+            cognitoSession,
+            timestamp
           );
         expect(passwordSignature).not.toEqual(PASSWORD_SIGNATURE);
       }
@@ -282,10 +288,54 @@ describe("SrpAuthenticationHelper unit tests", () => {
         );
         const cognitoSessionWrong =
           srpAuthenticationHelper.createCognitoSession(largeB, salt, secret);
+        const timestamp = srpAuthenticationHelper.createTimestamp();
         const passwordSignature =
           srpAuthenticationHelper.computePasswordSignature(
             clientSession,
-            cognitoSessionWrong
+            cognitoSessionWrong,
+            timestamp
+          );
+        expect(passwordSignature).not.toEqual(PASSWORD_SIGNATURE);
+      }
+    );
+
+    it.each([
+      "",
+      "Feb 1 03:04:05 UTC 2000",
+      "Tue 1 03:04:05 UTC 2000",
+      "Tue Feb 03:04:05 UTC 2000",
+      "Tue Feb 1 03:04:05 2000",
+      "Tue Feb 1 03:04:05 UTC",
+      "Tue Feb 01 03:04:05 UTC 2000",
+      "Tue Feb 1 3:04:05 UTC 2000",
+      "Tue Feb 1 03:4:05 UTC 2000",
+      "Tue Feb 1 03:04:5 UTC 2000",
+      "Tue Feb 1 03:04:05 UTC 20",
+      "Tue Feb 1 03:04:05 UTC 00",
+      " Tue Feb 1 03:04:05 UTC 2000",
+      "Tue Feb 1 03:04:05 UTC 2000 ",
+      " Tue Feb 1 03:04:05 UTC 2000 ",
+      "TueFeb 1 03:04:05 UTC 2000",
+      "Tue Feb1 03:04:05 UTC 2000",
+      "Tue Feb 103:04:05 UTC 2000",
+      "Tue Feb 1 03:04:05UTC 2000",
+      "Tue Feb 1 03:04:05 UTC2000",
+      "TueFeb103:04:05UTC2000",
+    ])(
+      "should not produce the correct password signature if the timestamp format is wrong, with timestamp: %p",
+      (timestamp) => {
+        const clientSession = srpAuthenticationHelper.createClientSession(
+          USERNAME,
+          PASSWORD,
+          POOL_ID
+        );
+        const cognitoSessionWrong =
+          srpAuthenticationHelper.createCognitoSession(LARGE_B, SALT, SECRET);
+        const passwordSignature =
+          srpAuthenticationHelper.computePasswordSignature(
+            clientSession,
+            cognitoSessionWrong,
+            timestamp
           );
         expect(passwordSignature).not.toEqual(PASSWORD_SIGNATURE);
       }

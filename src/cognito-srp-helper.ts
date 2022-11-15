@@ -34,30 +34,6 @@ import { hash, hexHash, padHex, randomBytes } from "./utils";
  * class by using a username, password, and pool ID.
  */
 export class CognitoSrpHelper {
-  // AWS Cognito SRP calls require a specific timestamp format: ddd MMM D HH:mm:ss UTC YYYY
-  private getCognitoTimeStamp(): string {
-    const now = new Date();
-
-    const locale = "en-US";
-    const timeZone = "UTC";
-
-    const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
-    const day = now.toLocaleString(locale, { day: "numeric", timeZone });
-    const month = now.toLocaleString(locale, { month: "short", timeZone });
-    const year = now.getUTCFullYear();
-    const time = now.toLocaleString(locale, {
-      hour: "2-digit",
-      hourCycle: "h23",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZone,
-    });
-
-    // ddd MMM D HH:mm:ss UTC YYYY
-    // EEE MMM d HH:mm:ss z yyyy in English
-    return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
-  }
-
   private generateSmallA(): BigInteger {
     // This will be interpreted as a postive 128-bit integer
     const hexRandom = randomBytes(128).toString("hex");
@@ -154,16 +130,13 @@ export class CognitoSrpHelper {
     // Client session keys
     const smallA = this.generateSmallA();
     const largeA = this.calculateLargeA(smallA);
-    // Cognito unique timestamp
-    const timestamp = this.getCognitoTimeStamp();
 
     return {
-      largeA: largeA.toString(16),
-      passwordHash,
-      poolId: poolIdNumber,
-      smallA: smallA.toString(16),
-      timestamp,
       username,
+      poolId: poolIdNumber,
+      passwordHash,
+      smallA: smallA.toString(16),
+      largeA: largeA.toString(16),
     };
   }
 
@@ -202,18 +175,51 @@ export class CognitoSrpHelper {
   }
 
   /**
+   * Generate timestamp in the format required by Cognito:
+   * `ddd MMM D HH:mm:ss UTC YYYY`. This timestamp is required when creating the
+   * password signature via `computePasswordSignature`, and when responding to
+   * the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the
+   * password signature and the `respondToAuthChallenge` need to share the same
+   * timestamp
+   */
+  public createTimestamp(): string {
+    const now = new Date();
+
+    const locale = "en-US";
+    const timeZone = "UTC";
+
+    const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
+    const day = now.toLocaleString(locale, { day: "numeric", timeZone });
+    const month = now.toLocaleString(locale, { month: "short", timeZone });
+    const year = now.getUTCFullYear();
+    const time = now.toLocaleString(locale, {
+      hour: "2-digit",
+      hourCycle: "h23",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZone,
+    });
+
+    // ddd MMM D HH:mm:ss UTC YYYY
+    // EEE MMM d HH:mm:ss z yyyy in English
+    return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
+  }
+
+  /**
    * Computes the password signature to determine whether the password provided
    * by the user is correct or not. This signature is passed to
    * `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
    *
-   * @param clientSession Client session object containing user credentials,
-   * session keys, and timestamp
+   * @param clientSession Client session object containing user credentials and
+   * session keys
    * @param cognitoSession Cognito session object containing public session key,
    * salt, and secret
+   * @param timestamp Timestamp that matches the format required by Cognito
    */
   public computePasswordSignature(
     clientSession: ClientSession,
-    cognitoSession: CognitoSession
+    cognitoSession: CognitoSession,
+    timestamp: string
   ): string {
     // Assert parameters exist
     if (!clientSession)
@@ -225,8 +231,7 @@ export class CognitoSrpHelper {
         `Cognito session could not be initialised because cognitoSession is missing or falsy`
       );
 
-    const { username, poolId, passwordHash, smallA, largeA, timestamp } =
-      clientSession;
+    const { username, poolId, passwordHash, smallA, largeA } = clientSession;
     const { largeB, salt, secret } = cognitoSession;
 
     const u = this.calculateU(

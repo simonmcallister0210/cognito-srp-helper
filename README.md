@@ -48,10 +48,14 @@ const cognitoSession = cognitoSrpHelper.createCognitoSession(
   SECRET_BLOCK
 );
 
+// Create timestamp in format required by Cognito
+const timestamp = cognitoSrpHelper.createTimestamp();
+
 // Use the client and cognito session to calculate password claim
 const passwordSignature = cognitoSrpHelper.computePasswordSignature(
   clientSession,
-  cognitoSession
+  cognitoSession,
+  timestamp
 );
 
 // Verify password with passwordSignature
@@ -61,7 +65,7 @@ const respondToAuthChallengeResponse = await cognito
     ChallengeResponses: {
       PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Pass the secret from cogntio session
       PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Pass signature we calculated before
-      TIMESTAMP: clientSession.timestamp, // Pass the timestamp from client session
+      TIMESTAMP: timestamp, // Pass the timestamp from client session
       USERNAME: username,
     },
     ClientId: clientId,
@@ -105,15 +109,25 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 _CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
 
+### `createTimestamp`
+
+Generate timestamp in the format required by Cognito: `ddd MMM D HH:mm:ss UTC YYYY`. This timestamp is required when creating the password signature via `computePasswordSignature`, and when responding to the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the password signature and the `respondToAuthChallenge` need to share the same timestamp
+
+**Returns**:
+
+_string_ - A timestamp in the format required by Cognito
+
 ### `computePasswordSignature`
 
 Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to PASSWORD_CLAIM_SIGNATURE in a respondToAuthChallenge call
 
 **Parameters**:
 
-`clientSession` - _ClientSession_ - Client session object containing user credentials, session keys, and timestamp
+`clientSession` - _ClientSession_ - Client session object containing user credentials and session keys
 
 `cognitoSession` - _CognitoSession_ - Cognito session object containing public session key, salt, and secret
+
+`timestamp` - _string_ - Timestamp that matches the format required by Cognito
 
 **Returns**:
 

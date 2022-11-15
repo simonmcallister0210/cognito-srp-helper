@@ -38,6 +38,8 @@ describe("SrpAuthenticationHelper integration tests", () => {
         ClientId: CLIENT_ID,
       })
       .promise();
+
+    // Ensure the response from Cognito is what we expect
     expect(initiateAuthResponse).toHaveProperty("ChallengeName");
     expect(initiateAuthResponse.ChallengeName).toEqual("PASSWORD_VERIFIER");
     expect(initiateAuthResponse).toHaveProperty("ChallengeParameters");
@@ -54,10 +56,14 @@ describe("SrpAuthenticationHelper integration tests", () => {
       initiateAuthResponse?.ChallengeParameters?.SECRET_BLOCK
     );
 
+    // Create timestamp in format required by Cognito
+    const timestamp = cognitoSrpHelper.createTimestamp();
+
     // Compute password signature using client and cognito session
     const signatureString = cognitoSrpHelper.computePasswordSignature(
       clientSession,
-      cognitoSession
+      cognitoSession,
+      timestamp
     );
 
     // Respond to PASSWORD_VERIFIER challenge with password signature
@@ -66,13 +72,15 @@ describe("SrpAuthenticationHelper integration tests", () => {
         ClientId: CLIENT_ID,
         ChallengeName: "PASSWORD_VERIFIER",
         ChallengeResponses: {
-          TIMESTAMP: clientSession.timestamp,
+          TIMESTAMP: timestamp,
           USERNAME,
           PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret,
           PASSWORD_CLAIM_SIGNATURE: signatureString,
         },
       })
       .promise();
+
+    // Ensure the response from Cognito is what we expect
     expect(respondToAuthChallenge).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallenge.AuthenticationResult).toHaveProperty(
       "AccessToken"
