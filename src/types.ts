@@ -4,6 +4,18 @@
  * created. Using these details we can initiate an SRP request to validate
  * the user's password via AWS Cognito.
  */
+export type Credentials = {
+  username: string;
+  password: string;
+  poolId: string;
+};
+
+/**
+ * Client session object. This object contains the user's credentials, unique
+ * session keys, and a Cognito compatible timestamp from when the session was
+ * created. Using these details we can initiate an SRP request to validate
+ * the user's password via AWS Cognito.
+ */
 export type ClientSession = {
   username: string;
   poolId: string;
