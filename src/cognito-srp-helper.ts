@@ -16,7 +16,12 @@ import CryptoJS, { HmacSHA256 } from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
-import { ClientSession, CognitoSession } from "./types";
+import {
+  Credentials,
+  InitiateAuthResponse,
+  ClientSession,
+  CognitoSession,
+} from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
@@ -104,11 +109,15 @@ export class CognitoSrpHelper {
    * @param password The user's AWS Cognito password
    * @param poolId The ID of the AWS Cognito user pool the user belongs to
    */
-  public createClientSession(
-    username?: string,
-    password?: string,
-    poolId?: string
-  ): ClientSession {
+  public createClientSession(credentials: Credentials): ClientSession {
+    // Assert credentials exist
+    if (!credentials)
+      throw new ReferenceError(
+        `Client session could not be initialised because credentials is missing or falsy`
+      );
+
+    const { username, password, poolId } = credentials;
+
     // Assert parameters exist
     if (!username)
       throw new ReferenceError(
@@ -124,8 +133,8 @@ export class CognitoSrpHelper {
       );
 
     // Client credentials
-    const poolIdNumber = poolId.split("_")[1];
-    const usernamePassword = `${poolIdNumber}${username}:${password}`;
+    const poolIdAbbr = poolId.split("_")[1];
+    const usernamePassword = `${poolIdAbbr}${username}:${password}`;
     const passwordHash = hash(usernamePassword);
     // Client session keys
     const smallA = this.generateSmallA();
@@ -133,7 +142,7 @@ export class CognitoSrpHelper {
 
     return {
       username,
-      poolId: poolIdNumber,
+      poolIdAbbr,
       passwordHash,
       smallA: smallA.toString(16),
       largeA: largeA.toString(16),
@@ -149,28 +158,47 @@ export class CognitoSrpHelper {
    * @param secret A secret value used to authenticate our verification request
    */
   public createCognitoSession(
-    largeB?: string,
-    salt?: string,
-    secret?: string
+    initiateAuthResponse?: InitiateAuthResponse
   ): CognitoSession {
-    // Assert parameters exist
-    if (!largeB)
+    // Assert initiateAuthResponse and ChallengeParameters exist
+    if (!initiateAuthResponse)
       throw new ReferenceError(
-        `Cognito session could not be initialised because largeB is missing or falsy`
+        `Cognito session could not be initialised because initiateAuthResponse is missing or falsy`
       );
-    if (!salt)
+    if (!initiateAuthResponse.ChallengeName)
       throw new ReferenceError(
-        `Cognito session could not be initialised because salt is missing or falsy`
+        `Cognito session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy`
       );
-    if (!secret)
+    if (initiateAuthResponse.ChallengeName !== "PASSWORD_VERIFIER")
       throw new ReferenceError(
-        `Cognito session could not be initialised because secret is missing or falsy`
+        `Cognito session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER`
+      );
+    if (!initiateAuthResponse.ChallengeParameters)
+      throw new ReferenceError(
+        `Cognito session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy`
+      );
+
+    const { SRP_B, SALT, SECRET_BLOCK } =
+      initiateAuthResponse.ChallengeParameters;
+
+    // Assert relevant SRP values exist
+    if (!SRP_B)
+      throw new ReferenceError(
+        `Cognito session could not be initialised because SRP_B is missing or falsy`
+      );
+    if (!SALT)
+      throw new ReferenceError(
+        `Cognito session could not be initialised because SALT is missing or falsy`
+      );
+    if (!SECRET_BLOCK)
+      throw new ReferenceError(
+        `Cognito session could not be initialised because SECRET_BLOCK is missing or falsy`
       );
 
     return {
-      largeB,
-      salt,
-      secret,
+      largeB: SRP_B,
+      salt: SALT,
+      secret: SECRET_BLOCK,
     };
   }
 
@@ -230,8 +258,13 @@ export class CognitoSrpHelper {
       throw new ReferenceError(
         `Cognito session could not be initialised because cognitoSession is missing or falsy`
       );
+    if (!timestamp)
+      throw new ReferenceError(
+        `Cognito session could not be initialised because timestamp is missing or falsy`
+      );
 
-    const { username, poolId, passwordHash, smallA, largeA } = clientSession;
+    const { username, poolIdAbbr, passwordHash, smallA, largeA } =
+      clientSession;
     const { largeB, salt, secret } = cognitoSession;
 
     const u = this.calculateU(
@@ -253,7 +286,7 @@ export class CognitoSrpHelper {
     const key = CryptoJS.lib.WordArray.create(hkdf);
     const message = CryptoJS.lib.WordArray.create(
       Buffer.concat([
-        Buffer.from(poolId, "utf8"),
+        Buffer.from(poolIdAbbr, "utf8"),
         Buffer.from(username, "utf8"),
         Buffer.from(secret, "base64"),
         Buffer.from(timestamp, "utf8"),

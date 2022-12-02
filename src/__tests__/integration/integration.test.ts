@@ -37,7 +37,12 @@ describe("SrpAuthenticationHelper integration tests", () => {
         },
         ClientId: CLIENT_ID,
       })
-      .promise();
+      .promise()
+      .catch(() => {
+        throw new Error("bla");
+      });
+
+    initiateAuthResponse;
 
     // Ensure the response from Cognito is what we expect
     expect(initiateAuthResponse).toHaveProperty("ChallengeName");

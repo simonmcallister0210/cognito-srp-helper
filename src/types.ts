@@ -1,3 +1,5 @@
+import { CognitoIdentityServiceProvider } from "aws-sdk";
+
 /**
  * Client credentials object. Contains data required to authorise a user using
  * SRP in AWS Cognito
@@ -12,6 +14,12 @@ export type Credentials = {
 };
 
 /**
+ * Type alias for CognitoIdentityServiceProvider.InitiateAuthResponse
+ */
+export type InitiateAuthResponse =
+  CognitoIdentityServiceProvider.InitiateAuthResponse;
+
+/**
  * Client session object. This object contains the user's credentials, unique
  * session keys, and a Cognito compatible timestamp from when the session was
  * created. Using these details we can initiate an SRP request to validate
@@ -20,13 +28,13 @@ export type Credentials = {
 export type ClientSession = {
   /** Username of the user. The is the value that is in the `Credentials` object. It is bundled here for convenience when passing parameters into `computePasswordSignature` */
   username: string;
-  /** ID of the Cognito Userpool. Here it is just the succeeding ID that's used e.g. abc123 */
-  poolId: string;
+  /** Abbreviated ID of the Cognito Userpool. Here it is just the succeeding ID that's used e.g. abc123 */
+  poolIdAbbr: string;
   /** Password hash generated using the users credentials */
   passwordHash: string;
-  /** Private client session key */
+  /** Client's private session key */
   smallA: string;
-  /** Public client session key */
+  /** Client's public session key */
   largeA: string;
 };
 
@@ -36,10 +44,10 @@ export type ClientSession = {
  * three values that we can use to compute the signature for our password.
  */
 export type CognitoSession = {
-  /** Public server session key */
+  /** Server's public session key */
   largeB: string;
-  /** Server session salt */
+  /** Server's session salt */
   salt: string;
-  /** Server session secret  */
+  /** Server's session secret  */
   secret: string;
 };
