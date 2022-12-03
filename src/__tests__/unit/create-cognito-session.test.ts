@@ -99,7 +99,7 @@ const negativeInitiateAuthResponses = {
   // SRP_B
   largeBUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
-      SRP_B: undefined,
+      SRP_B: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     },
   }),
   largeBEmptyString: factories.mockInitiateAuthResponseFactory({
@@ -110,7 +110,7 @@ const negativeInitiateAuthResponses = {
   // SALT
   saltUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
-      SALT: undefined,
+      SALT: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     },
   }),
   saltEmptyString: factories.mockInitiateAuthResponseFactory({
@@ -121,7 +121,7 @@ const negativeInitiateAuthResponses = {
   // SECRET_BLOCK
   secretUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
-      SECRET_BLOCK: undefined,
+      SECRET_BLOCK: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
     },
   }),
   secretEmptyString: factories.mockInitiateAuthResponseFactory({

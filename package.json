@@ -5,6 +5,7 @@
   "author": "Simon McAllister",
   "license": "Apache-2.0",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
