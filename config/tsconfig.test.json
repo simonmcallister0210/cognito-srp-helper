@@ -1,0 +1,4 @@
+{
+  "exclude": [], // Don't exlude __tests__ so we can lint them
+  "extends": "./tsconfig.base.json"
+}

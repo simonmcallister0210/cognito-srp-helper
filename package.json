@@ -7,14 +7,13 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch",
+    "build": "tsc -p ./config/tsconfig.base.json",
     "format": "prettier 'src/**/*.ts' --write",
-    "lint": "tsc --noEmit && eslint src/**/* --ext .ts",
-    "start": "tsc && node dist/app.js",
-    "test": "jest",
-    "test:unit": "jest ./src/__tests__/unit/*.test.ts",
-    "test:integration": "jest ./src/__tests__/integration/*.test.ts",
+    "lint": "tsc -p ./config/tsconfig.lint.json && eslint -c ./config/eslintrc.json src/**/* --ext .ts",
+    "test": "jest -c ./config/jest.config.json",
+    "test:unit": "jest -c ./config/jest.config.json ./src/__tests__/unit",
+    "test:integration": "jest -c ./config/jest.config.json  ./src/__tests__/integration",
+    "test:clear": "jest --clear-cache",
     "prepare": "husky install"
   },
   "lint-staged": {

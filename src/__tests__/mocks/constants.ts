@@ -1,4 +1,4 @@
-// Deterministic inputs
+// We have pre-calculated these values and know they give the password signature specified below
 export const defaultValues = {
   // credentials
   username: "username",
