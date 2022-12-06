@@ -12,7 +12,7 @@
   CognitoSrpHelper class.
 */
 
-import CryptoJS, { HmacSHA256 } from "crypto-js";
+import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
@@ -65,8 +65,8 @@ export class CognitoSrpHelper {
       salt instanceof Buffer ? CryptoJS.lib.WordArray.create(salt) : salt;
 
     // Create Hmacs
-    const prk = HmacSHA256(ikmWordArray, saltWordArray);
-    const hmac = HmacSHA256(infoBitsWordArray, prk);
+    const prk = CryptoJS.HmacSHA256(ikmWordArray, saltWordArray);
+    const hmac = CryptoJS.HmacSHA256(infoBitsWordArray, prk);
     const hkdf = Buffer.from(hmac.toString(), "hex").slice(0, 16);
 
     return hkdf;
@@ -293,7 +293,7 @@ export class CognitoSrpHelper {
       ])
     );
     const signatureString = CryptoJS.enc.Base64.stringify(
-      HmacSHA256(message, key)
+      CryptoJS.HmacSHA256(message, key)
     );
 
     return signatureString;

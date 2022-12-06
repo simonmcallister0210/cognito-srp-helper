@@ -91,7 +91,7 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 **Returns**:
 
-_ClientSession_ - An object containing client session details for a SRP authentication request
+_ClientSession_ - An object containing client session details required to complete our SRP authentication request
 
 ### `createCognitoSession`
 
@@ -99,11 +99,7 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 **Parameters**:
 
-`largeB` - _string_ - The Cognito public session key
-
-`salt` - _string_ - Value paired with user's password to ensure it's unqiue
-
-`secret` - _string_ - A secret value used to authenticate our verification request
+`initiateAuthResponse` - _InitiateAuthResponse_ - The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
 
 **Returns**:
 

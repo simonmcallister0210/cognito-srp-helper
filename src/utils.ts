@@ -11,7 +11,7 @@
   own implementation of WordArray, but we use CryptoJS for this instead
 */
 
-import CryptoJS, { SHA256 } from "crypto-js";
+import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
 /**
@@ -21,7 +21,7 @@ import { BigInteger } from "jsbn";
  */
 export const hash = (buf: Buffer | string): string => {
   const str = buf instanceof Buffer ? CryptoJS.lib.WordArray.create(buf) : buf;
-  const hashHex = SHA256(str).toString();
+  const hashHex = CryptoJS.SHA256(str).toString();
   const completeHash = new Array(64 - hashHex.length).join("0") + hashHex;
 
   return completeHash;
