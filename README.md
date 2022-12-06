@@ -17,62 +17,66 @@ import CognitoSrpHelper from "cognito-srp-helper";
 
 // . . . obtain user credentials and setup Cognito client
 
-// Initialise helper
+// Initialise SRP helper
 const cognitoSrpHelper = new CognitoSrpHelper();
 
-// Create a client session
+// Create client session
 const clientSession = cognitoSrpHelper.createClientSession(
-  username,
-  password,
-  poolId
+  USERNAME,
+  PASSWORD,
+  POOL_ID
 );
 
-// Initiate password verification with challenge SRP_A
-const initiateAuthResponse = await cognito
+// Initiate SRP auth
+const initiateAuthResponse = await cognitoIdentityServiceProvider
   .initiateAuth({
-    AuthFlow: "USER_SRP_AUTH", // NOTE: also works with CUSTOM_AUTH
+    AuthFlow: "USER_SRP_AUTH",
     AuthParameters: {
       CHALLENGE_NAME: "SRP_A",
-      SRP_A: clientSession.largeA, // Pass the large A from client session
-      USERNAME: username,
+      SECRET_HASH,
+      SRP_A: clientSession.largeA, // Use largeA from clientSession here
+      USERNAME,
     },
-    ClientId: clientId,
+    ClientId: CLIENT_ID,
   })
-  .promise();
+  .promise()
+  .catch((err) => {
+    // . . .
+  });
 
-// Create a cognito session
-const { SALT, SECRET_BLOCK, SRP_B } = initiateAuthResponse.ChallengeParameters;
-const cognitoSession = cognitoSrpHelper.createCognitoSession(
-  SRP_B,
-  SALT,
-  SECRET_BLOCK
-);
+// Create a session out of the response. A ReferenceError will be thrown if any values are missing
+const cognitoSession =
+  cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
 
 // Create timestamp in format required by Cognito
 const timestamp = cognitoSrpHelper.createTimestamp();
 
-// Use the client and cognito session to calculate password claim
+// Compute password signature using both sessions and the timestamp
 const passwordSignature = cognitoSrpHelper.computePasswordSignature(
   clientSession,
   cognitoSession,
   timestamp
 );
 
-// Verify password with passwordSignature
-const respondToAuthChallengeResponse = await cognito
+// Respond to PASSWORD_VERIFIER challenge with password signature and timestamp
+const respondToAuthChallenge = await cognitoIdentityServiceProvider
   .respondToAuthChallenge({
+    ClientId: CLIENT_ID,
     ChallengeName: "PASSWORD_VERIFIER",
     ChallengeResponses: {
-      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Pass the secret from cogntio session
-      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Pass signature we calculated before
-      TIMESTAMP: timestamp, // Pass the timestamp from client session
-      USERNAME: username,
+      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Use secret from cognitoSession here
+      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Use timestamp here
+      SECRET_HASH,
+      TIMESTAMP: timestamp, // Use timestamp here
+      USERNAME,
     },
-    ClientId: clientId,
   })
-  .promise();
+  .promise()
+  .catch((err) => {
+    // . . .
+  });
 
-// . . . return login tokens or continue custom authentication flow
+// . . . return login tokens from respondToAuthChallenge
 ```
 
 ## API
