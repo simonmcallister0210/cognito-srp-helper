@@ -75,11 +75,14 @@ describe("createClientSession", () => {
     it.each(Object.entries(positiveCredentials))(
       "should produce client session values that match the required format: %p",
       (_, credentials) => {
-        const clientSession = cognitoSrpHelper.createClientSession(credentials);
-        expect(clientSession.username).toEqual(credentials.username);
-        expect(clientSession.poolIdAbbr).toEqual(
-          credentials.poolId.split("_")[1]
+        const { username, password, poolId } = credentials;
+        const clientSession = cognitoSrpHelper.createClientSession(
+          username,
+          password,
+          poolId
         );
+        expect(clientSession.username).toEqual(username);
+        expect(clientSession.poolIdAbbr).toEqual(poolId.split("_")[1]);
         expect(clientSession.passwordHash).toMatch(/[A-Fa-f0-9]{64}/);
         expect(clientSession.smallA).toMatch(/^[A-Fa-f0-9]+$/);
         expect(clientSession.largeA).toMatch(/^[A-Fa-f0-9]+$/);
@@ -97,8 +100,13 @@ describe("createClientSession", () => {
         .mockImplementationOnce(() => new BigInteger(defaultValues.smallA, 16));
 
       const credentials = factories.mockCredentialsFactory();
+      const { username, password, poolId } = credentials;
+      const clientSession = cognitoSrpHelper.createClientSession(
+        username,
+        password,
+        poolId
+      );
       const expectedClientSession = factories.mockClientSessionFactory();
-      const clientSession = cognitoSrpHelper.createClientSession(credentials);
       expect(clientSession).toEqual(expectedClientSession);
 
       jest.useRealTimers();
@@ -106,8 +114,17 @@ describe("createClientSession", () => {
 
     it("should not produce the same client session on successive calls", () => {
       const credentials = factories.mockCredentialsFactory();
-      const clientSession1 = cognitoSrpHelper.createClientSession(credentials);
-      const clientSession2 = cognitoSrpHelper.createClientSession(credentials);
+      const { username, password, poolId } = credentials;
+      const clientSession1 = cognitoSrpHelper.createClientSession(
+        username,
+        password,
+        poolId
+      );
+      const clientSession2 = cognitoSrpHelper.createClientSession(
+        username,
+        password,
+        poolId
+      );
       expect(clientSession1).not.toEqual(clientSession2);
     });
   });
@@ -126,10 +143,10 @@ describe("createClientSession", () => {
           : "";
 
         expect(() => {
-          cognitoSrpHelper.createClientSession(credentials);
+          cognitoSrpHelper.createClientSession(username, password, poolId);
         }).toThrow(
           ReferenceError(
-            `Client session could not be initialised because ${falsyCredential} is missing or falsy`
+            `Client session could not be initialised because ${falsyCredential} is undefined or empty`
           )
         );
       }

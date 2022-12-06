@@ -4,7 +4,6 @@ import { defaultValues } from "./constants";
 import {
   ClientSession,
   CognitoSession,
-  Credentials,
   InitiateAuthResponse,
 } from "../../types";
 
@@ -21,7 +20,7 @@ const {
   secret,
 } = defaultValues;
 
-const defaultMockCredentials: Credentials = {
+const defaultMockCredentials = {
   username,
   password,
   poolId,
@@ -51,8 +50,8 @@ const defaultMockCognitoSession: CognitoSession = {
 };
 
 export const mockCredentialsFactory = (
-  credentials?: Partial<Credentials>
-): Credentials =>
+  credentials?: Partial<typeof defaultMockCredentials>
+) =>
   clonedeep({
     ...defaultMockCredentials,
     ...credentials,
@@ -60,7 +59,7 @@ export const mockCredentialsFactory = (
 
 export const mockInitiateAuthResponseFactory = (
   initiateAuthResponse?: Partial<InitiateAuthResponse>
-): InitiateAuthResponse =>
+) =>
   clonedeep({
     ...defaultMockInitiateAuthResponse,
     ...initiateAuthResponse,
@@ -68,7 +67,7 @@ export const mockInitiateAuthResponseFactory = (
 
 export const mockClientSessionFactory = (
   clientSession?: Partial<ClientSession>
-): ClientSession =>
+) =>
   clonedeep({
     ...defaultMockClientSession,
     ...clientSession,
@@ -76,7 +75,7 @@ export const mockClientSessionFactory = (
 
 export const mockCognitoSessionFactory = (
   cognitoSession?: Partial<CognitoSession>
-): CognitoSession =>
+) =>
   clonedeep({
     ...defaultMockCognitoSession,
     ...cognitoSession,

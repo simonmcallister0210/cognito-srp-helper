@@ -1,20 +1,8 @@
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 
 /**
- * Client credentials object. Contains data required to authorise a user using
- * SRP in AWS Cognito
- */
-export type Credentials = {
-  /** The username associated with the user in a Cognito Userpool */
-  username: string;
-  /** The password associated with the user in a Cognito Userpool */
-  password: string;
-  /** The ID of the Cognito Userpool. Must be full ID e.g. eu-west-2_abc123 */
-  poolId: string;
-};
-
-/**
  * Type alias for CognitoIdentityServiceProvider.InitiateAuthResponse
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthresponse.html
  */
 export type InitiateAuthResponse =
   CognitoIdentityServiceProvider.InitiateAuthResponse;

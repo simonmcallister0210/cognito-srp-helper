@@ -13,15 +13,11 @@
 */
 
 import CryptoJS from "crypto-js";
+import isUndefined from "lodash.isundefined";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
-import {
-  Credentials,
-  InitiateAuthResponse,
-  ClientSession,
-  CognitoSession,
-} from "./types";
+import { InitiateAuthResponse, ClientSession, CognitoSession } from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
@@ -105,31 +101,27 @@ export class CognitoSrpHelper {
    * `PASSWORD_CLAIM_SIGNATURE` when responding to a `PASSWORD_VERIFICATION`
    * challenge with `respondToAuthChallenge`
    *
-   * @param username The user's AWS Cognito username
-   * @param password The user's AWS Cognito password
+   * @param username The user's username
+   * @param password The user's password
    * @param poolId The ID of the AWS Cognito user pool the user belongs to
    */
-  public createClientSession(credentials: Credentials): ClientSession {
-    // Assert credentials exist
-    if (!credentials)
-      throw new ReferenceError(
-        `Client session could not be initialised because credentials is missing or falsy`
-      );
-
-    const { username, password, poolId } = credentials;
-
+  public createClientSession(
+    username: string,
+    password: string,
+    poolId: string
+  ): ClientSession {
     // Assert parameters exist
-    if (!username)
+    if (isUndefined(username) || username === "")
       throw new ReferenceError(
-        `Client session could not be initialised because username is missing or falsy`
+        `Client session could not be initialised because username is undefined or empty`
       );
-    if (!password)
+    if (isUndefined(password) || password === "")
       throw new ReferenceError(
-        `Client session could not be initialised because password is missing or falsy`
+        `Client session could not be initialised because password is undefined or empty`
       );
-    if (!poolId)
+    if (isUndefined(poolId) || poolId === "")
       throw new ReferenceError(
-        `Client session could not be initialised because poolId is missing or falsy`
+        `Client session could not be initialised because poolId is undefined or empty`
       );
 
     // Client credentials
