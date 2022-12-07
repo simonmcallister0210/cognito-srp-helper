@@ -13,7 +13,6 @@
 */
 
 import CryptoJS from "crypto-js";
-import isUndefined from "lodash.isundefined";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
@@ -111,15 +110,15 @@ export class CognitoSrpHelper {
     poolId: string
   ): ClientSession {
     // Assert parameters exist
-    if (isUndefined(username) || username === "")
+    if (username === undefined || username === "")
       throw new ReferenceError(
         `Client session could not be initialised because username is undefined or empty`
       );
-    if (isUndefined(password) || password === "")
+    if (password === undefined || password === "")
       throw new ReferenceError(
         `Client session could not be initialised because password is undefined or empty`
       );
-    if (isUndefined(poolId) || poolId === "")
+    if (poolId === undefined || poolId === "")
       throw new ReferenceError(
         `Client session could not be initialised because poolId is undefined or empty`
       );
