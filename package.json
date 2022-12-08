@@ -6,6 +6,10 @@
   "license": "Apache-2.0",
   "private": false,
   "repository": "https://github.com/simonmcallister0210/cognito-srp-helper",
+  "homepage": "https://github.com/simonmcallister0210/cognito-srp-helper",
+  "bugs": {
+    "url": "https://github.com/simonmcallister0210/cognito-srp-helper/issues"
+  },
   "type": "module",
   "main": "dist/index.js",
   "files": [
