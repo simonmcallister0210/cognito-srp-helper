@@ -5,15 +5,19 @@
   "author": "Simon McAllister",
   "license": "Apache-2.0",
   "private": false,
-  "main": "dist/index.js",
+  "repository": "https://github.com/simonmcallister0210/cognito-srp-helper",
   "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist/**"
+  ],
   "scripts": {
-    "build": "tsc -p ./config/tsconfig.base.json",
+    "build": "tsc -p config/tsconfig.base.json",
     "format": "prettier 'src/**/*.ts' --write",
-    "lint": "tsc -p ./config/tsconfig.lint.json && eslint -c ./config/eslintrc.json src/**/* --ext .ts",
-    "test": "jest -c ./config/jest.config.json",
-    "test:unit": "jest -c ./config/jest.config.json ./src/__tests__/unit",
-    "test:integration": "jest -c ./config/jest.config.json ./src/__tests__/integration",
+    "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/* --ext .ts",
+    "test": "jest -c config/jest.config.json",
+    "test:unit": "jest -c config/jest.config.json src/__tests__/unit",
+    "test:integration": "jest -c config/jest.config.json src/__tests__/integration",
     "test:clear": "jest --clear-cache"
   },
   "lint-staged": {
@@ -24,9 +28,7 @@
   },
   "devDependencies": {
     "@faker-js/faker": "^7.6.0",
-    "@types/crypto-js": "3.1.47",
     "@types/jest": "^29.2.0",
-    "@types/jsbn": "1.2.30",
     "@types/lodash.clonedeep": "^4.5.7",
     "@typescript-eslint/eslint-plugin": "^5.40.0",
     "@typescript-eslint/parser": "^5.40.0",
@@ -43,6 +45,10 @@
     "typescript": "^4.8.4"
   },
   "dependencies": {
+    "@types/aws-sdk": "^2.7.0",
+    "@types/crypto-js": "3.1.47",
+    "@types/jsbn": "1.2.30",
+    "@types/node": "^18.11.11",
     "crypto-js": "4.1.1",
     "jsbn": "1.1.0"
   }
