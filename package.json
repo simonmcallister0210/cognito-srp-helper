@@ -11,12 +11,23 @@
     "url": "https://github.com/simonmcallister0210/cognito-srp-helper/issues"
   },
   "type": "module",
-  "main": "dist/index.js",
   "files": [
     "dist/**"
   ],
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "scripts": {
-    "build": "tsc -p config/tsconfig.base.json",
+    "build": "npm run build:cjs && npm run build:esm",
+    "build:cjs": "tsc -p config/tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build:esm": "tsc -p config/tsconfig.esm.json",
     "format": "prettier 'src/**/*.ts' --write",
     "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/* --ext .ts",
     "test": "jest -c config/jest.config.json",

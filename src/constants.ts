@@ -9,6 +9,7 @@
   in BigInteger constructors, or built-in NodeJS Buffer
 */
 
+import { Buffer } from "buffer";
 import { BigInteger } from "jsbn";
 import { hexHash, padHex } from "./utils";
 

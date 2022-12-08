@@ -144,9 +144,7 @@ export class CognitoSrpHelper {
    * Asserts and bundles the SRP authentication values retrieved from Cognito
    * into a single object that can be passed into `createCognitoSession`
    *
-   * @param largeB The Cognito public session key
-   * @param salt Value paired with user's password to ensure it's unqiue
-   * @param secret A secret value used to authenticate our verification request
+   * @param initiateAuthResponse The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
    */
   public createCognitoSession(
     initiateAuthResponse?: InitiateAuthResponse
