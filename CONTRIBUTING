@@ -6,6 +6,7 @@ Table of Contents:
 2. [Comitting to the project](#comitting-to-the-project)
 3. [Releases](#releases)
 4. [Running integration tests locally](#running-integration-tests-locally)
+5. [Supporting older releases](#supporting-older-releases)
 
 ## Implementing a fix or feature
 
@@ -84,3 +85,11 @@ INT_TEST_SECRET_ID=<secret_id_of_the_new_app>
 ```
 
 After all these steps have been completed, you should be able to run integration tests locally. If you have any problems following these steps feel free to open an issue
+
+## Supporting old major releases
+
+To support older major versions you must make sure you create a branch for the older major version before a new major version is released. For example, if we are on v1, and we plan on releasing a braking change to v2, we must create a new branch for v1 just before we release v2
+
+After we have this branch we need to update the Github workflow files to support GitHub actions for this branch. To do this, first checkout the new branch `git checkout 1.x.x` and look for comments in `.github/workflow/*` preceded by 'SUPPORTING OLDER MAJOR VERSIONS'. The comments will tell you what you need to change in order to support these old major releases
+
+_Update 12/2022_ - At time of writing the release-please action will always tag a release as 'latest', so if you release on an old major branch you will need to manually re-tag the latest Github release

@@ -16,7 +16,7 @@
   ],
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
-  "types": "./dist/types/index.d.ts",
+  "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
       "require": "./dist/cjs/index.js",
@@ -25,9 +25,10 @@
     }
   },
   "scripts": {
-    "build": "npm run build:cjs && npm run build:esm",
+    "build": "npm run build:cjs && npm run build:esm && npm run build:types",
     "build:cjs": "tsc -p config/tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
-    "build:esm": "tsc -p config/tsconfig.esm.json",
+    "build:esm": "tsc -p config/tsconfig.esm.json && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc -p config/tsconfig.types.json",
     "format": "prettier 'src/**/*.ts' --write",
     "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/* --ext .ts",
     "test": "jest -c config/jest.config.json",
@@ -64,6 +65,7 @@
     "@types/crypto-js": "3.1.47",
     "@types/jsbn": "1.2.30",
     "@types/node": "^18.11.11",
+    "buffer": "^6.0.3",
     "crypto-js": "4.1.1",
     "jsbn": "1.1.0"
   }

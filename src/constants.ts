@@ -9,7 +9,7 @@
   in BigInteger constructors, or built-in NodeJS Buffer
 */
 
-import { Buffer } from "buffer";
+import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
 import { BigInteger } from "jsbn";
 import { hexHash, padHex } from "./utils";
 

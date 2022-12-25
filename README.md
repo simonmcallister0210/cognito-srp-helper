@@ -103,7 +103,7 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 **Parameters**:
 
-`initiateAuthResponse` - _InitiateAuthResponse_ - The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
+`initiateAuthResponse` - [_InitiateAuthResponse_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthresponse.html) - The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
 
 **Returns**:
 

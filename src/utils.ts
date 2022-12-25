@@ -11,6 +11,7 @@
   own implementation of WordArray, but we use CryptoJS for this instead
 */
 
+import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 

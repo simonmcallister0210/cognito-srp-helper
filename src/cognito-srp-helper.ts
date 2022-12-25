@@ -12,6 +12,7 @@
   CognitoSrpHelper class.
 */
 
+import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
