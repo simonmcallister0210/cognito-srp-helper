@@ -2,8 +2,8 @@ import clonedeep from "lodash.clonedeep";
 
 import { defaultValues } from "./constants";
 import {
-  ClientSession,
-  CognitoSession,
+  ClientSrpSession,
+  CognitoSrpSession,
   InitiateAuthResponse,
 } from "../../types";
 
@@ -35,7 +35,7 @@ const defaultMockInitiateAuthResponse: InitiateAuthResponse = {
   },
 };
 
-const defaultMockClientSession: ClientSession = {
+const defaultMockClientSrpSession: ClientSrpSession = {
   username,
   poolIdAbbr,
   passwordHash,
@@ -43,7 +43,7 @@ const defaultMockClientSession: ClientSession = {
   largeA,
 };
 
-const defaultMockCognitoSession: CognitoSession = {
+const defaultMockCognitoSrpSession: CognitoSrpSession = {
   largeB,
   salt,
   secret,
@@ -65,18 +65,18 @@ export const mockInitiateAuthResponseFactory = (
     ...initiateAuthResponse,
   });
 
-export const mockClientSessionFactory = (
-  clientSession?: Partial<ClientSession>
+export const mockClientSrpSessionFactory = (
+  clientSrpSession?: Partial<ClientSrpSession>
 ) =>
   clonedeep({
-    ...defaultMockClientSession,
-    ...clientSession,
+    ...defaultMockClientSrpSession,
+    ...clientSrpSession,
   });
 
-export const mockCognitoSessionFactory = (
-  cognitoSession?: Partial<CognitoSession>
+export const mockCognitoSrpSessionFactory = (
+  cognitoSrpSession?: Partial<CognitoSrpSession>
 ) =>
   clonedeep({
-    ...defaultMockCognitoSession,
-    ...cognitoSession,
+    ...defaultMockCognitoSrpSession,
+    ...cognitoSrpSession,
   });

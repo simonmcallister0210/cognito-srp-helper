@@ -132,28 +132,28 @@ const negativeInitiateAuthResponses = {
   }),
 };
 
-describe("createCognitoSession", () => {
+describe("createCognitoSrpSession", () => {
   const cognitoSrpHelper = new CognitoSrpHelper();
 
   describe("positive", () => {
     it.each(Object.entries(positiveInitiateAuthResponses))(
-      "should produce cognito session values that match the required format: %p",
+      "should produce cognito SRP session values that match the required format: %p",
       (_, initiateAuthResponse) => {
-        const cognitoSession =
-          cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
-        expect(cognitoSession.largeB).toMatch(/[A-Fa-f0-9]+/);
-        expect(cognitoSession.salt).toMatch(/^[A-Fa-f0-9]+$/);
-        expect(cognitoSession.secret).toMatch(/^[a-zA-Z0-9+=/]+$/);
+        const cognitoSrpSession =
+          cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
+        expect(cognitoSrpSession.largeB).toMatch(/[A-Fa-f0-9]+/);
+        expect(cognitoSrpSession.salt).toMatch(/^[A-Fa-f0-9]+$/);
+        expect(cognitoSrpSession.secret).toMatch(/^[a-zA-Z0-9+=/]+$/);
       }
     );
 
-    it("should produce the correct cognito session given default inputs", () => {
+    it("should produce the correct cognito SRP session given default inputs", () => {
       const initiateAuthResponse = factories.mockInitiateAuthResponseFactory();
-      const expectedCognitoSession =
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
-      const cognitoSession =
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
-      expect(cognitoSession).toEqual(expectedCognitoSession);
+      const expectedCognitoSrpSession =
+        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
+      const cognitoSrpSession =
+        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
+      expect(cognitoSrpSession).toEqual(expectedCognitoSrpSession);
     });
   });
 
@@ -176,10 +176,10 @@ describe("createCognitoSession", () => {
           : "";
 
         expect(() => {
-          cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+          cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
         }).toThrow(
           ReferenceError(
-            `Cognito session could not be initialised because ${falsyParameter} is missing or falsy`
+            `Cognito SRP session could not be initialised because ${falsyParameter} is missing or falsy`
           )
         );
       }
@@ -187,10 +187,10 @@ describe("createCognitoSession", () => {
 
     it("should throw a ReferenceError if initiateAuthResponse is undefined", () => {
       expect(() => {
-        cognitoSrpHelper.createCognitoSession();
+        cognitoSrpHelper.createCognitoSrpSession();
       }).toThrow(
         ReferenceError(
-          "Cognito session could not be initialised because initiateAuthResponse is missing or falsy"
+          "Cognito SRP session could not be initialised because initiateAuthResponse is missing or falsy"
         )
       );
     });
@@ -200,10 +200,10 @@ describe("createCognitoSession", () => {
       delete initiateAuthResponse.ChallengeName;
 
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
       }).toThrow(
         ReferenceError(
-          "Cognito session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy"
+          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy"
         )
       );
     });
@@ -214,10 +214,10 @@ describe("createCognitoSession", () => {
       });
 
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
       }).toThrow(
         ReferenceError(
-          "Cognito session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER"
+          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER"
         )
       );
     });
@@ -227,10 +227,10 @@ describe("createCognitoSession", () => {
       delete initiateAuthResponse.ChallengeParameters;
 
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
       }).toThrow(
         ReferenceError(
-          "Cognito session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy"
+          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy"
         )
       );
     });
@@ -246,7 +246,9 @@ describe("createCognitoSession", () => {
         });
 
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(initiateAuthResponseSingleZero);
+        cognitoSrpHelper.createCognitoSrpSession(
+          initiateAuthResponseSingleZero
+        );
       }).toThrow(new AbortOnZeroSrpErrorB());
 
       const initiateAuthResponseMultipleZeros =
@@ -259,7 +261,7 @@ describe("createCognitoSession", () => {
         });
 
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(
+        cognitoSrpHelper.createCognitoSrpSession(
           initiateAuthResponseMultipleZeros
         );
       }).toThrow(new AbortOnZeroSrpErrorB());

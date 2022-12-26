@@ -20,8 +20,8 @@ import CognitoSrpHelper from "cognito-srp-helper";
 // Initialise SRP helper
 const cognitoSrpHelper = new CognitoSrpHelper();
 
-// Create client session
-const clientSession = cognitoSrpHelper.createClientSession(
+// Create client srp session
+const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
   USERNAME,
   PASSWORD,
   POOL_ID
@@ -34,7 +34,7 @@ const initiateAuthResponse = await cognitoIdentityServiceProvider
     AuthParameters: {
       CHALLENGE_NAME: "SRP_A",
       SECRET_HASH,
-      SRP_A: clientSession.largeA, // Use largeA from clientSession here
+      SRP_A: clientSrpSession.largeA, // Use largeA from clientSrpSession here
       USERNAME,
     },
     ClientId: CLIENT_ID,
@@ -45,16 +45,16 @@ const initiateAuthResponse = await cognitoIdentityServiceProvider
   });
 
 // Create a session out of the response. A ReferenceError will be thrown if any values are missing
-const cognitoSession =
-  cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+const cognitoSrpSession =
+  cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
 
 // Create timestamp in format required by Cognito
 const timestamp = cognitoSrpHelper.createTimestamp();
 
 // Compute password signature using both sessions and the timestamp
 const passwordSignature = cognitoSrpHelper.computePasswordSignature(
-  clientSession,
-  cognitoSession,
+  clientSrpSession,
+  cognitoSrpSession,
   timestamp
 );
 
@@ -64,7 +64,7 @@ const respondToAuthChallenge = await cognitoIdentityServiceProvider
     ClientId: CLIENT_ID,
     ChallengeName: "PASSWORD_VERIFIER",
     ChallengeResponses: {
-      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Use secret from cognitoSession here
+      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSrpSession.secret, // Use secret from cognitoSrpSession here
       PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Use timestamp here
       SECRET_HASH,
       TIMESTAMP: timestamp, // Use timestamp here
@@ -81,7 +81,7 @@ const respondToAuthChallenge = await cognitoIdentityServiceProvider
 
 ## API
 
-### `createClientSession`
+### `createClientSrpSession`
 
 Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key largeA is passed to SRP_A in the initiateAuth call, timestamp is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the PASSWORD_CLAIM_SIGNATURE when responding to a PASSWORD_VERIFICATION challenge with respondToAuthChallenge
 
@@ -95,11 +95,11 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 **Returns**:
 
-_ClientSession_ - An object containing client session details required to complete our SRP authentication request
+_ClientSrpSession_ - An object containing client SRP session details required to complete our SRP authentication request
 
-### `createCognitoSession`
+### `createCognitoSrpSession`
 
-Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSession
+Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSrpSession
 
 **Parameters**:
 
@@ -107,7 +107,7 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 
 **Returns**:
 
-_CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
+_CognitoSrpSession_ - An object containing Cognito SRP session details required to complete our SRP authentication request
 
 ### `createTimestamp`
 
@@ -123,9 +123,9 @@ Computes the password signature to determine whether the password provided by th
 
 **Parameters**:
 
-`clientSession` - _ClientSession_ - Client session object containing user credentials and session keys
+`clientSrpSession` - _ClientSrpSession_ - Client SRP session object containing user credentials and session keys
 
-`cognitoSession` - _CognitoSession_ - Cognito session object containing public session key, salt, and secret
+`cognitoSrpSession` - _CognitoSrpSession_ - Cognito SRP session object containing public session key, salt, and secret
 
 `timestamp` - _string_ - Timestamp that matches the format required by Cognito
 

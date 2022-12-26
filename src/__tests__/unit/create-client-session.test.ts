@@ -68,29 +68,29 @@ const negativeCredentials = {
   }),
 };
 
-describe("createClientSession", () => {
+describe("createClientSrpSession", () => {
   const cognitoSrpHelper = new CognitoSrpHelper();
   const { defaultValues } = constants;
 
   describe("positive", () => {
     it.each(Object.entries(positiveCredentials))(
-      "should produce client session values that match the required format: %p",
+      "should produce client SRP session values that match the required format: %p",
       (_, credentials) => {
         const { username, password, poolId } = credentials;
-        const clientSession = cognitoSrpHelper.createClientSession(
+        const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
           username,
           password,
           poolId
         );
-        expect(clientSession.username).toEqual(username);
-        expect(clientSession.poolIdAbbr).toEqual(poolId.split("_")[1]);
-        expect(clientSession.passwordHash).toMatch(/[A-Fa-f0-9]{64}/);
-        expect(clientSession.smallA).toMatch(/^[A-Fa-f0-9]+$/);
-        expect(clientSession.largeA).toMatch(/^[A-Fa-f0-9]+$/);
+        expect(clientSrpSession.username).toEqual(username);
+        expect(clientSrpSession.poolIdAbbr).toEqual(poolId.split("_")[1]);
+        expect(clientSrpSession.passwordHash).toMatch(/[A-Fa-f0-9]{64}/);
+        expect(clientSrpSession.smallA).toMatch(/^[A-Fa-f0-9]+$/);
+        expect(clientSrpSession.largeA).toMatch(/^[A-Fa-f0-9]+$/);
       }
     );
 
-    it("should produce the correct client session given default inputs", () => {
+    it("should produce the correct client SRP session given default inputs", () => {
       // use default values for deterministic output
       jest.useFakeTimers().setSystemTime(new Date(defaultValues.date));
       jest
@@ -102,31 +102,31 @@ describe("createClientSession", () => {
 
       const credentials = factories.mockCredentialsFactory();
       const { username, password, poolId } = credentials;
-      const clientSession = cognitoSrpHelper.createClientSession(
+      const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
         username,
         password,
         poolId
       );
-      const expectedClientSession = factories.mockClientSessionFactory();
-      expect(clientSession).toEqual(expectedClientSession);
+      const expectedClientSrpSession = factories.mockClientSrpSessionFactory();
+      expect(clientSrpSession).toEqual(expectedClientSrpSession);
 
       jest.useRealTimers();
     });
 
-    it("should not produce the same client session on successive calls", () => {
+    it("should not produce the same client SRP session on successive calls", () => {
       const credentials = factories.mockCredentialsFactory();
       const { username, password, poolId } = credentials;
-      const clientSession1 = cognitoSrpHelper.createClientSession(
+      const clientSrpSession1 = cognitoSrpHelper.createClientSrpSession(
         username,
         password,
         poolId
       );
-      const clientSession2 = cognitoSrpHelper.createClientSession(
+      const clientSrpSession2 = cognitoSrpHelper.createClientSrpSession(
         username,
         password,
         poolId
       );
-      expect(clientSession1).not.toEqual(clientSession2);
+      expect(clientSrpSession1).not.toEqual(clientSrpSession2);
     });
   });
 
@@ -144,10 +144,10 @@ describe("createClientSession", () => {
           : "";
 
         expect(() => {
-          cognitoSrpHelper.createClientSession(username, password, poolId);
+          cognitoSrpHelper.createClientSrpSession(username, password, poolId);
         }).toThrow(
           ReferenceError(
-            `Client session could not be initialised because ${falsyCredential} is undefined or empty`
+            `Client SRP session could not be initialised because ${falsyCredential} is undefined or empty`
           )
         );
       }
@@ -165,7 +165,7 @@ describe("createClientSession", () => {
       const credentials = factories.mockCredentialsFactory();
       const { username, password, poolId } = credentials;
       expect(() => {
-        cognitoSrpHelper.createClientSession(username, password, poolId);
+        cognitoSrpHelper.createClientSrpSession(username, password, poolId);
       }).toThrow(new AbortOnZeroSrpErrorA());
     });
   });

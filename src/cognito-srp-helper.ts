@@ -22,7 +22,11 @@ import {
   AbortOnZeroSrpErrorB,
   AbortOnZeroSrpErrorU,
 } from "./exceptions";
-import { InitiateAuthResponse, ClientSession, CognitoSession } from "./types";
+import {
+  InitiateAuthResponse,
+  ClientSrpSession,
+  CognitoSrpSession,
+} from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
@@ -124,23 +128,23 @@ export class CognitoSrpHelper {
    * safeguard to protect against the session becoming advertently or
    * inadvertently insecure
    */
-  public createClientSession(
+  public createClientSrpSession(
     username: string,
     password: string,
     poolId: string
-  ): ClientSession {
+  ): ClientSrpSession {
     // Check parameters exist
     if (username === undefined || username === "")
       throw new ReferenceError(
-        `Client session could not be initialised because username is undefined or empty`
+        `Client SRP session could not be initialised because username is undefined or empty`
       );
     if (password === undefined || password === "")
       throw new ReferenceError(
-        `Client session could not be initialised because password is undefined or empty`
+        `Client SRP session could not be initialised because password is undefined or empty`
       );
     if (poolId === undefined || poolId === "")
       throw new ReferenceError(
-        `Client session could not be initialised because poolId is undefined or empty`
+        `Client SRP session could not be initialised because poolId is undefined or empty`
       );
 
     // Client credentials
@@ -162,7 +166,7 @@ export class CognitoSrpHelper {
 
   /**
    * Validates and bundles the SRP authentication values retrieved from Cognito
-   * into a single object that can be passed into `createCognitoSession`
+   * into a single object that can be passed into `createCognitoSrpSession`
    *
    * @param initiateAuthResponse The response from calling
    * CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth
@@ -174,25 +178,25 @@ export class CognitoSrpHelper {
    * inadvertently insecure. If multiple errors are thrown it could indicate
    * that initiateAuthResponse is being tampered with
    */
-  public createCognitoSession(
+  public createCognitoSrpSession(
     initiateAuthResponse?: InitiateAuthResponse
-  ): CognitoSession {
+  ): CognitoSrpSession {
     // Check initiateAuthResponse and ChallengeParameters exist
     if (!initiateAuthResponse)
       throw new ReferenceError(
-        `Cognito session could not be initialised because initiateAuthResponse is missing or falsy`
+        `Cognito SRP session could not be initialised because initiateAuthResponse is missing or falsy`
       );
     if (!initiateAuthResponse.ChallengeName)
       throw new ReferenceError(
-        `Cognito session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy`
+        `Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy`
       );
     if (initiateAuthResponse.ChallengeName !== "PASSWORD_VERIFIER")
       throw new ReferenceError(
-        `Cognito session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER`
+        `Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER`
       );
     if (!initiateAuthResponse.ChallengeParameters)
       throw new ReferenceError(
-        `Cognito session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy`
+        `Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy`
       );
 
     const {
@@ -204,15 +208,15 @@ export class CognitoSrpHelper {
     // Check relevant SRP values exist
     if (!largeB)
       throw new ReferenceError(
-        `Cognito session could not be initialised because SRP_B is missing or falsy`
+        `Cognito SRP session could not be initialised because SRP_B is missing or falsy`
       );
     if (!salt)
       throw new ReferenceError(
-        `Cognito session could not be initialised because SALT is missing or falsy`
+        `Cognito SRP session could not be initialised because SALT is missing or falsy`
       );
     if (!secret)
       throw new ReferenceError(
-        `Cognito session could not be initialised because SECRET_BLOCK is missing or falsy`
+        `Cognito SRP session could not be initialised because SECRET_BLOCK is missing or falsy`
       );
 
     // Check server public key isn't 0
@@ -261,9 +265,9 @@ export class CognitoSrpHelper {
    * by the user is correct or not. This signature is passed to
    * `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
    *
-   * @param clientSession Client session object containing user credentials and
+   * @param clientSrpSession Client SRP session object containing user credentials and
    * session keys
-   * @param cognitoSession Cognito session object containing public session key,
+   * @param cognitoSrpSession Cognito SRP session object containing public session key,
    * salt, and secret
    * @param timestamp Timestamp that matches the format required by Cognito
    * @throws `AbortOnZeroSrpErrorU` Abort SRP if value of 0 is generated for
@@ -272,27 +276,27 @@ export class CognitoSrpHelper {
    * inadvertently insecure
    */
   public computePasswordSignature(
-    clientSession: ClientSession,
-    cognitoSession: CognitoSession,
+    clientSrpSession: ClientSrpSession,
+    cognitoSrpSession: CognitoSrpSession,
     timestamp: string
   ): string {
     // Check parameters exist
-    if (!clientSession)
+    if (!clientSrpSession)
       throw new ReferenceError(
-        `Cognito session could not be initialised because clientSession is missing or falsy`
+        `Cognito SRP session could not be initialised because clientSrpSession is missing or falsy`
       );
-    if (!cognitoSession)
+    if (!cognitoSrpSession)
       throw new ReferenceError(
-        `Cognito session could not be initialised because cognitoSession is missing or falsy`
+        `Cognito SRP session could not be initialised because cognitoSrpSession is missing or falsy`
       );
     if (!timestamp)
       throw new ReferenceError(
-        `Cognito session could not be initialised because timestamp is missing or falsy`
+        `Cognito SRP session could not be initialised because timestamp is missing or falsy`
       );
 
     const { username, poolIdAbbr, passwordHash, smallA, largeA } =
-      clientSession;
-    const { largeB, salt, secret } = cognitoSession;
+      clientSrpSession;
+    const { largeB, salt, secret } = cognitoSrpSession;
 
     const u = this.calculateU(
       new BigInteger(largeA, 16),

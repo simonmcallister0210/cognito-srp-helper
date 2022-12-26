@@ -43,7 +43,7 @@ const cognitoSrpHelper = new CognitoSrpHelper();
 describe("CognitoSrpHelper integration tests", () => {
   test("USER_SRP_AUTH authentication flow", async () => {
     // Create client session
-    const clientSession = cognitoSrpHelper.createClientSession(
+    const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
       USERNAME,
       PASSWORD,
       POOL_ID
@@ -56,7 +56,7 @@ describe("CognitoSrpHelper integration tests", () => {
         AuthParameters: {
           CHALLENGE_NAME: "SRP_A",
           SECRET_HASH,
-          SRP_A: clientSession.largeA,
+          SRP_A: clientSrpSession.largeA,
           USERNAME,
         },
         ClientId: CLIENT_ID,
@@ -77,16 +77,16 @@ describe("CognitoSrpHelper integration tests", () => {
     expect(initiateAuthResponse.ChallengeParameters).toHaveProperty("SRP_B");
 
     // Retreive Cognito SRP values, and create cognito session
-    const cognitoSession =
-      cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
+    const cognitoSrpSession =
+      cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
 
     // Create timestamp in format required by Cognito
     const timestamp = cognitoSrpHelper.createTimestamp();
 
     // Compute password signature using client and cognito session
     const passwordSignature = cognitoSrpHelper.computePasswordSignature(
-      clientSession,
-      cognitoSession,
+      clientSrpSession,
+      cognitoSrpSession,
       timestamp
     );
 
@@ -96,7 +96,7 @@ describe("CognitoSrpHelper integration tests", () => {
         ClientId: CLIENT_ID,
         ChallengeName: "PASSWORD_VERIFIER",
         ChallengeResponses: {
-          PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret,
+          PASSWORD_CLAIM_SECRET_BLOCK: cognitoSrpSession.secret,
           PASSWORD_CLAIM_SIGNATURE: passwordSignature,
           SECRET_HASH,
           TIMESTAMP: timestamp,
