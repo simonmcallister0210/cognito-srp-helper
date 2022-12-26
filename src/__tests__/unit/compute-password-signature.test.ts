@@ -2,7 +2,9 @@ import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
+import { AbortOnZeroSrpErrorU } from "../../exceptions";
 import { factories, constants } from "../mocks";
+import * as utils from "../../utils";
 
 const positiveClientSessions = {
   randomUsername: factories.mockClientSessionFactory({
@@ -162,5 +164,31 @@ describe("computePasswordSignature", () => {
     });
   });
 
-  // describe("negative", () => {});
+  describe("negative", () => {
+    it("should throw a AbortOnZeroSrpErrorU if the generated public key hash is 0", () => {
+      const clientSession = factories.mockClientSessionFactory();
+      const cognitoSession = factories.mockCognitoSessionFactory();
+      const timestamp = cognitoSrpHelper.createTimestamp();
+
+      // make sure our u = H(A, B) calculation returns 0
+      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
+      expect(() => {
+        cognitoSrpHelper.computePasswordSignature(
+          clientSession,
+          cognitoSession,
+          timestamp
+        );
+      }).toThrow(new AbortOnZeroSrpErrorU());
+
+      // make sure our u = H(A, B) calculation returns 0
+      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0000000000");
+      expect(() => {
+        cognitoSrpHelper.computePasswordSignature(
+          clientSession,
+          cognitoSession,
+          timestamp
+        );
+      }).toThrow(new AbortOnZeroSrpErrorU());
+    });
+  });
 });

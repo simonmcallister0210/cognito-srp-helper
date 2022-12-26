@@ -2,6 +2,7 @@ import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
+import { AbortOnZeroSrpErrorB } from "../../exceptions";
 import { factories, constants } from "../mocks";
 
 const {
@@ -208,12 +209,12 @@ describe("createCognitoSession", () => {
     });
 
     it("should throw a ReferenceError if initiateAuthResponse.ChallengeName is not 'PASSWORD_VERIFIER'", () => {
+      const initiateAuthResponse = factories.mockInitiateAuthResponseFactory({
+        ChallengeName: "INCORRECT_CHALLENGE_NAME",
+      });
+
       expect(() => {
-        cognitoSrpHelper.createCognitoSession(
-          factories.mockInitiateAuthResponseFactory({
-            ChallengeName: "INCORRECT_CHALLENGE_NAME",
-          })
-        );
+        cognitoSrpHelper.createCognitoSession(initiateAuthResponse);
       }).toThrow(
         ReferenceError(
           "Cognito session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER"
@@ -232,6 +233,36 @@ describe("createCognitoSession", () => {
           "Cognito session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy"
         )
       );
+    });
+
+    it("should throw a AbortOnZeroSrpErrorB if the generated server public key is 0", () => {
+      const initiateAuthResponseSingleZero =
+        factories.mockInitiateAuthResponseFactory({
+          ChallengeParameters: {
+            SRP_B: "0",
+            SALT,
+            SECRET_BLOCK,
+          },
+        });
+
+      expect(() => {
+        cognitoSrpHelper.createCognitoSession(initiateAuthResponseSingleZero);
+      }).toThrow(new AbortOnZeroSrpErrorB());
+
+      const initiateAuthResponseMultipleZeros =
+        factories.mockInitiateAuthResponseFactory({
+          ChallengeParameters: {
+            SRP_B: "0000000000",
+            SALT,
+            SECRET_BLOCK,
+          },
+        });
+
+      expect(() => {
+        cognitoSrpHelper.createCognitoSession(
+          initiateAuthResponseMultipleZeros
+        );
+      }).toThrow(new AbortOnZeroSrpErrorB());
     });
   });
 });

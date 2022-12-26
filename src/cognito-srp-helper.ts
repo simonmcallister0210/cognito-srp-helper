@@ -17,6 +17,11 @@ import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
+import {
+  AbortOnZeroSrpErrorA,
+  AbortOnZeroSrpErrorB,
+  AbortOnZeroSrpErrorU,
+} from "./exceptions";
 import { InitiateAuthResponse, ClientSession, CognitoSession } from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
@@ -47,6 +52,11 @@ export class CognitoSrpHelper {
 
   private calculateLargeA(smallA: BigInteger): BigInteger {
     const largeA = G.modPow(smallA, N);
+
+    if (largeA.equals(BigInteger.ZERO)) {
+      throw new AbortOnZeroSrpErrorA();
+    }
+
     return largeA;
   }
 
@@ -71,6 +81,11 @@ export class CognitoSrpHelper {
   private calculateU(largeA: BigInteger, largeB: BigInteger): BigInteger {
     const uHexHash = hexHash(padHex(largeA) + padHex(largeB));
     const u = new BigInteger(uHexHash, 16);
+
+    if (u.equals(BigInteger.ZERO)) {
+      throw new AbortOnZeroSrpErrorU();
+    }
+
     return u;
   }
 
@@ -104,13 +119,17 @@ export class CognitoSrpHelper {
    * @param username The user's username
    * @param password The user's password
    * @param poolId The ID of the AWS Cognito user pool the user belongs to
+   * @throws `AbortOnZeroSrpErrorA` Abort SRP if value of 0 is generated for
+   * client public key (A). This is _very_ unlikely to occur and is simply a
+   * safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
    */
   public createClientSession(
     username: string,
     password: string,
     poolId: string
   ): ClientSession {
-    // Assert parameters exist
+    // Check parameters exist
     if (username === undefined || username === "")
       throw new ReferenceError(
         `Client session could not be initialised because username is undefined or empty`
@@ -142,15 +161,23 @@ export class CognitoSrpHelper {
   }
 
   /**
-   * Asserts and bundles the SRP authentication values retrieved from Cognito
+   * Validates and bundles the SRP authentication values retrieved from Cognito
    * into a single object that can be passed into `createCognitoSession`
    *
-   * @param initiateAuthResponse The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
+   * @param initiateAuthResponse The response from calling
+   * CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth
+   * should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth
+   * flow if SRP is used
+   * @throws `AbortOnZeroSrpErrorB` Abort SRP if value of 0 is generated for
+   * server public key (B). This is _very_ unlikely to occur and is simply a
+   * safeguard to protect against the session becoming advertently or
+   * inadvertently insecure. If multiple errors are thrown it could indicate
+   * that initiateAuthResponse is being tampered with
    */
   public createCognitoSession(
     initiateAuthResponse?: InitiateAuthResponse
   ): CognitoSession {
-    // Assert initiateAuthResponse and ChallengeParameters exist
+    // Check initiateAuthResponse and ChallengeParameters exist
     if (!initiateAuthResponse)
       throw new ReferenceError(
         `Cognito session could not be initialised because initiateAuthResponse is missing or falsy`
@@ -168,27 +195,33 @@ export class CognitoSrpHelper {
         `Cognito session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy`
       );
 
-    const { SRP_B, SALT, SECRET_BLOCK } =
-      initiateAuthResponse.ChallengeParameters;
+    const {
+      SRP_B: largeB,
+      SALT: salt,
+      SECRET_BLOCK: secret,
+    } = initiateAuthResponse.ChallengeParameters;
 
-    // Assert relevant SRP values exist
-    if (!SRP_B)
+    // Check relevant SRP values exist
+    if (!largeB)
       throw new ReferenceError(
         `Cognito session could not be initialised because SRP_B is missing or falsy`
       );
-    if (!SALT)
+    if (!salt)
       throw new ReferenceError(
         `Cognito session could not be initialised because SALT is missing or falsy`
       );
-    if (!SECRET_BLOCK)
+    if (!secret)
       throw new ReferenceError(
         `Cognito session could not be initialised because SECRET_BLOCK is missing or falsy`
       );
 
+    // Check server public key isn't 0
+    if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroSrpErrorB();
+
     return {
-      largeB: SRP_B,
-      salt: SALT,
-      secret: SECRET_BLOCK,
+      largeB,
+      salt,
+      secret,
     };
   }
 
@@ -233,13 +266,17 @@ export class CognitoSrpHelper {
    * @param cognitoSession Cognito session object containing public session key,
    * salt, and secret
    * @param timestamp Timestamp that matches the format required by Cognito
+   * @throws `AbortOnZeroSrpErrorU` Abort SRP if value of 0 is generated for
+   * public key hash (u). This is _very_ unlikely to occur and is simply a
+   * safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
    */
   public computePasswordSignature(
     clientSession: ClientSession,
     cognitoSession: CognitoSession,
     timestamp: string
   ): string {
-    // Assert parameters exist
+    // Check parameters exist
     if (!clientSession)
       throw new ReferenceError(
         `Cognito session could not be initialised because clientSession is missing or falsy`

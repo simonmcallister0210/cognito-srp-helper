@@ -3,6 +3,7 @@ import { BigInteger } from "jsbn";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
+import { AbortOnZeroSrpErrorA } from "../../exceptions";
 import { factories, constants } from "../mocks";
 
 const positiveCredentials = {
@@ -151,5 +152,21 @@ describe("createClientSession", () => {
         );
       }
     );
+
+    it("should throw a AbortOnZeroSrpErrorA if the generated client public key is 0", () => {
+      // make sure our A = G % a ^ N calculation returns 0
+      jest
+        .spyOn(
+          BigInteger.prototype as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+          "modPow"
+        )
+        .mockImplementationOnce(() => new BigInteger("0", 16));
+
+      const credentials = factories.mockCredentialsFactory();
+      const { username, password, poolId } = credentials;
+      expect(() => {
+        cognitoSrpHelper.createClientSession(username, password, poolId);
+      }).toThrow(new AbortOnZeroSrpErrorA());
+    });
   });
 });
