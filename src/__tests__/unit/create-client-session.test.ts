@@ -3,7 +3,7 @@ import { BigInteger } from "jsbn";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpErrorA } from "../../exceptions";
+import { AbortOnZeroSrpErrorA, ErrorMessages } from "../../exceptions";
 import { factories, constants } from "../mocks";
 
 const positiveCredentials = {
@@ -26,6 +26,9 @@ const positiveCredentials = {
   usernameSymbols: factories.mockCredentialsFactory({
     username: faker.datatype.string(),
   }),
+  usernameEmpty: factories.mockCredentialsFactory({
+    username: "",
+  }),
   // password
   passwordMemorable: factories.mockCredentialsFactory({
     password: faker.internet.password(20, true),
@@ -36,11 +39,17 @@ const positiveCredentials = {
   passwordSymbols: factories.mockCredentialsFactory({
     password: faker.datatype.string(),
   }),
+  passwordEmpty: factories.mockCredentialsFactory({
+    password: "",
+  }),
   // poolId
   poolIdRandom: factories.mockCredentialsFactory({
     poolId: new RandExp(
       /^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_[a-zA-Z0-9]{9}$/
     ).gen(),
+  }),
+  poolIdEmpty: factories.mockCredentialsFactory({
+    poolId: "",
   }),
 };
 
@@ -49,22 +58,11 @@ const negativeCredentials = {
   usernameUndefined: factories.mockCredentialsFactory({
     username: undefined,
   }),
-  usernameEmptyString: factories.mockCredentialsFactory({
-    username: "",
-  }),
-  // password
   passwordUndefined: factories.mockCredentialsFactory({
     password: undefined,
   }),
-  passwordEmptyString: factories.mockCredentialsFactory({
-    password: "",
-  }),
-  // poolId
   poolIdUndefined: factories.mockCredentialsFactory({
     poolId: undefined,
-  }),
-  poolIdEmptyString: factories.mockCredentialsFactory({
-    poolId: "",
   }),
 };
 
@@ -73,9 +71,9 @@ describe("createClientSrpSession", () => {
   const { defaultValues } = constants;
 
   describe("positive", () => {
-    it.each(Object.entries(positiveCredentials))(
-      "should produce client SRP session values that match the required format: %p",
-      (_, credentials) => {
+    it.each(Object.values(positiveCredentials))(
+      "should produce client SRP session values that match the required format: %#",
+      (credentials) => {
         const { username, password, poolId } = credentials;
         const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
           username,
@@ -131,25 +129,21 @@ describe("createClientSrpSession", () => {
   });
 
   describe("negative", () => {
-    it.each(Object.entries(negativeCredentials))(
-      "should throw a ReferenceError if any credential values are falsy: %p",
-      (_, credentials) => {
+    it.each([
+      [negativeCredentials.usernameUndefined, ErrorMessages.UNDEF_USERNAME],
+      [negativeCredentials.passwordUndefined, ErrorMessages.UNDEF_PASSWORD],
+      [negativeCredentials.poolIdUndefined, ErrorMessages.UNDEF_POOLID],
+    ])(
+      "should throw a ReferenceError if any credential values are undefined: %#",
+      (credentials, errorMessage) => {
         const { username, password, poolId } = credentials;
-        const falsyCredential = !username
-          ? "username"
-          : !password
-          ? "password"
-          : !poolId
-          ? "poolId"
-          : "";
-
         expect(() => {
-          cognitoSrpHelper.createClientSrpSession(username, password, poolId);
-        }).toThrow(
-          ReferenceError(
-            `Client SRP session could not be initialised because ${falsyCredential} is undefined or empty`
-          )
-        );
+          cognitoSrpHelper.createClientSrpSession(
+            username as string,
+            password as string,
+            poolId as string
+          );
+        }).toThrow(new ReferenceError(errorMessage));
       }
     );
 

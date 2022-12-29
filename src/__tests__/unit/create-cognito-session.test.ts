@@ -2,7 +2,12 @@ import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpErrorB } from "../../exceptions";
+import {
+  AbortOnZeroSrpErrorB,
+  ErrorMessages,
+  IncorrectCognitoChallengeError,
+} from "../../exceptions";
+import { InitiateAuthResponse } from "../../types";
 import { factories, constants } from "../mocks";
 
 const {
@@ -97,37 +102,32 @@ const positiveInitiateAuthResponses = {
 };
 
 const negativeInitiateAuthResponses = {
-  // SRP_B
+  initiateAuthResponseUndefined: undefined,
+  challengeNameUndefined: factories.mockInitiateAuthResponseFactory({
+    ChallengeName: undefined,
+  }),
+  challengeParametersUndefined: factories.mockInitiateAuthResponseFactory({
+    ChallengeParameters: undefined,
+  }),
   largeBUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      SALT,
+      SECRET_BLOCK,
     },
   }),
-  largeBEmptyString: factories.mockInitiateAuthResponseFactory({
-    ChallengeParameters: {
-      SRP_B: "",
-    },
-  }),
-  // SALT
   saltUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
+      SRP_B,
       SALT: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
+      SECRET_BLOCK,
     },
   }),
-  saltEmptyString: factories.mockInitiateAuthResponseFactory({
-    ChallengeParameters: {
-      SALT: "",
-    },
-  }),
-  // SECRET_BLOCK
   secretUndefined: factories.mockInitiateAuthResponseFactory({
     ChallengeParameters: {
+      SRP_B,
+      SALT,
       SECRET_BLOCK: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
-    },
-  }),
-  secretEmptyString: factories.mockInitiateAuthResponseFactory({
-    ChallengeParameters: {
-      SECRET_BLOCK: "",
     },
   }),
 };
@@ -136,9 +136,9 @@ describe("createCognitoSrpSession", () => {
   const cognitoSrpHelper = new CognitoSrpHelper();
 
   describe("positive", () => {
-    it.each(Object.entries(positiveInitiateAuthResponses))(
-      "should produce cognito SRP session values that match the required format: %p",
-      (_, initiateAuthResponse) => {
+    it.each(Object.values(positiveInitiateAuthResponses))(
+      "should produce cognito SRP session values that match the required format: %#",
+      (initiateAuthResponse) => {
         const cognitoSrpSession =
           cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
         expect(cognitoSrpSession.largeB).toMatch(/[A-Fa-f0-9]+/);
@@ -158,57 +158,40 @@ describe("createCognitoSrpSession", () => {
   });
 
   describe("negative", () => {
-    it.each(Object.entries(negativeInitiateAuthResponses))(
-      "should throw ReferenceError if any ChallengeParameters are falsy: %p",
-      (_, initiateAuthResponse) => {
-        const challengeParameters = initiateAuthResponse.ChallengeParameters;
-        if (!challengeParameters)
-          throw new ReferenceError(
-            "initiateAuthResponse.ChallengeParameters is undefined"
-          );
-        const { SRP_B, SALT, SECRET_BLOCK } = challengeParameters;
-        const falsyParameter = !SRP_B
-          ? "SRP_B"
-          : !SALT
-          ? "SALT"
-          : !SECRET_BLOCK
-          ? "SECRET_BLOCK"
-          : "";
-
+    it.each([
+      [
+        negativeInitiateAuthResponses.initiateAuthResponseUndefined,
+        ErrorMessages.UNDEF_INIT_AUTH,
+      ],
+      [
+        negativeInitiateAuthResponses.challengeNameUndefined,
+        ErrorMessages.UNDEF_INIT_AUTH_CHALLENGE_NAME,
+      ],
+      [
+        negativeInitiateAuthResponses.challengeParametersUndefined,
+        ErrorMessages.UNDEF_INIT_AUTH_CHALLENGE_PARAMS,
+      ],
+      [
+        negativeInitiateAuthResponses.largeBUndefined,
+        ErrorMessages.UNDEF_SRP_B,
+      ],
+      [negativeInitiateAuthResponses.saltUndefined, ErrorMessages.UNDEF_SALT],
+      [
+        negativeInitiateAuthResponses.secretUndefined,
+        ErrorMessages.UNDEF_SECRET_BLOCK,
+      ],
+    ])(
+      "should throw ReferenceError if initiateAuthResponse, ChallengeName, or any ChallengeParameters are undefined: %#",
+      (initiateAuthResponse, errorMessage) => {
         expect(() => {
-          cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
-        }).toThrow(
-          ReferenceError(
-            `Cognito SRP session could not be initialised because ${falsyParameter} is missing or falsy`
-          )
-        );
+          cognitoSrpHelper.createCognitoSrpSession(
+            initiateAuthResponse as InitiateAuthResponse
+          );
+        }).toThrow(ReferenceError(errorMessage));
       }
     );
 
-    it("should throw a ReferenceError if initiateAuthResponse is undefined", () => {
-      expect(() => {
-        cognitoSrpHelper.createCognitoSrpSession();
-      }).toThrow(
-        ReferenceError(
-          "Cognito SRP session could not be initialised because initiateAuthResponse is missing or falsy"
-        )
-      );
-    });
-
-    it("should throw a ReferenceError if initiateAuthResponse.ChallengeName is missing", () => {
-      const initiateAuthResponse = factories.mockInitiateAuthResponseFactory();
-      delete initiateAuthResponse.ChallengeName;
-
-      expect(() => {
-        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
-      }).toThrow(
-        ReferenceError(
-          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is missing or falsy"
-        )
-      );
-    });
-
-    it("should throw a ReferenceError if initiateAuthResponse.ChallengeName is not 'PASSWORD_VERIFIER'", () => {
+    it("should throw a IncorrectCognitoChallengeError if initiateAuthResponse.ChallengeName is not 'PASSWORD_VERIFIER'", () => {
       const initiateAuthResponse = factories.mockInitiateAuthResponseFactory({
         ChallengeName: "INCORRECT_CHALLENGE_NAME",
       });
@@ -216,22 +199,7 @@ describe("createCognitoSrpSession", () => {
       expect(() => {
         cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
       }).toThrow(
-        ReferenceError(
-          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER"
-        )
-      );
-    });
-
-    it("should throw a ReferenceError if initiateAuthResponse.ChallengeParameters is missing", () => {
-      const initiateAuthResponse = factories.mockInitiateAuthResponseFactory();
-      delete initiateAuthResponse.ChallengeParameters;
-
-      expect(() => {
-        cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
-      }).toThrow(
-        ReferenceError(
-          "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeParameters is missing or falsy"
-        )
+        new IncorrectCognitoChallengeError(initiateAuthResponse.ChallengeName)
       );
     });
 
