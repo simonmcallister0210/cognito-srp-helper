@@ -7,6 +7,14 @@
   "private": false,
   "repository": "https://github.com/simonmcallister0210/cognito-srp-helper",
   "homepage": "https://github.com/simonmcallister0210/cognito-srp-helper",
+  "keywords": [
+    "aws",
+    "aws-cognito",
+    "cognito",
+    "helper",
+    "srp",
+    "typescript"
+  ],
   "bugs": {
     "url": "https://github.com/simonmcallister0210/cognito-srp-helper/issues"
   },
