@@ -21,6 +21,12 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run test
+        env:
+          INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
+          INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
+          INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
+          INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
+          INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
       - run: npm run build
 
   github-release:
