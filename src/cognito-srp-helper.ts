@@ -126,7 +126,7 @@ export class CognitoSrpHelper {
    * @param `poolId` The ID of the AWS Cognito user pool the user belongs to
    * @returns An object containing client SRP session details required to
    * complete our SRP authentication request
-   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
+   * @throws `AbortOnZeroSrpAError` Abort SRP if value of 0 is generated for
    * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
    * simply a safeguard to protect against the session becoming advertently or
    * inadvertently insecure
@@ -172,12 +172,13 @@ export class CognitoSrpHelper {
    * flow if SRP is used
    * @returns An object containing Cognito SRP session details required to
    * complete our SRP authentication request
-   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
-   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * @throws `AbortOnZeroSrpBError` Abort SRP if value of 0 is generated for
+   * Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is
    * simply a safeguard to protect against the session becoming advertently or
    * inadvertently insecure
    * @throws `IncorrectCognitoChallengeError` If the challenge returned from
-   * Cognito is not PASSWORD_VERIFIER, then this error is thrown
+   * Cognito is not PASSWORD_VERIFIER, then this error is thrown. If your
+   * Cognito app integration is configured correctly this shouldn't occur
    */
   public createCognitoSrpSession(
     initiateAuthResponse: InitiateAuthResponse
@@ -257,8 +258,8 @@ export class CognitoSrpHelper {
    * session key, salt, and secret
    * @param timestamp Timestamp that matches the format required by Cognito
    * @returns The password signature to pass to PASSWORD_CLAIM_SIGNATURE
-   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
-   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * @throws `AbortOnZeroSrpUError` Abort SRP if value of 0 is generated for the
+   * public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is
    * simply a safeguard to protect against the session becoming advertently or
    * inadvertently insecure
    */

@@ -33,7 +33,7 @@ const initiateAuthResponse = await cognitoIdentityServiceProvider
     AuthFlow: "USER_SRP_AUTH",
     AuthParameters: {
       CHALLENGE_NAME: "SRP_A",
-      SECRET_HASH,
+      SECRET_HASH, // you may / may not have to pass a SECRET_HASH, depending on your Cognito config
       SRP_A: clientSrpSession.largeA, // Use largeA from clientSrpSession here
       USERNAME,
     },
@@ -65,7 +65,7 @@ const respondToAuthChallenge = await cognitoIdentityServiceProvider
     ChallengeName: "PASSWORD_VERIFIER",
     ChallengeResponses: {
       PASSWORD_CLAIM_SECRET_BLOCK: cognitoSrpSession.secret, // Use secret from cognitoSrpSession here
-      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Use timestamp here
+      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Use password signature here
       SECRET_HASH,
       TIMESTAMP: timestamp, // Use timestamp here
       USERNAME,
@@ -99,7 +99,7 @@ _ClientSrpSession_ - An object containing client SRP session details required to
 
 **Throws**:
 
-_AbortOnZeroSrpError_ - Abort SRP if value of 0 is generated for client public key (A). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+_AbortOnZeroSrpAError_ - Abort SRP if value of 0 is generated for client public key (A). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
 ### `createCognitoSrpSession`
 
@@ -115,9 +115,9 @@ _CognitoSrpSession_ - An object containing Cognito SRP session details required 
 
 **Throws**:
 
-_AbortOnZeroSrpError_ - Abort SRP if value of 0 is generated for Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+_AbortOnZeroSrpBError_ - Abort SRP if value of 0 is generated for Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
-_IncorrectCognitoChallengeError_ - If the challenge returned from Cognito is not PASSWORD_VERIFIER, then this error is thrown
+_IncorrectCognitoChallengeError_ - If the challenge returned from Cognito is not PASSWORD_VERIFIER, then this error is thrown. If your Cognito app integration is configured correctly this shouldn't occur
 
 ### `createTimestamp`
 
@@ -145,7 +145,7 @@ _string_ - The password signature to pass to PASSWORD_CLAIM_SIGNATURE
 
 **Throws**:
 
-_AbortOnZeroSrpError_ - Abort SRP if value of 0 is generated for the public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+_AbortOnZeroSrpUError_ - Abort SRP if value of 0 is generated for the public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
 ## See Also
 

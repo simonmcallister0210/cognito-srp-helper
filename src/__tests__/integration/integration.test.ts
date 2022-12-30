@@ -66,16 +66,6 @@ describe("CognitoSrpHelper integration tests", () => {
         throw err; // re-throwing the error will stop execution
       });
 
-    // Ensure the response from Cognito is what we expect
-    expect(initiateAuthResponse).toHaveProperty("ChallengeName");
-    expect(initiateAuthResponse.ChallengeName).toEqual("PASSWORD_VERIFIER");
-    expect(initiateAuthResponse).toHaveProperty("ChallengeParameters");
-    expect(initiateAuthResponse.ChallengeParameters).toHaveProperty("SALT");
-    expect(initiateAuthResponse.ChallengeParameters).toHaveProperty(
-      "SECRET_BLOCK"
-    );
-    expect(initiateAuthResponse.ChallengeParameters).toHaveProperty("SRP_B");
-
     // Retreive Cognito SRP values, and create cognito session
     const cognitoSrpSession =
       cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
