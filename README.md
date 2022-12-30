@@ -4,8 +4,6 @@ A JavaScript helper class used to calculate the values required for SRP authenti
 
 If you've ever tried to use the in-built SRP authentication flows in Cognito (either through USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth or respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper class was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
 
-This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK. It mimics the official AWS SRP implementation from [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js), but improves on it by removing the need for callbacks, and removing its internal state, making more readable, testable, and re-usable
-
 ## Usage
 
 Here is an example of how you would use the helper class to implement SRP using the AWS SDK:
