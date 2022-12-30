@@ -1,65 +1,73 @@
 import { faker } from "@faker-js/faker";
+import omit from "lodash.omit";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpErrorU, ErrorMessages } from "../../exceptions";
+import { AbortOnZeroSrpUError, ErrorMessages } from "../../exceptions";
 import { factories, constants } from "../mocks";
 import * as utils from "../../utils";
 import { ClientSrpSession, CognitoSrpSession } from "../../types";
 
+const { mockClientSrpSessionFactory, mockCognitoSrpSessionFactory } = factories;
+
 const positiveSrpSessions = {
+  default: {
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
+    timestamp: constants.defaultValues.timestamp,
+  },
   // clientSrpSession
   randomUsername: {
-    clientSrpSession: factories.mockClientSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory({
       username: faker.internet.userName(),
     }),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   randomPasswordHash: {
-    clientSrpSession: factories.mockClientSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory({
       passwordHash: faker.datatype.hexadecimal({
         case: "lower",
         length: 64,
         prefix: "",
       }),
     }),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   randomPoolIdAbbr: {
-    clientSrpSession: factories.mockClientSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory({
       poolIdAbbr: new RandExp(/^[a-zA-Z0-9]{9}$/).gen(),
     }),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   randomSmallA: {
-    clientSrpSession: factories.mockClientSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory({
       smallA: faker.datatype.hexadecimal({
         case: "lower",
         length: 16,
         prefix: "",
       }),
     }),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   randomLargeA: {
-    clientSrpSession: factories.mockClientSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory({
       largeA: faker.datatype.hexadecimal({
         case: "lower",
         length: 1024,
         prefix: "",
       }),
     }),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   // cognitoSrpSession
   randomLargeB: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory({
       largeB: faker.datatype.hexadecimal({
         case: "lower",
         length: 1024,
@@ -69,8 +77,8 @@ const positiveSrpSessions = {
     timestamp: constants.defaultValues.timestamp,
   },
   randomSalt: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory({
       salt: faker.datatype.hexadecimal({
         case: "lower",
         length: 16,
@@ -80,16 +88,16 @@ const positiveSrpSessions = {
     timestamp: constants.defaultValues.timestamp,
   },
   randomSecret: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory({
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory({
       secret: new RandExp(/^[a-zA-Z0-9+=/]{2048}$/).gen(),
     }),
     timestamp: constants.defaultValues.timestamp,
   },
   // timestamp
   randomTimestamp: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: "Tue Feb 1 03:04:05 UTC 1234", // wrong
   },
 };
@@ -97,17 +105,17 @@ const positiveSrpSessions = {
 const negativeSrpSessions = {
   clientSrpSessionUndefined: {
     clientSrpSession: undefined,
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: constants.defaultValues.timestamp,
   },
   cognitoSrpSessionUndefined: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
+    clientSrpSession: mockClientSrpSessionFactory(),
     cognitoSrpSession: undefined,
     timestamp: constants.defaultValues.timestamp,
   },
   timestampUndefined: {
-    clientSrpSession: factories.mockClientSrpSessionFactory(),
-    cognitoSrpSession: factories.mockCognitoSrpSessionFactory(),
+    clientSrpSession: mockClientSrpSessionFactory(),
+    cognitoSrpSession: mockCognitoSrpSessionFactory(),
     timestamp: undefined,
   },
 };
@@ -144,8 +152,8 @@ describe("computePasswordSignature", () => {
       "should produce a password signature that matches the required format with date: %p",
       (date) => {
         jest.useFakeTimers().setSystemTime(new Date(date));
-        const clientSrpSession = factories.mockClientSrpSessionFactory();
-        const cognitoSrpSession = factories.mockCognitoSrpSessionFactory();
+        const clientSrpSession = mockClientSrpSessionFactory();
+        const cognitoSrpSession = mockCognitoSrpSessionFactory();
         const timestamp = cognitoSrpHelper.createTimestamp();
         const passwordSignature = cognitoSrpHelper.computePasswordSignature(
           clientSrpSession,
@@ -156,7 +164,7 @@ describe("computePasswordSignature", () => {
       }
     );
 
-    it.each(Object.values(positiveSrpSessions))(
+    it.each(Object.values(omit(positiveSrpSessions, "default")))(
       "should not produce correct password signature if any session values are wrong: %#",
       (sessions) => {
         const { clientSrpSession, cognitoSrpSession, timestamp } = sessions;
@@ -170,8 +178,8 @@ describe("computePasswordSignature", () => {
     );
 
     it("should produce the correct password signature given the set of pre-calculated default inputs", () => {
-      const clientSrpSession = factories.mockClientSrpSessionFactory();
-      const cognitoSrpSession = factories.mockCognitoSrpSessionFactory();
+      const clientSrpSession = mockClientSrpSessionFactory();
+      const cognitoSrpSession = mockCognitoSrpSessionFactory();
       const passwordSignature = cognitoSrpHelper.computePasswordSignature(
         clientSrpSession,
         cognitoSrpSession,
@@ -206,9 +214,9 @@ describe("computePasswordSignature", () => {
       }
     );
 
-    it("should throw a AbortOnZeroSrpErrorU if the generated public key hash is 0", () => {
-      const clientSrpSession = factories.mockClientSrpSessionFactory();
-      const cognitoSrpSession = factories.mockCognitoSrpSessionFactory();
+    it("should throw a AbortOnZeroSrpUError if the generated public key hash is 0", () => {
+      const clientSrpSession = mockClientSrpSessionFactory();
+      const cognitoSrpSession = mockCognitoSrpSessionFactory();
       const timestamp = cognitoSrpHelper.createTimestamp();
 
       // make sure our u = H(A, B) calculation returns 0
@@ -219,7 +227,7 @@ describe("computePasswordSignature", () => {
           cognitoSrpSession,
           timestamp
         );
-      }).toThrow(new AbortOnZeroSrpErrorU());
+      }).toThrow(new AbortOnZeroSrpUError());
 
       // make sure our u = H(A, B) calculation returns 0
       jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0000000000");
@@ -229,7 +237,7 @@ describe("computePasswordSignature", () => {
           cognitoSrpSession,
           timestamp
         );
-      }).toThrow(new AbortOnZeroSrpErrorU());
+      }).toThrow(new AbortOnZeroSrpUError());
     });
   });
 });

@@ -8,15 +8,14 @@ export type InitiateAuthResponse =
   CognitoIdentityServiceProvider.InitiateAuthResponse;
 
 /**
- * Client SRP session object. This object contains the user's credentials, unique
- * session keys, and a Cognito compatible timestamp from when the session was
- * created. Using these details we can initiate an SRP request to validate
- * the user's password via AWS Cognito.
+ * Client SRP session object. This object contains the user's credentials,
+ * unique session keys. Using these details we can initiate an SRP request to
+ * validate the user's password via AWS Cognito
  */
 export type ClientSrpSession = {
-  /** Username of the user. The is the value that is in the `Credentials` object. It is bundled here for convenience when passing parameters into `computePasswordSignature` */
+  /** Username of the user. It is stored here for convenience when passing parameters into `computePasswordSignature` */
   username: string;
-  /** Abbreviated ID of the Cognito Userpool. Here it is just the succeeding ID that's used e.g. abc123 */
+  /** Abbreviated ID of the Cognito Userpool. Here it is just the succeeding ID that's used e.g. 'eu-west-2_abc123' becomes 'abc123' */
   poolIdAbbr: string;
   /** Password hash generated using the users credentials */
   passwordHash: string;
@@ -29,7 +28,7 @@ export type ClientSrpSession = {
 /**
  * Cognito SRP session object. After initiating SRP authentication with AWS
  * Cognito using the data provided by `ClientSrpSession`, Cognito will return
- * three values that we can use to compute the signature for our password.
+ * these three values that we can use to compute the signature for our password
  */
 export type CognitoSrpSession = {
   /** Server's public session key */

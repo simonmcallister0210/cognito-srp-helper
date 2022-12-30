@@ -9,7 +9,7 @@
   into synchronous functions. It wraps logic used to calculate password
   signature into its own function. The timestamp function has been re-worked
   using toLocaleString. All SRP related functions have been placed inside the
-  CognitoSrpHelper class.
+  CognitoSrpHelper class
 */
 
 import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
@@ -18,9 +18,9 @@ import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
 import {
-  AbortOnZeroSrpErrorA,
-  AbortOnZeroSrpErrorB,
-  AbortOnZeroSrpErrorU,
+  AbortOnZeroSrpAError,
+  AbortOnZeroSrpBError,
+  AbortOnZeroSrpUError,
   ErrorMessages,
   IncorrectCognitoChallengeError,
 } from "./exceptions";
@@ -60,7 +60,7 @@ export class CognitoSrpHelper {
     const largeA = G.modPow(smallA, N);
 
     if (largeA.equals(BigInteger.ZERO)) {
-      throw new AbortOnZeroSrpErrorA();
+      throw new AbortOnZeroSrpAError();
     }
 
     return largeA;
@@ -89,7 +89,7 @@ export class CognitoSrpHelper {
     const u = new BigInteger(uHexHash, 16);
 
     if (u.equals(BigInteger.ZERO)) {
-      throw new AbortOnZeroSrpErrorU();
+      throw new AbortOnZeroSrpUError();
     }
 
     return u;
@@ -118,16 +118,17 @@ export class CognitoSrpHelper {
   /**
    * Creates the required data needed to initiate SRP authentication with AWS
    * Cognito. The public session key `largeA` is passed to `SRP_A` in the
-   * initiateAuth call. The rest of the values are used later to compute the
-   * `PASSWORD_CLAIM_SIGNATURE` when responding to a `PASSWORD_VERIFICATION`
-   * challenge with `respondToAuthChallenge`
+   * initiateAuth call. The rest of the values are used later in
+   * `computePasswordSignature` to compute `PASSWORD_CLAIM_SIGNATURE`
    *
-   * @param username The user's username
-   * @param password The user's password
-   * @param poolId The ID of the AWS Cognito user pool the user belongs to
-   * @throws `AbortOnZeroSrpErrorA` Abort SRP if value of 0 is generated for
-   * client public key (A). This is _very_ unlikely to occur and is simply a
-   * safeguard to protect against the session becoming advertently or
+   * @param `username` The user's AWS Cognito username
+   * @param `password` The user's AWS Cognito password
+   * @param `poolId` The ID of the AWS Cognito user pool the user belongs to
+   * @returns An object containing client SRP session details required to
+   * complete our SRP authentication request
+   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
+   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
    * inadvertently insecure
    */
   public createClientSrpSession(
@@ -162,17 +163,19 @@ export class CognitoSrpHelper {
 
   /**
    * Validates and bundles the SRP authentication values retrieved from Cognito
-   * into a single object that can be passed into `createCognitoSrpSession`
+   * into a single object that can be passed into `computePasswordSignature` to
+   * compute `PASSWORD_CLAIM_SIGNATURE`
    *
    * @param initiateAuthResponse The response from calling
    * CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth
    * should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth
    * flow if SRP is used
-   * @throws `AbortOnZeroSrpErrorB` Abort SRP if value of 0 is generated for
-   * server public key (B). This is _very_ unlikely to occur and is simply a
-   * safeguard to protect against the session becoming advertently or
-   * inadvertently insecure. If multiple errors are thrown it could indicate
-   * that initiateAuthResponse is being tampered with
+   * @returns An object containing Cognito SRP session details required to
+   * complete our SRP authentication request
+   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
+   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
    * @throws `IncorrectCognitoChallengeError` If the challenge returned from
    * Cognito is not PASSWORD_VERIFIER, then this error is thrown
    */
@@ -203,7 +206,7 @@ export class CognitoSrpHelper {
     if (!secret) throw new ReferenceError(ErrorMessages.UNDEF_SECRET_BLOCK);
 
     // Check server public key isn't 0
-    if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroSrpErrorB();
+    if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroSrpBError();
 
     return {
       largeB,
@@ -219,6 +222,8 @@ export class CognitoSrpHelper {
    * the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the
    * password signature and the `respondToAuthChallenge` need to share the same
    * timestamp
+   *
+   * @returns A timestamp in the format required by Cognito
    */
   public createTimestamp(): string {
     const now = new Date();
@@ -238,8 +243,6 @@ export class CognitoSrpHelper {
       timeZone,
     });
 
-    // ddd MMM D HH:mm:ss UTC YYYY
-    // EEE MMM d HH:mm:ss z yyyy in English
     return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
   }
 
@@ -248,14 +251,15 @@ export class CognitoSrpHelper {
    * by the user is correct or not. This signature is passed to
    * `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
    *
-   * @param clientSrpSession Client SRP session object containing user credentials and
-   * session keys
-   * @param cognitoSrpSession Cognito SRP session object containing public session key,
-   * salt, and secret
+   * @param clientSrpSession Client SRP session object containing user
+   * credentials and session keys
+   * @param cognitoSrpSession Cognito SRP session object containing public
+   * session key, salt, and secret
    * @param timestamp Timestamp that matches the format required by Cognito
-   * @throws `AbortOnZeroSrpErrorU` Abort SRP if value of 0 is generated for
-   * public key hash (u). This is _very_ unlikely to occur and is simply a
-   * safeguard to protect against the session becoming advertently or
+   * @returns The password signature to pass to PASSWORD_CLAIM_SIGNATURE
+   * @throws `AbortOnZeroSrpError` Abort SRP if value of 0 is generated for
+   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
    * inadvertently insecure
    */
   public computePasswordSignature(

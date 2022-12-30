@@ -3,21 +3,23 @@ import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
 import {
-  AbortOnZeroSrpErrorB,
+  AbortOnZeroSrpBError,
   ErrorMessages,
   IncorrectCognitoChallengeError,
 } from "../../exceptions";
 import { InitiateAuthResponse } from "../../types";
 import { factories, constants } from "../mocks";
 
+const { mockInitiateAuthResponseFactory } = factories;
+
 const {
   defaultValues: { largeB: SRP_B, salt: SALT, secret: SECRET_BLOCK },
 } = constants;
 
 const positiveInitiateAuthResponses = {
-  default: factories.mockInitiateAuthResponseFactory(),
+  default: mockInitiateAuthResponseFactory(),
   // SRP_B
-  largeBLowerHex: factories.mockInitiateAuthResponseFactory({
+  largeBLowerHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B: faker.datatype.hexadecimal({
         case: "lower",
@@ -28,7 +30,7 @@ const positiveInitiateAuthResponses = {
       SECRET_BLOCK,
     },
   }),
-  largeBUpperHex: factories.mockInitiateAuthResponseFactory({
+  largeBUpperHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B: faker.datatype.hexadecimal({
         case: "upper",
@@ -39,7 +41,7 @@ const positiveInitiateAuthResponses = {
       SECRET_BLOCK,
     },
   }),
-  largeBMixedHex: factories.mockInitiateAuthResponseFactory({
+  largeBMixedHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B: faker.datatype.hexadecimal({
         case: "mixed",
@@ -51,7 +53,7 @@ const positiveInitiateAuthResponses = {
     },
   }),
   // SALT
-  saltLowerHex: factories.mockInitiateAuthResponseFactory({
+  saltLowerHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT: faker.datatype.hexadecimal({
@@ -62,7 +64,7 @@ const positiveInitiateAuthResponses = {
       SECRET_BLOCK,
     },
   }),
-  saltUpperHex: factories.mockInitiateAuthResponseFactory({
+  saltUpperHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT: faker.datatype.hexadecimal({
@@ -73,7 +75,7 @@ const positiveInitiateAuthResponses = {
       SECRET_BLOCK,
     },
   }),
-  saltMixedHex: factories.mockInitiateAuthResponseFactory({
+  saltMixedHex: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT: faker.datatype.hexadecimal({
@@ -85,14 +87,14 @@ const positiveInitiateAuthResponses = {
     },
   }),
   // SECRET_BLOCK
-  secretSmall: factories.mockInitiateAuthResponseFactory({
+  secretSmall: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT,
       SECRET_BLOCK: new RandExp(/^[a-zA-Z0-9+=/]{5}$/).gen(),
     },
   }),
-  secretLarge: factories.mockInitiateAuthResponseFactory({
+  secretLarge: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT,
@@ -103,27 +105,27 @@ const positiveInitiateAuthResponses = {
 
 const negativeInitiateAuthResponses = {
   initiateAuthResponseUndefined: undefined,
-  challengeNameUndefined: factories.mockInitiateAuthResponseFactory({
+  challengeNameUndefined: mockInitiateAuthResponseFactory({
     ChallengeName: undefined,
   }),
-  challengeParametersUndefined: factories.mockInitiateAuthResponseFactory({
+  challengeParametersUndefined: mockInitiateAuthResponseFactory({
     ChallengeParameters: undefined,
   }),
-  largeBUndefined: factories.mockInitiateAuthResponseFactory({
+  largeBUndefined: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       SALT,
       SECRET_BLOCK,
     },
   }),
-  saltUndefined: factories.mockInitiateAuthResponseFactory({
+  saltUndefined: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT: undefined as any, // eslint-disable-line @typescript-eslint/no-explicit-any
       SECRET_BLOCK,
     },
   }),
-  secretUndefined: factories.mockInitiateAuthResponseFactory({
+  secretUndefined: mockInitiateAuthResponseFactory({
     ChallengeParameters: {
       SRP_B,
       SALT,
@@ -148,7 +150,7 @@ describe("createCognitoSrpSession", () => {
     );
 
     it("should produce the correct cognito SRP session given default inputs", () => {
-      const initiateAuthResponse = factories.mockInitiateAuthResponseFactory();
+      const initiateAuthResponse = mockInitiateAuthResponseFactory();
       const expectedCognitoSrpSession =
         cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
       const cognitoSrpSession =
@@ -192,7 +194,7 @@ describe("createCognitoSrpSession", () => {
     );
 
     it("should throw a IncorrectCognitoChallengeError if initiateAuthResponse.ChallengeName is not 'PASSWORD_VERIFIER'", () => {
-      const initiateAuthResponse = factories.mockInitiateAuthResponseFactory({
+      const initiateAuthResponse = mockInitiateAuthResponseFactory({
         ChallengeName: "INCORRECT_CHALLENGE_NAME",
       });
 
@@ -203,36 +205,36 @@ describe("createCognitoSrpSession", () => {
       );
     });
 
-    it("should throw a AbortOnZeroSrpErrorB if the generated server public key is 0", () => {
-      const initiateAuthResponseSingleZero =
-        factories.mockInitiateAuthResponseFactory({
-          ChallengeParameters: {
-            SRP_B: "0",
-            SALT,
-            SECRET_BLOCK,
-          },
-        });
+    it("should throw a AbortOnZeroSrpBError if the generated server public key is 0", () => {
+      const initiateAuthResponseSingleZero = mockInitiateAuthResponseFactory({
+        ChallengeParameters: {
+          SRP_B: "0",
+          SALT,
+          SECRET_BLOCK,
+        },
+      });
 
       expect(() => {
         cognitoSrpHelper.createCognitoSrpSession(
           initiateAuthResponseSingleZero
         );
-      }).toThrow(new AbortOnZeroSrpErrorB());
+      }).toThrow(new AbortOnZeroSrpBError());
 
-      const initiateAuthResponseMultipleZeros =
-        factories.mockInitiateAuthResponseFactory({
+      const initiateAuthResponseMultipleZeros = mockInitiateAuthResponseFactory(
+        {
           ChallengeParameters: {
             SRP_B: "0000000000",
             SALT,
             SECRET_BLOCK,
           },
-        });
+        }
+      );
 
       expect(() => {
         cognitoSrpHelper.createCognitoSrpSession(
           initiateAuthResponseMultipleZeros
         );
-      }).toThrow(new AbortOnZeroSrpErrorB());
+      }).toThrow(new AbortOnZeroSrpBError());
     });
   });
 });

@@ -54,7 +54,7 @@ describe("createTimestamp", () => {
     });
 
     it("should produce a correctly formatted timestamp given 0 yr", () => {
-      // 24 midnight hour 24:00:00
+      // 0 year 0000
       jest.useFakeTimers().setSystemTime(new Date("0000-01-01T00:00:00.000Z"));
 
       const timestamp = cognitoSrpHelper.createTimestamp();

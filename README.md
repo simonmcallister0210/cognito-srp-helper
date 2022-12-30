@@ -83,7 +83,7 @@ const respondToAuthChallenge = await cognitoIdentityServiceProvider
 
 ### `createClientSrpSession`
 
-Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key largeA is passed to SRP_A in the initiateAuth call, timestamp is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the PASSWORD_CLAIM_SIGNATURE when responding to a PASSWORD_VERIFICATION challenge with respondToAuthChallenge
+Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key `largeA` is passed to `SRP_A` in the initiateAuth call. The rest of the values are used later in `computePasswordSignature` to compute `PASSWORD_CLAIM_SIGNATURE`
 
 **Parameters**
 
@@ -97,6 +97,10 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 _ClientSrpSession_ - An object containing client SRP session details required to complete our SRP authentication request
 
+**Throws**:
+
+`AbortOnZeroSrpError` - Abort SRP if value of 0 is generated for client public key (A). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+
 ### `createCognitoSrpSession`
 
 Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSrpSession
@@ -108,6 +112,12 @@ Asserts and bundles the SRP authentication values retrieved from Cognito into a 
 **Returns**:
 
 _CognitoSrpSession_ - An object containing Cognito SRP session details required to complete our SRP authentication request
+
+**Throws**:
+
+`AbortOnZeroSrpError` - Abort SRP if value of 0 is generated for Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+
+`IncorrectCognitoChallengeError` - If the challenge returned from Cognito is not PASSWORD_VERIFIER, then this error is thrown
 
 ### `createTimestamp`
 
@@ -132,6 +142,10 @@ Computes the password signature to determine whether the password provided by th
 **Returns**:
 
 _string_ - The password signature to pass to PASSWORD_CLAIM_SIGNATURE
+
+**Throws**:
+
+`AbortOnZeroSrpError` - Abort SRP if value of 0 is generated for the public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
 ## See Also
 

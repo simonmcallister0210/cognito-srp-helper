@@ -3,65 +3,67 @@ import { BigInteger } from "jsbn";
 import RandExp from "randexp";
 
 import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpErrorA, ErrorMessages } from "../../exceptions";
+import { AbortOnZeroSrpAError, ErrorMessages } from "../../exceptions";
 import { factories, constants } from "../mocks";
 
+const { mockCredentialsFactory } = factories;
+
 const positiveCredentials = {
-  default: factories.mockCredentialsFactory(),
+  default: mockCredentialsFactory(),
   // username
-  usernameTypical: factories.mockCredentialsFactory({
+  usernameTypical: mockCredentialsFactory({
     username: faker.internet.userName(),
   }),
-  usernameEmail: factories.mockCredentialsFactory({
+  usernameEmail: mockCredentialsFactory({
     username: faker.internet.email(),
   }),
-  usernameEmailSpecialChars: factories.mockCredentialsFactory({
+  usernameEmailSpecialChars: mockCredentialsFactory({
     username: faker.internet.email("john", "doe", "example.fakerjs.dev", {
       allowSpecialCharacters: true,
     }),
   }),
-  usernameUuid: factories.mockCredentialsFactory({
+  usernameUuid: mockCredentialsFactory({
     username: faker.datatype.uuid(),
   }),
-  usernameSymbols: factories.mockCredentialsFactory({
+  usernameSymbols: mockCredentialsFactory({
     username: faker.datatype.string(),
   }),
-  usernameEmpty: factories.mockCredentialsFactory({
+  usernameEmpty: mockCredentialsFactory({
     username: "",
   }),
   // password
-  passwordMemorable: factories.mockCredentialsFactory({
+  passwordMemorable: mockCredentialsFactory({
     password: faker.internet.password(20, true),
   }),
-  passwordUnmemorable: factories.mockCredentialsFactory({
+  passwordUnmemorable: mockCredentialsFactory({
     password: faker.internet.password(20, false),
   }),
-  passwordSymbols: factories.mockCredentialsFactory({
+  passwordSymbols: mockCredentialsFactory({
     password: faker.datatype.string(),
   }),
-  passwordEmpty: factories.mockCredentialsFactory({
+  passwordEmpty: mockCredentialsFactory({
     password: "",
   }),
   // poolId
-  poolIdRandom: factories.mockCredentialsFactory({
+  poolIdRandom: mockCredentialsFactory({
     poolId: new RandExp(
       /^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_[a-zA-Z0-9]{9}$/
     ).gen(),
   }),
-  poolIdEmpty: factories.mockCredentialsFactory({
+  poolIdEmpty: mockCredentialsFactory({
     poolId: "",
   }),
 };
 
 const negativeCredentials = {
   // username
-  usernameUndefined: factories.mockCredentialsFactory({
+  usernameUndefined: mockCredentialsFactory({
     username: undefined,
   }),
-  passwordUndefined: factories.mockCredentialsFactory({
+  passwordUndefined: mockCredentialsFactory({
     password: undefined,
   }),
-  poolIdUndefined: factories.mockCredentialsFactory({
+  poolIdUndefined: mockCredentialsFactory({
     poolId: undefined,
   }),
 };
@@ -98,7 +100,7 @@ describe("createClientSrpSession", () => {
         )
         .mockImplementationOnce(() => new BigInteger(defaultValues.smallA, 16));
 
-      const credentials = factories.mockCredentialsFactory();
+      const credentials = mockCredentialsFactory();
       const { username, password, poolId } = credentials;
       const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
         username,
@@ -112,7 +114,7 @@ describe("createClientSrpSession", () => {
     });
 
     it("should not produce the same client SRP session on successive calls", () => {
-      const credentials = factories.mockCredentialsFactory();
+      const credentials = mockCredentialsFactory();
       const { username, password, poolId } = credentials;
       const clientSrpSession1 = cognitoSrpHelper.createClientSrpSession(
         username,
@@ -147,7 +149,7 @@ describe("createClientSrpSession", () => {
       }
     );
 
-    it("should throw a AbortOnZeroSrpErrorA if the generated client public key is 0", () => {
+    it("should throw a AbortOnZeroSrpAError if the generated client public key is 0", () => {
       // make sure our A = G % a ^ N calculation returns 0
       jest
         .spyOn(
@@ -156,11 +158,11 @@ describe("createClientSrpSession", () => {
         )
         .mockImplementationOnce(() => new BigInteger("0", 16));
 
-      const credentials = factories.mockCredentialsFactory();
+      const credentials = mockCredentialsFactory();
       const { username, password, poolId } = credentials;
       expect(() => {
         cognitoSrpHelper.createClientSrpSession(username, password, poolId);
-      }).toThrow(new AbortOnZeroSrpErrorA());
+      }).toThrow(new AbortOnZeroSrpAError());
     });
   });
 });

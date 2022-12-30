@@ -6,9 +6,10 @@
 /*
   CHANGES:
   In the Amplify implementation, they use their own private implementation of
-  BigInteger, but this is just a small copy of: http://www-cs-students.stanford.edu/~tjw/jsbn/
-  This code is packaged by jsbn, so we'll use that instead. They also use their
-  own implementation of WordArray, but we use CryptoJS for this instead
+  BigInteger, but this is just a small copy of JSBN:
+  http://www-cs-students.stanford.edu/~tjw/jsbn/. This code is packaged by jsbn,
+  so we'll use that instead. They also use their own implementation of WordArray
+  but we use the CryptoJS implementation for this instead
 */
 
 import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
@@ -17,8 +18,9 @@ import { BigInteger } from "jsbn";
 
 /**
  * Calculate a hash from a bitArray
- * @param {Buffer} buf Value to hash.
- * @returns {String} Hex-encoded hash.
+ *
+ * @param buf Value to hash.
+ * @returns Hex-encoded hash.
  */
 export const hash = (buf: Buffer | string): string => {
   const str = buf instanceof Buffer ? CryptoJS.lib.WordArray.create(buf) : buf;
@@ -30,8 +32,9 @@ export const hash = (buf: Buffer | string): string => {
 
 /**
  * Calculate a hash from a hex string
- * @param {String} hexStr Value to hash.
- * @returns {String} Hex-encoded hash.
+ *
+ * @param hexStr Value to hash.
+ * @returns Hex-encoded hash.
  */
 export const hexHash = (hexStr: string): string => {
   const hexHash = hash(Buffer.from(hexStr, "hex"));
@@ -63,8 +66,8 @@ export const hexHash = (hexStr: string): string => {
  * padHex(bigInteger.fromInt(-56))   === "C8"
  * padHex(bigInteger.fromInt(200))   === "00C8"
  *
- * @param {BigInteger} bigInt Number to encode.
- * @returns {String} even-length hex string of the two's complement encoding.
+ * @param bigInt Number to encode.
+ * @returns Even-length hex string of the two's complement encoding.
  */
 export const padHex = (bigInt: BigInteger): string => {
   if (!(bigInt instanceof BigInteger)) {
@@ -120,8 +123,8 @@ export const padHex = (bigInt: BigInteger): string => {
 /**
  * Returns a Buffer with a sequence of random nBytes
  *
- * @param {number} nBytes
- * @returns {Buffer} fixed-length sequence of random bytes
+ * @param nBytes
+ * @returns Fixed-length sequence of random bytes
  */
 export const randomBytes = (nBytes: number): Buffer => {
   const bytes = Buffer.from(

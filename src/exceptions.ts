@@ -35,7 +35,6 @@ export const ErrorMessages = {
   ABORT_ON_ZERO_SRP_U:
     "Aborting SRP due to 0 value received for public key hash (u)",
   // Inccorect challenge error:
-  // IncorrectCognitoChallengeError
   INCORRECT_COGNITO_CHALLENGE:
     "Cognito SRP session could not be initialised because initiateAuthResponse.ChallengeName is not PASSWORD_VERIFIER. Received: ",
 };
@@ -46,19 +45,19 @@ export class AbortOnZeroSrpError extends Error {
   }
 }
 
-export class AbortOnZeroSrpErrorA extends AbortOnZeroSrpError {
+export class AbortOnZeroSrpAError extends AbortOnZeroSrpError {
   constructor() {
     super(ErrorMessages.ABORT_ON_ZERO_SRP_A);
   }
 }
 
-export class AbortOnZeroSrpErrorB extends AbortOnZeroSrpError {
+export class AbortOnZeroSrpBError extends AbortOnZeroSrpError {
   constructor() {
     super(ErrorMessages.ABORT_ON_ZERO_SRP_B);
   }
 }
 
-export class AbortOnZeroSrpErrorU extends AbortOnZeroSrpError {
+export class AbortOnZeroSrpUError extends AbortOnZeroSrpError {
   constructor() {
     super(ErrorMessages.ABORT_ON_ZERO_SRP_U);
   }
