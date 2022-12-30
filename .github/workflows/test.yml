@@ -1,25 +1,30 @@
 name: test
+
 on:
   pull_request:
     branches:
-      - main
-  push:
-    branches:
-      - main
+      - main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. 1.x.x
+
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         # https://what-version-of-node.js.org/
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x, 18.x] # remember to update this when support is added/dropped
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }}
+          node-version: 16 # remember to update this when support is added/dropped
       - run: npm ci
       - run: npm run lint
       - run: npm run test
+        env:
+          INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
+          INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
+          INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
+          INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
+          INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
       - run: npm run build

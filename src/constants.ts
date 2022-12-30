@@ -6,9 +6,10 @@
 /*
   CHANGES:
   The constants below are removed from AuthenticationHelper class, and wrapped
-  in BigInteger constructors, or built-in NodeJS Buffer
+  in BigInteger constructors, or use built-in Buffer
 */
 
+import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
 import { BigInteger } from "jsbn";
 import { hexHash, padHex } from "./utils";
 

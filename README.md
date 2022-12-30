@@ -1,12 +1,10 @@
 # 🔐 Cognito SRP Helper
 
-Using the CognitoIdentityServiceProvider from the AWS SDK, we can authenticate a user using SRP (secure remote password). SRP can be used for basic password verification using the USER_SRP_AUTH or CUSTOM_AUTH flow. The problem here (and the reason this project exists) is that the SRP logic needs to be implemented by the developer, and there aren't a lot of libraries available to do this for you. The options that are available include:
+A JavaScript helper class used to calculate the values required for SRP authentication in AWS Cognito
 
-- [Warrant](https://github.com/capless/warrant) - A Python library that implements the SRP logic for you. This solution works well, but there isn't a JavaScript version we can use with the AWS SDK
+If you've ever tried to use the in-built SRP authentication flows in Cognito (either through USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth or respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper class was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
 
-- [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js) - Cognito Identity SDK, which also implements the SRP logic for you. This is [what Amplify uses under the hood](https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js). The problem with this package is the setup and interface. To setup you either have to download the bundle via NPM and include it via a HTML script tag, or you bundle the package yourself with webpack, which isn't ideal if you don't want to mess with the build config of your project. The interface of the project is also different to the standard [AWS Cognito SDK](https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_Operations.html). If you're already using the standard SDK it may clutter your code if you have to refer to another seperate SDK to interact with Cognito
-
-This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK
+This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK. It mimics the official AWS SRP implementation from [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js), but improves on it by removing the need for callbacks, and removing its internal state, making more readable, testable, and re-usable
 
 ## Usage
 
@@ -17,65 +15,73 @@ import CognitoSrpHelper from "cognito-srp-helper";
 
 // . . . obtain user credentials and setup Cognito client
 
-// Initialise helper
+// Initialise SRP helper
 const cognitoSrpHelper = new CognitoSrpHelper();
 
-// Create a client session
-const clientSession = cognitoSrpHelper.createClientSession(
-  username,
-  password,
-  poolId
+// Create client srp session
+const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
+  USERNAME,
+  PASSWORD,
+  POOL_ID
 );
 
-// Initiate password verification with challenge SRP_A
-const initiateAuthResponse = await cognito
+// Initiate SRP auth
+const initiateAuthResponse = await cognitoIdentityServiceProvider
   .initiateAuth({
-    AuthFlow: "USER_SRP_AUTH", // NOTE: also works with CUSTOM_AUTH
+    AuthFlow: "USER_SRP_AUTH",
     AuthParameters: {
       CHALLENGE_NAME: "SRP_A",
-      SRP_A: clientSession.largeA, // Pass the large A from client session
-      USERNAME: username,
+      SECRET_HASH, // you may / may not have to pass a SECRET_HASH, depending on your Cognito config
+      SRP_A: clientSrpSession.largeA, // Use largeA from clientSrpSession here
+      USERNAME,
     },
-    ClientId: clientId,
+    ClientId: CLIENT_ID,
   })
-  .promise();
+  .promise()
+  .catch((err) => {
+    // . . .
+  });
 
-// Create a cognito session
-const { SALT, SECRET_BLOCK, SRP_B } = initiateAuthResponse.ChallengeParameters;
-const cognitoSession = cognitoSrpHelper.createCognitoSession(
-  SRP_B,
-  SALT,
-  SECRET_BLOCK
-);
+// Create a session out of the response. A ReferenceError will be thrown if any values are missing
+const cognitoSrpSession =
+  cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
 
-// Use the client and cognito session to calculate password claim
+// Create timestamp in format required by Cognito
+const timestamp = cognitoSrpHelper.createTimestamp();
+
+// Compute password signature using both sessions and the timestamp
 const passwordSignature = cognitoSrpHelper.computePasswordSignature(
-  clientSession,
-  cognitoSession
+  clientSrpSession,
+  cognitoSrpSession,
+  timestamp
 );
 
-// Verify password with passwordSignature
-const respondToAuthChallengeResponse = await cognito
+// Respond to PASSWORD_VERIFIER challenge with password signature and timestamp
+const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
   .respondToAuthChallenge({
+    ClientId: CLIENT_ID,
     ChallengeName: "PASSWORD_VERIFIER",
     ChallengeResponses: {
-      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSession.secret, // Pass the secret from cogntio session
-      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Pass signature we calculated before
-      TIMESTAMP: clientSession.timestamp, // Pass the timestamp from client session
-      USERNAME: username,
+      PASSWORD_CLAIM_SECRET_BLOCK: cognitoSrpSession.secret, // Use secret from cognitoSrpSession here
+      PASSWORD_CLAIM_SIGNATURE: passwordSignature, // Use password signature here
+      SECRET_HASH,
+      TIMESTAMP: timestamp, // Use timestamp here
+      USERNAME,
     },
-    ClientId: clientId,
   })
-  .promise();
+  .promise()
+  .catch((err) => {
+    // . . .
+  });
 
-// . . . return login tokens or continue custom authentication flow
+// . . . return login tokens from respondToAuthChallenge
 ```
 
 ## API
 
-### `createClientSession`
+### `createClientSrpSession`
 
-Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key _largeA_ is passed to _SRP_A_ in the initiateAuth call, _timestamp_ is passed to TIMESTAMP in respondToAuthChallenge. The rest of the values are used later to compute the _PASSWORD_CLAIM_SIGNATURE_ when responding to a _PASSWORD_VERIFICATION_ challenge with _respondToAuthChallenge_
+Creates the required data needed to initiate SRP authentication with AWS Cognito. The public session key `largeA` is passed to `SRP_A` in the initiateAuth call. The rest of the values are used later in `computePasswordSignature` to compute `PASSWORD_CLAIM_SIGNATURE`
 
 **Parameters**
 
@@ -87,37 +93,57 @@ Creates the required data needed to initiate SRP authentication with AWS Cognito
 
 **Returns**:
 
-`clientSession` - _ClientSession_ - An object containing client session details for a SRP authentication request
+_ClientSrpSession_ - An object containing client SRP session details required to complete our SRP authentication request
 
-### `createCognitoSession`
+**Throws**:
 
-Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSession
+_AbortOnZeroSrpAError_ - Abort SRP if value of 0 is generated for client public key (A). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+
+### `createCognitoSrpSession`
+
+Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSrpSession
 
 **Parameters**:
 
-`largeB` - _string_ - The Cognito public session key
-
-`salt` - _string_ - Value paired with user's password to ensure it's unqiue
-
-`secret` - _string_ - A secret value used to authenticate our verification request
+`initiateAuthResponse` - [_InitiateAuthResponse_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthresponse.html) - The response from calling CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth flow if SRP is used
 
 **Returns**:
 
-`cognitoSession` - _CognitoSession_ - An object containing Cognito session details required to complete our SRP authentication request
+_CognitoSrpSession_ - An object containing Cognito SRP session details required to complete our SRP authentication request
+
+**Throws**:
+
+_AbortOnZeroSrpBError_ - Abort SRP if value of 0 is generated for Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
+
+_IncorrectCognitoChallengeError_ - If the challenge returned from Cognito is not PASSWORD_VERIFIER, then this error is thrown. If your Cognito app integration is configured correctly this shouldn't occur
+
+### `createTimestamp`
+
+Generate timestamp in the format required by Cognito: `ddd MMM D HH:mm:ss UTC YYYY`. This timestamp is required when creating the password signature via `computePasswordSignature`, and when responding to the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the password signature and the `respondToAuthChallenge` need to share the same timestamp
+
+**Returns**:
+
+_string_ - A timestamp in the format required by Cognito
 
 ### `computePasswordSignature`
 
-Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to _PASSWORD_CLAIM_SIGNATURE_ in a _respondToAuthChallenge_ call
+Computes the password signature to determine whether the password provided by the user is correct or not. This signature is passed to PASSWORD_CLAIM_SIGNATURE in a respondToAuthChallenge call
 
 **Parameters**:
 
-`clientSession` - _ClientSession_ - Client session object containing user credentials, session keys, and timestamp
+`clientSrpSession` - _ClientSrpSession_ - Client SRP session object containing user credentials and session keys
 
-`cognitoSession` - _CognitoSession_ - Cognito session object containing public session key, salt, and secret
+`cognitoSrpSession` - _CognitoSrpSession_ - Cognito SRP session object containing public session key, salt, and secret
+
+`timestamp` - _string_ - Timestamp that matches the format required by Cognito
 
 **Returns**:
 
-`passwordSignature` - _string_ - The password signature to pass to _PASSWORD_CLAIM_SIGNATURE_
+_string_ - The password signature to pass to PASSWORD_CLAIM_SIGNATURE
+
+**Throws**:
+
+_AbortOnZeroSrpUError_ - Abort SRP if value of 0 is generated for the public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
 ## See Also
 

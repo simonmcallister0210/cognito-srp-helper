@@ -1,30 +1,69 @@
 name: release
+
 on:
   push:
     branches:
-      - main
+      - main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. 1.x.x
+
 jobs:
-  release-please:
+  test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        # https://what-version-of-node.js.org/
+        node-version: [14.x, 16.x, 18.x] # remember to update this when support is added/dropped
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16 # remember to update this when support is added/dropped
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run test
+        env:
+          INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
+          INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
+          INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
+          INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
+          INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
+      - run: npm run build
+
+  github-release:
+    runs-on: ubuntu-latest
+    needs: [test]
     steps:
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
+          default-branch: main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. 1.x.x
           release-type: node
-          package-name: test-release-please
-      # The logic below handles the npm publication:
-      - uses: actions/checkout@v2
-        # these if statements ensure that a publication only occurs when
-        # a new release is created:
-        if: ${{ steps.release.outputs.release_created }}
-      - uses: actions/setup-node@v1
+      - run: |
+          echo releases_created: ${{steps.release.outputs.releases_created}}
+          echo upload_url: ${{steps.release.outputs.upload_url}}
+          echo html_url: ${{steps.release.outputs.html_url}}
+          echo tag_name: ${{steps.release.outputs.tag_name}}
+          echo major: ${{steps.release.outputs.major}}
+          echo minor: ${{steps.release.outputs.minor}}
+          echo patch: ${{steps.release.outputs.patch}}
+          echo sha: ${{steps.release.outputs.sha}}
+          echo pr: ${{steps.release.outputs.pr}}
+          echo prs: ${{steps.release.outputs.prs}}
+    outputs:
+      releases_created: ${{steps.release.outputs.releases_created}}
+
+  npm-publish:
+    runs-on: ubuntu-latest
+    needs: [github-release]
+    if: ${{ needs.github-release.outputs.releases_created == 'true' }} # only publish to npm if a github release has been made
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
         with:
-          node-version: 12
+          node-version: 16 # remember to update this when support is added/dropped
           registry-url: "https://registry.npmjs.org"
-        if: ${{ steps.release.outputs.release_created }}
-      - run: npm ci
-        if: ${{ steps.release.outputs.release_created }}
-      - run: npm publish
+      - run: npm ci --production
+      - run: npm run build
+      - run: npm publish # SUPPORTING OLDER MAJOR VERSIONS: add a tag so that 'latest' tag isn't used, e.g. `npm publish --tag v1-latest`
         env:
           NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
-        if: ${{ steps.release.outputs.release_created }}

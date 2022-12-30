@@ -5,16 +5,30 @@
 
 /*
   CHANGES:
-  The Amplify implementation uses callbacks. This implementation move the logic
-  into synchronous functions. It also wraps logic used to calculate password
-  signature into its own function
+  The Amplify implementation uses callbacks. This implementation moves logic
+  into synchronous functions. It wraps logic used to calculate password
+  signature into its own function. The timestamp function has been re-worked
+  using toLocaleString. All SRP related functions have been placed inside the
+  CognitoSrpHelper class
 */
 
-import CryptoJS, { HmacSHA256 } from "crypto-js";
+import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
+import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { INFO_BITS, G, N, K } from "./constants";
-import { ClientSession, CognitoSession } from "./types";
+import {
+  AbortOnZeroSrpAError,
+  AbortOnZeroSrpBError,
+  AbortOnZeroSrpUError,
+  ErrorMessages,
+  IncorrectCognitoChallengeError,
+} from "./exceptions";
+import {
+  InitiateAuthResponse,
+  ClientSrpSession,
+  CognitoSrpSession,
+} from "./types";
 import { hash, hexHash, padHex, randomBytes } from "./utils";
 
 /**
@@ -32,30 +46,6 @@ import { hash, hexHash, padHex, randomBytes } from "./utils";
  * class by using a username, password, and pool ID.
  */
 export class CognitoSrpHelper {
-  // AWS Cognito SRP calls require a specific timestamp format: ddd MMM D HH:mm:ss UTC YYYY
-  private getCognitoTimeStamp(): string {
-    const now = new Date();
-
-    const locale = "en-US";
-    const timeZone = "UTC";
-
-    const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
-    const day = now.toLocaleString(locale, { day: "numeric", timeZone });
-    const month = now.toLocaleString(locale, { month: "short", timeZone });
-    const year = now.getUTCFullYear();
-    const time = now.toLocaleString(locale, {
-      hour: "2-digit",
-      hourCycle: "h23",
-      minute: "2-digit",
-      second: "2-digit",
-      timeZone,
-    });
-
-    // ddd MMM D HH:mm:ss UTC YYYY
-    // EEE MMM d HH:mm:ss z yyyy in English
-    return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
-  }
-
   private generateSmallA(): BigInteger {
     // This will be interpreted as a postive 128-bit integer
     const hexRandom = randomBytes(128).toString("hex");
@@ -68,6 +58,11 @@ export class CognitoSrpHelper {
 
   private calculateLargeA(smallA: BigInteger): BigInteger {
     const largeA = G.modPow(smallA, N);
+
+    if (largeA.equals(BigInteger.ZERO)) {
+      throw new AbortOnZeroSrpAError();
+    }
+
     return largeA;
   }
 
@@ -82,8 +77,8 @@ export class CognitoSrpHelper {
       salt instanceof Buffer ? CryptoJS.lib.WordArray.create(salt) : salt;
 
     // Create Hmacs
-    const prk = HmacSHA256(ikmWordArray, saltWordArray);
-    const hmac = HmacSHA256(infoBitsWordArray, prk);
+    const prk = CryptoJS.HmacSHA256(ikmWordArray, saltWordArray);
+    const hmac = CryptoJS.HmacSHA256(infoBitsWordArray, prk);
     const hkdf = Buffer.from(hmac.toString(), "hex").slice(0, 16);
 
     return hkdf;
@@ -92,6 +87,11 @@ export class CognitoSrpHelper {
   private calculateU(largeA: BigInteger, largeB: BigInteger): BigInteger {
     const uHexHash = hexHash(padHex(largeA) + padHex(largeB));
     const u = new BigInteger(uHexHash, 16);
+
+    if (u.equals(BigInteger.ZERO)) {
+      throw new AbortOnZeroSrpUError();
+    }
+
     return u;
   }
 
@@ -118,79 +118,96 @@ export class CognitoSrpHelper {
   /**
    * Creates the required data needed to initiate SRP authentication with AWS
    * Cognito. The public session key `largeA` is passed to `SRP_A` in the
-   * initiateAuth call. The rest of the values are used later to compute the
-   * `PASSWORD_CLAIM_SIGNATURE` when responding to a `PASSWORD_VERIFICATION`
-   * challenge with `respondToAuthChallenge`
+   * initiateAuth call. The rest of the values are used later in
+   * `computePasswordSignature` to compute `PASSWORD_CLAIM_SIGNATURE`
    *
-   * @param username The user's AWS Cognito username
-   * @param password The user's AWS Cognito password
-   * @param poolId The ID of the AWS Cognito user pool the user belongs to
+   * @param `username` The user's AWS Cognito username
+   * @param `password` The user's AWS Cognito password
+   * @param `poolId` The ID of the AWS Cognito user pool the user belongs to
+   * @returns An object containing client SRP session details required to
+   * complete our SRP authentication request
+   * @throws `AbortOnZeroSrpAError` Abort SRP if value of 0 is generated for
+   * client public key (A). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
    */
-  public createClientSession(
-    username?: string,
-    password?: string,
-    poolId?: string
-  ): ClientSession {
-    // Assert parameters exist
-    if (!username)
-      throw new ReferenceError(
-        `Client session could not be initialised because username is missing or falsy`
-      );
-    if (!password)
-      throw new ReferenceError(
-        `Client session could not be initialised because password is missing or falsy`
-      );
-    if (!poolId)
-      throw new ReferenceError(
-        `Client session could not be initialised because poolId is missing or falsy`
-      );
+  public createClientSrpSession(
+    username: string,
+    password: string,
+    poolId: string
+  ): ClientSrpSession {
+    // Check parameters exist
+    if (username === undefined)
+      throw new ReferenceError(ErrorMessages.UNDEF_USERNAME);
+    if (password === undefined)
+      throw new ReferenceError(ErrorMessages.UNDEF_PASSWORD);
+    if (poolId === undefined)
+      throw new ReferenceError(ErrorMessages.UNDEF_POOLID);
 
     // Client credentials
-    const poolIdNumber = poolId.split("_")[1];
-    const usernamePassword = `${poolIdNumber}${username}:${password}`;
+    const poolIdAbbr = poolId.split("_")[1];
+    const usernamePassword = `${poolIdAbbr}${username}:${password}`;
     const passwordHash = hash(usernamePassword);
     // Client session keys
     const smallA = this.generateSmallA();
     const largeA = this.calculateLargeA(smallA);
-    // Cognito unique timestamp
-    const timestamp = this.getCognitoTimeStamp();
 
     return {
-      largeA: largeA.toString(16),
-      passwordHash,
-      poolId: poolIdNumber,
-      smallA: smallA.toString(16),
-      timestamp,
       username,
+      poolIdAbbr,
+      passwordHash,
+      smallA: smallA.toString(16),
+      largeA: largeA.toString(16),
     };
   }
 
   /**
-   * Asserts and bundles the SRP authentication values retrieved from Cognito
-   * into a single object that can be passed into `createCognitoSession`
+   * Validates and bundles the SRP authentication values retrieved from Cognito
+   * into a single object that can be passed into `computePasswordSignature` to
+   * compute `PASSWORD_CLAIM_SIGNATURE`
    *
-   * @param largeB The Cognito public session key
-   * @param salt Value paired with user's password to ensure it's unqiue
-   * @param secret A secret value used to authenticate our verification request
+   * @param initiateAuthResponse The response from calling
+   * CognitoIdentityServiceProvider's initiateAuth method. Note: initiateAuth
+   * should be called using the USER_SRP_AUTH auth flow, or CUSTOM_AUTH auth
+   * flow if SRP is used
+   * @returns An object containing Cognito SRP session details required to
+   * complete our SRP authentication request
+   * @throws `AbortOnZeroSrpBError` Abort SRP if value of 0 is generated for
+   * Cognito public key (B). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
+   * @throws `IncorrectCognitoChallengeError` If the challenge returned from
+   * Cognito is not PASSWORD_VERIFIER, then this error is thrown. If your
+   * Cognito app integration is configured correctly this shouldn't occur
    */
-  public createCognitoSession(
-    largeB?: string,
-    salt?: string,
-    secret?: string
-  ): CognitoSession {
-    // Assert parameters exist
-    if (!largeB)
-      throw new ReferenceError(
-        `Cognito session could not be initialised because largeB is missing or falsy`
+  public createCognitoSrpSession(
+    initiateAuthResponse: InitiateAuthResponse
+  ): CognitoSrpSession {
+    // Check initiateAuthResponse and ChallengeParameters exist
+    if (!initiateAuthResponse)
+      throw new ReferenceError(ErrorMessages.UNDEF_INIT_AUTH);
+    if (!initiateAuthResponse.ChallengeName)
+      throw new ReferenceError(ErrorMessages.UNDEF_INIT_AUTH_CHALLENGE_NAME);
+    if (initiateAuthResponse.ChallengeName !== "PASSWORD_VERIFIER")
+      throw new IncorrectCognitoChallengeError(
+        initiateAuthResponse.ChallengeName
       );
-    if (!salt)
-      throw new ReferenceError(
-        `Cognito session could not be initialised because salt is missing or falsy`
-      );
-    if (!secret)
-      throw new ReferenceError(
-        `Cognito session could not be initialised because secret is missing or falsy`
-      );
+    if (!initiateAuthResponse.ChallengeParameters)
+      throw new ReferenceError(ErrorMessages.UNDEF_INIT_AUTH_CHALLENGE_PARAMS);
+
+    const {
+      SRP_B: largeB,
+      SALT: salt,
+      SECRET_BLOCK: secret,
+    } = initiateAuthResponse.ChallengeParameters;
+
+    // Check relevant SRP values exist
+    if (!largeB) throw new ReferenceError(ErrorMessages.UNDEF_SRP_B);
+    if (!salt) throw new ReferenceError(ErrorMessages.UNDEF_SALT);
+    if (!secret) throw new ReferenceError(ErrorMessages.UNDEF_SECRET_BLOCK);
+
+    // Check server public key isn't 0
+    if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroSrpBError();
 
     return {
       largeB,
@@ -200,32 +217,67 @@ export class CognitoSrpHelper {
   }
 
   /**
+   * Generate timestamp in the format required by Cognito:
+   * `ddd MMM D HH:mm:ss UTC YYYY`. This timestamp is required when creating the
+   * password signature via `computePasswordSignature`, and when responding to
+   * the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the
+   * password signature and the `respondToAuthChallenge` need to share the same
+   * timestamp
+   *
+   * @returns A timestamp in the format required by Cognito
+   */
+  public createTimestamp(): string {
+    const now = new Date();
+
+    const locale = "en-US";
+    const timeZone = "UTC";
+
+    const weekDay = now.toLocaleString(locale, { timeZone, weekday: "short" });
+    const day = now.toLocaleString(locale, { day: "numeric", timeZone });
+    const month = now.toLocaleString(locale, { month: "short", timeZone });
+    const year = now.getUTCFullYear();
+    const time = now.toLocaleString(locale, {
+      hour: "2-digit",
+      hourCycle: "h23",
+      minute: "2-digit",
+      second: "2-digit",
+      timeZone,
+    });
+
+    return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
+  }
+
+  /**
    * Computes the password signature to determine whether the password provided
    * by the user is correct or not. This signature is passed to
    * `PASSWORD_CLAIM_SIGNATURE` in a `respondToAuthChallenge` call
    *
-   * @param clientSession Client session object containing user credentials,
-   * session keys, and timestamp
-   * @param cognitoSession Cognito session object containing public session key,
-   * salt, and secret
+   * @param clientSrpSession Client SRP session object containing user
+   * credentials and session keys
+   * @param cognitoSrpSession Cognito SRP session object containing public
+   * session key, salt, and secret
+   * @param timestamp Timestamp that matches the format required by Cognito
+   * @returns The password signature to pass to PASSWORD_CLAIM_SIGNATURE
+   * @throws `AbortOnZeroSrpUError` Abort SRP if value of 0 is generated for the
+   * public key hash (u). This is _very_ unlikely to occur (~1/10^77) and is
+   * simply a safeguard to protect against the session becoming advertently or
+   * inadvertently insecure
    */
   public computePasswordSignature(
-    clientSession: ClientSession,
-    cognitoSession: CognitoSession
+    clientSrpSession: ClientSrpSession,
+    cognitoSrpSession: CognitoSrpSession,
+    timestamp: string
   ): string {
-    // Assert parameters exist
-    if (!clientSession)
-      throw new ReferenceError(
-        `Cognito session could not be initialised because clientSession is missing or falsy`
-      );
-    if (!cognitoSession)
-      throw new ReferenceError(
-        `Cognito session could not be initialised because cognitoSession is missing or falsy`
-      );
+    // Check parameters exist
+    if (!clientSrpSession)
+      throw new ReferenceError(ErrorMessages.UNDEF_CLIENT_SRP_SESSION);
+    if (!cognitoSrpSession)
+      throw new ReferenceError(ErrorMessages.UNDEF_COGNITO_SRP_SESSION);
+    if (!timestamp) throw new ReferenceError(ErrorMessages.UNDEF_TIMESTAMP);
 
-    const { username, poolId, passwordHash, smallA, largeA, timestamp } =
-      clientSession;
-    const { largeB, salt, secret } = cognitoSession;
+    const { username, poolIdAbbr, passwordHash, smallA, largeA } =
+      clientSrpSession;
+    const { largeB, salt, secret } = cognitoSrpSession;
 
     const u = this.calculateU(
       new BigInteger(largeA, 16),
@@ -246,14 +298,14 @@ export class CognitoSrpHelper {
     const key = CryptoJS.lib.WordArray.create(hkdf);
     const message = CryptoJS.lib.WordArray.create(
       Buffer.concat([
-        Buffer.from(poolId, "utf8"),
+        Buffer.from(poolIdAbbr, "utf8"),
         Buffer.from(username, "utf8"),
         Buffer.from(secret, "base64"),
         Buffer.from(timestamp, "utf8"),
       ])
     );
     const signatureString = CryptoJS.enc.Base64.stringify(
-      HmacSHA256(message, key)
+      CryptoJS.HmacSHA256(message, key)
     );
 
     return signatureString;
