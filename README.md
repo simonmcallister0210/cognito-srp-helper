@@ -97,6 +97,8 @@ _ClientSrpSession_ - An object containing client SRP session details required to
 
 _AbortOnZeroSrpAError_ - Abort SRP if value of 0 is generated for client public key (A). This is _very_ unlikely to occur (~1/10^77) and is simply a safeguard to protect against the session becoming advertently or inadvertently insecure
 
+---
+
 ### `createCognitoSrpSession`
 
 Asserts and bundles the SRP authentication values retrieved from Cognito into a single object that can be passed into createCognitoSrpSession
@@ -115,6 +117,8 @@ _AbortOnZeroSrpBError_ - Abort SRP if value of 0 is generated for Cognito public
 
 _IncorrectCognitoChallengeError_ - If the challenge returned from Cognito is not PASSWORD_VERIFIER, then this error is thrown. If your Cognito app integration is configured correctly this shouldn't occur
 
+---
+
 ### `createTimestamp`
 
 Generate timestamp in the format required by Cognito: `ddd MMM D HH:mm:ss UTC YYYY`. This timestamp is required when creating the password signature via `computePasswordSignature`, and when responding to the PASSWORD_VERIFIER challenge with `respondToAuthChallenge`. Both the password signature and the `respondToAuthChallenge` need to share the same timestamp
@@ -122,6 +126,8 @@ Generate timestamp in the format required by Cognito: `ddd MMM D HH:mm:ss UTC YY
 **Returns**:
 
 _string_ - A timestamp in the format required by Cognito
+
+---
 
 ### `computePasswordSignature`
 
