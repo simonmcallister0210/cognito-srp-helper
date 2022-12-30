@@ -1,10 +1,8 @@
 # 🔐 Cognito SRP Helper
 
-Using the CognitoIdentityServiceProvider from the AWS SDK, we can authenticate a user without sending their password to the server. This is done through SRP (secure remote password). SRP can be used for password verification using the USER_SRP_AUTH or CUSTOM_AUTH flow. The problem here (and the reason this project exists) is that the SRP logic needs to be implemented by the developer, and there aren't many libraries available to do this for you. The options that are available include:
+A JavaScript helper class used to calculate the values required for SRP authentication in AWS Cognito
 
-- [Warrant](https://github.com/capless/warrant) - A Python library that implements the SRP logic for you. This solution works well, but there isn't a JavaScript version we can use with the AWS SDK
-
-- [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js) - Cognito Identity SDK, which also implements the SRP logic for you. This is [what Amplify uses under the hood](https://github.com/aws-amplify/amplify-js/tree/main/packages/amazon-cognito-identity-js). The problem with this package is the setup and interface. To setup you either have to download the bundle via NPM and include it via a HTML script tag, or you bundle the package yourself with webpack, which isn't ideal if you don't want to mess with the build config of your project. The interface of the project is also different to the standard [AWS Cognito SDK](https://docs.aws.amazon.com/cognito-user-identity-pools/latest/APIReference/API_Operations.html). If you're already using the standard SDK it may clutter your code if you have to refer to another seperate SDK to interact with Cognito
+If you've ever tried to use the in-built SRP authentication flows in Cognito (either through USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth or respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper class was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
 
 This package will implement the SRP logic for you in JavsScript, without the need to stray away from the AWS SDK. It mimics the official AWS SRP implementation from [amazon-cognito-identity-js](https://www.npmjs.com/package/amazon-cognito-identity-js), but improves on it by removing the need for callbacks, and removing its internal state, making more readable, testable, and re-usable
 
@@ -59,7 +57,7 @@ const passwordSignature = cognitoSrpHelper.computePasswordSignature(
 );
 
 // Respond to PASSWORD_VERIFIER challenge with password signature and timestamp
-const respondToAuthChallenge = await cognitoIdentityServiceProvider
+const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
   .respondToAuthChallenge({
     ClientId: CLIENT_ID,
     ChallengeName: "PASSWORD_VERIFIER",

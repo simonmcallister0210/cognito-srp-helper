@@ -81,7 +81,7 @@ describe("CognitoSrpHelper integration tests", () => {
     );
 
     // Respond to PASSWORD_VERIFIER challenge with password signature
-    const respondToAuthChallenge = await cognitoIdentityServiceProvider
+    const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
       .respondToAuthChallenge({
         ClientId: CLIENT_ID,
         ChallengeName: "PASSWORD_VERIFIER",
@@ -99,11 +99,13 @@ describe("CognitoSrpHelper integration tests", () => {
       });
 
     // Ensure the response from Cognito is what we expect
-    expect(respondToAuthChallenge).toHaveProperty("AuthenticationResult");
-    expect(respondToAuthChallenge.AuthenticationResult).toHaveProperty(
+    expect(respondToAuthChallengeResponse).toHaveProperty(
+      "AuthenticationResult"
+    );
+    expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
       "AccessToken"
     );
-    expect(respondToAuthChallenge.AuthenticationResult).toHaveProperty(
+    expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
       "RefreshToken"
     );
   });

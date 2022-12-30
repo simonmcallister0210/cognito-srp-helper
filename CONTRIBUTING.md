@@ -5,8 +5,9 @@ Table of Contents:
 1. [Implementing a fix or feature](#implementing-a-fix-or-feature)
 2. [Comitting to the project](#comitting-to-the-project)
 3. [Releases](#releases)
-4. [Running integration tests locally](#running-integration-tests-locally)
-5. [Supporting older releases](#supporting-older-releases)
+4. [VSCode setup](#vscode-setup)
+5. [Running integration tests locally](#running-integration-tests-locally)
+6. [Supporting older releases](#supporting-older-releases)
 
 ## Implementing a fix or feature
 
@@ -33,6 +34,26 @@ For more information on that this works see [release-please](https://github.com/
 ## Releases
 
 Releases are automated by the [release-please](https://github.com/googleapis/release-please) bot. The bot create a draft PR that updates itself everytime a branch is merged into main. The the draft PR is merged a few things happen. The change log is updated, the package.json version is updated, the project is tagged with the new version, and the project is uploaded to npm
+
+## VSCode setup
+
+We don't track our VSCode workspace config in Git, so if you need to setup you project to work with prettier and our eslint config file `config/eslintrc.json` you can create a workspace file similar to this:
+
+```json
+{
+  "folders": [
+    {
+      "path": ".."
+    }
+  ],
+  "settings": {
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "eslint.options": { "overrideConfigFile": "./config/eslintrc.json" }
+  }
+}
+```
 
 ## Running integration tests locally
 
