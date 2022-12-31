@@ -2,7 +2,7 @@ import { faker } from "@faker-js/faker";
 import { BigInteger } from "jsbn";
 import RandExp from "randexp";
 
-import CognitoSrpHelper from "../../cognito-srp-helper.js";
+import { CognitoSrpHelper } from "../../index.js";
 import { AbortOnZeroSrpAError, ErrorMessages } from "../../exceptions.js";
 import { factories, constants } from "../mocks/index.js";
 
