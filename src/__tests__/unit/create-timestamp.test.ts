@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-import CognitoSrpHelper from "../../cognito-srp-helper";
+import CognitoSrpHelper from "../../cognito-srp-helper.js";
 
 describe("createTimestamp", () => {
   const cognitoSrpHelper = new CognitoSrpHelper();

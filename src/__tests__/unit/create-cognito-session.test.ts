@@ -1,14 +1,14 @@
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
-import CognitoSrpHelper from "../../cognito-srp-helper";
+import CognitoSrpHelper from "../../cognito-srp-helper.js";
 import {
   AbortOnZeroSrpBError,
   ErrorMessages,
   IncorrectCognitoChallengeError,
-} from "../../exceptions";
-import { InitiateAuthResponse } from "../../types";
-import { factories, constants } from "../mocks";
+} from "../../exceptions.js";
+import { InitiateAuthResponse } from "../../types.js";
+import { factories, constants } from "../mocks/index.js";
 
 const { mockInitiateAuthResponseFactory } = factories;
 

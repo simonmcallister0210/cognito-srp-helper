@@ -3,7 +3,7 @@ import { createHmac } from "crypto";
 import dotenv from "dotenv";
 import path from "path";
 
-import CognitoSrpHelper from "../../cognito-srp-helper";
+import CognitoSrpHelper from "../../cognito-srp-helper.js";
 
 // Load in env variables from .env if it / they exist..
 dotenv.config({

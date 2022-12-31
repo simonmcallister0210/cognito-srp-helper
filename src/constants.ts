@@ -9,9 +9,10 @@
   in BigInteger constructors, or use built-in Buffer
 */
 
-import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
+import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import { BigInteger } from "jsbn";
-import { hexHash, padHex } from "./utils";
+
+import { hexHash, padHex } from "./utils.js";
 
 export const INFO_BITS = Buffer.from("Caldera Derived Key", "utf8");
 export const G = new BigInteger("2", 16);

@@ -12,7 +12,7 @@
   but we use the CryptoJS implementation for this instead
 */
 
-import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
+import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 

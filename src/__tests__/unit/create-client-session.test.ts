@@ -2,9 +2,9 @@ import { faker } from "@faker-js/faker";
 import { BigInteger } from "jsbn";
 import RandExp from "randexp";
 
-import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpAError, ErrorMessages } from "../../exceptions";
-import { factories, constants } from "../mocks";
+import CognitoSrpHelper from "../../cognito-srp-helper.js";
+import { AbortOnZeroSrpAError, ErrorMessages } from "../../exceptions.js";
+import { factories, constants } from "../mocks/index.js";
 
 const { mockCredentialsFactory } = factories;
 

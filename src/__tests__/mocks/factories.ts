@@ -1,11 +1,11 @@
 import clonedeep from "lodash.clonedeep";
 
-import { defaultValues } from "./constants";
+import { defaultValues } from "./constants.js";
 import {
   ClientSrpSession,
   CognitoSrpSession,
   InitiateAuthResponse,
-} from "../../types";
+} from "../../types.js";
 
 const {
   username,

@@ -1,8 +1,8 @@
-import { CognitoSrpHelper } from "./cognito-srp-helper";
+import { CognitoSrpHelper } from "./cognito-srp-helper.js";
 
-export * from "./cognito-srp-helper";
-export * from "./constants";
-export * from "./exceptions";
-export * from "./types";
-export * from "./utils";
+export * from "./cognito-srp-helper.js";
+export * from "./constants.js";
+export * from "./exceptions.js";
+export * from "./types.js";
+export * from "./utils.js";
 export default CognitoSrpHelper;

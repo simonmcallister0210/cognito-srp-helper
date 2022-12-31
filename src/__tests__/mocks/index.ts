@@ -1,2 +1,2 @@
-export * as factories from "./factories";
-export * as constants from "./constants";
+export * as factories from "./factories.js";
+export * as constants from "./constants.js";

@@ -12,24 +12,24 @@
   CognitoSrpHelper class
 */
 
-import { Buffer } from "buffer/"; // the leading '/' is so we use the browser compatible buffer library
+import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
-import { INFO_BITS, G, N, K } from "./constants";
+import { INFO_BITS, G, N, K } from "./constants.js";
 import {
   AbortOnZeroSrpAError,
   AbortOnZeroSrpBError,
   AbortOnZeroSrpUError,
   ErrorMessages,
   IncorrectCognitoChallengeError,
-} from "./exceptions";
+} from "./exceptions.js";
 import {
   InitiateAuthResponse,
   ClientSrpSession,
   CognitoSrpSession,
-} from "./types";
-import { hash, hexHash, padHex, randomBytes } from "./utils";
+} from "./types.js";
+import { hash, hexHash, padHex, randomBytes } from "./utils.js";
 
 /**
  * Helper class used to perform calculations required for SRP authentication in
