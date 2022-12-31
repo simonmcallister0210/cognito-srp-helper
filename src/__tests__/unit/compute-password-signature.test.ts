@@ -2,11 +2,11 @@ import { faker } from "@faker-js/faker";
 import omit from "lodash.omit";
 import RandExp from "randexp";
 
-import CognitoSrpHelper from "../../cognito-srp-helper";
-import { AbortOnZeroSrpUError, ErrorMessages } from "../../exceptions";
-import { factories, constants } from "../mocks";
-import * as utils from "../../utils";
-import { ClientSrpSession, CognitoSrpSession } from "../../types";
+import CognitoSrpHelper from "../../cognito-srp-helper.js";
+import { AbortOnZeroSrpUError, ErrorMessages } from "../../exceptions.js";
+import { factories, constants } from "../mocks/index.js";
+import * as utils from "../../utils.js";
+import { ClientSrpSession, CognitoSrpSession } from "../../types.js";
 
 const { mockClientSrpSessionFactory, mockCognitoSrpSessionFactory } = factories;
 
