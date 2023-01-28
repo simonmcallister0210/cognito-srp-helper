@@ -3,11 +3,11 @@
 Table of Contents:
 
 1. [Implementing a fix or feature](#implementing-a-fix-or-feature)
-2. [Comitting to the project](#comitting-to-the-project)
+2. [Committing to the project](#committing-to-the-project)
 3. [Releases](#releases)
 4. [VSCode setup](#vscode-setup)
 5. [Running integration tests locally](#running-integration-tests-locally)
-6. [Supporting older releases](#supporting-older-releases)
+6. [Supporting old major releases](#supporting-old-major-releases)
 
 ## Implementing a fix or feature
 
@@ -60,7 +60,7 @@ We don't track our VSCode workspace config in Git, so if you need to setup you p
 If you've just downloaded this repository and tried to run the integration tests you'll come across some errors to do with missing credentials. Something like:
 
 ```sh
-TODO: put specific error here
+ReferenceError: Integration test could not run because USERNAME is undefined or empty
 ```
 
 This is because we don't store the credentials for our Cognito userpool in code, they are stored as secrets inside Github for use in our Github actions. If you want to run integration tests locally, you'll need to follow these steps
