@@ -1,82 +1,62 @@
 import clonedeep from "lodash.clonedeep";
-
-import { defaultValues } from "./constants.js";
 import {
-  ClientSrpSession,
-  CognitoSrpSession,
   InitiateAuthResponse,
+  InitiateAuthRequest,
+  RespondToAuthChallengeRequest,
+  SrpSession,
+  SrpSessionSigned,
 } from "../../types.js";
-
-const {
-  username,
-  password,
-  poolId,
-  poolIdAbbr,
-  passwordHash,
-  smallA,
-  largeA,
-  largeB,
-  salt,
-  secret,
-} = defaultValues;
-
-const defaultMockCredentials = {
-  username,
-  password,
-  poolId,
-};
-
-const defaultMockInitiateAuthResponse: InitiateAuthResponse = {
-  ChallengeName: "PASSWORD_VERIFIER",
-  ChallengeParameters: {
-    SRP_B: largeB,
-    SALT: salt,
-    SECRET_BLOCK: secret,
-  },
-};
-
-const defaultMockClientSrpSession: ClientSrpSession = {
-  username,
-  poolIdAbbr,
-  passwordHash,
-  smallA,
-  largeA,
-};
-
-const defaultMockCognitoSrpSession: CognitoSrpSession = {
-  largeB,
-  salt,
-  secret,
-};
+import {
+  mockCredentials,
+  mockSession,
+  mockSessionSigned,
+  mockInitiateAuthRequest,
+  mockInitiateAuthResponse,
+  mockRespondToAuthChallengeRequest,
+} from "./values.js";
 
 export const mockCredentialsFactory = (
-  credentials?: Partial<typeof defaultMockCredentials>
+  credentials?: Partial<typeof mockCredentials>
 ) =>
   clonedeep({
-    ...defaultMockCredentials,
+    ...mockCredentials,
     ...credentials,
   });
 
+export const mockSrpSessionFactory = (session?: Partial<SrpSession>) =>
+  clonedeep({
+    ...mockSession,
+    ...session,
+  });
+
+export const mockSrpSessionSignedFactory = (
+  session?: Partial<SrpSessionSigned>
+) =>
+  clonedeep({
+    ...mockSessionSigned,
+    ...session,
+  });
+
+export const mockInitiateAuthRequestFactory = (
+  request?: Partial<InitiateAuthRequest>
+) =>
+  clonedeep({
+    ...mockInitiateAuthRequest,
+    ...request,
+  });
+
 export const mockInitiateAuthResponseFactory = (
-  initiateAuthResponse?: Partial<InitiateAuthResponse>
+  response?: Partial<InitiateAuthResponse>
 ) =>
   clonedeep({
-    ...defaultMockInitiateAuthResponse,
-    ...initiateAuthResponse,
+    ...mockInitiateAuthResponse,
+    ...response,
   });
 
-export const mockClientSrpSessionFactory = (
-  clientSrpSession?: Partial<ClientSrpSession>
+export const mockRespondToAuthChallengeRequestFactory = (
+  request?: Partial<RespondToAuthChallengeRequest>
 ) =>
   clonedeep({
-    ...defaultMockClientSrpSession,
-    ...clientSrpSession,
-  });
-
-export const mockCognitoSrpSessionFactory = (
-  cognitoSrpSession?: Partial<CognitoSrpSession>
-) =>
-  clonedeep({
-    ...defaultMockCognitoSrpSession,
-    ...cognitoSrpSession,
+    ...mockRespondToAuthChallengeRequest,
+    ...request,
   });
