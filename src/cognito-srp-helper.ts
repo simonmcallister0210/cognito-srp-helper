@@ -21,6 +21,10 @@ import {
   AbortOnZeroASrpError,
   AbortOnZeroBSrpError,
   AbortOnZeroUSrpError,
+  MissingChallengeResponsesError,
+  MissingLargeBError,
+  MissingSaltError,
+  MissingSecretError,
 } from "./errors.js";
 import {
   InitiateAuthResponse,
@@ -168,13 +172,20 @@ export const signSrpSession = (
   session: SrpSession,
   response: InitiateAuthResponse
 ): SrpSessionSigned => {
-  const { username, poolIdAbbr, passwordHash, timestamp, smallA, largeA } =
-    session;
+  // Assert SRP ChallengeParameters
+  if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
+  if (!response.ChallengeParameters.SALT) throw new MissingSaltError();
+  if (!response.ChallengeParameters.SECRET_BLOCK)
+    throw new MissingSecretError();
+  if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
+
   const {
     SALT: salt,
     SECRET_BLOCK: secret,
     SRP_B: largeB,
   } = response.ChallengeParameters;
+  const { username, poolIdAbbr, passwordHash, timestamp, smallA, largeA } =
+    session;
 
   // Check server public key isn't 0
   if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();

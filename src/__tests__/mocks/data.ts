@@ -4,6 +4,7 @@ import {
   RespondToAuthChallengeRequest,
   SrpSession,
   SrpSessionSigned,
+  Credentials,
 } from "../../types.js";
 
 const username = "username";
@@ -27,7 +28,7 @@ const secret =
 const passwordSignature = "AmaS40dQC4mBIgVaKNkAvWpYBmHUi/gv/XKVVCr8xyE=";
 
 // This object isn't typed because it is a collection of external inputs
-export const mockCredentials = {
+export const mockCredentials: Credentials = {
   username,
   password,
   poolId,

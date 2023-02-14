@@ -7,11 +7,14 @@ import {
   mockRespondToAuthChallengeRequestFactory,
   mockSrpSessionSignedFactory,
 } from "../mocks/factories.js";
-import { RespondToAuthChallengeRequest } from "../../types.js";
+import {
+  RespondToAuthChallengeRequest,
+  SrpSessionSigned,
+} from "../../types.js";
 
 const { ChallengeResponses } = mockRespondToAuthChallengeRequestFactory();
 
-const positiveSessions = {
+const positiveSessions: Record<string, SrpSessionSigned> = {
   default: mockSrpSessionSignedFactory(),
   // username
   usernameTypical: mockSrpSessionSignedFactory({
@@ -49,7 +52,7 @@ const positiveSessions = {
     poolIdAbbr: faker.random.alphaNumeric(9, { casing: "mixed" }),
   }),
   // timestamp
-  randomTimestamp: mockSrpSessionSignedFactory({
+  timestampRandom: mockSrpSessionSignedFactory({
     timestamp: `
       ${faker.date.weekday({ abbr: true })}
       ${faker.date.month({ abbr: true })}
@@ -103,13 +106,13 @@ const positiveSessions = {
     largeA: faker.random.alphaNumeric(10000, { casing: "lower" }),
   }),
   // largeB
-  randomLargeB: mockSrpSessionSignedFactory({
+  largeBRandom: mockSrpSessionSignedFactory({
     largeB: faker.random.alphaNumeric(1024, { casing: "lower" }),
   }),
-  shortLargeB: mockSrpSessionSignedFactory({
+  largeBShort: mockSrpSessionSignedFactory({
     largeB: faker.random.alphaNumeric(1, { casing: "lower" }),
   }),
-  longLargeB: mockSrpSessionSignedFactory({
+  largeBLarge: mockSrpSessionSignedFactory({
     largeB: faker.random.alphaNumeric(10000, { casing: "lower" }),
   }),
   // salt
@@ -144,7 +147,7 @@ const positiveSessions = {
   }),
 };
 
-const positiveRequests = {
+const positiveRequests: Record<string, RespondToAuthChallengeRequest> = {
   default: mockRespondToAuthChallengeRequestFactory(),
   // ChallengeName
   challengeNamePasswordVerifier: mockRespondToAuthChallengeRequestFactory({
@@ -163,6 +166,11 @@ const positiveRequests = {
   clientIdLong: mockRespondToAuthChallengeRequestFactory({
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
+  // ChallengeResponses
+  challengeResponsesOmitted: omit(
+    mockRespondToAuthChallengeRequestFactory(),
+    "ChallengeResponses"
+  ),
   // SECRET_HASH
   secretHashRandom: mockRespondToAuthChallengeRequestFactory({
     ChallengeResponses: {
@@ -170,17 +178,13 @@ const positiveRequests = {
       SECRET_HASH: new RandExp(/^[A-Za-z0-9+=/]{44}$/).gen(),
     },
   }),
-  secretHashUndefined: mockRespondToAuthChallengeRequestFactory({
+  secretHashOmitted: mockRespondToAuthChallengeRequestFactory({
     ChallengeResponses: {
-      ...ChallengeResponses,
-      SECRET_HASH: undefined,
+      ...omit(ChallengeResponses, "SECRET_HASH"),
     },
   }),
-  secretHashMissing: omit(
-    mockRespondToAuthChallengeRequestFactory(),
-    "ChallengeResponses.SECRET_HASH"
-  ),
-  // USERNAME: needs to match session.username
+  // USERNAME
+  // ... needs to match session.username
 };
 
 describe("wrapAuthChallenge", () => {

@@ -1,9 +1,10 @@
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
-
 import { Buffer } from "buffer/index.js";
+
 import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
-import { createSrpSession } from "../../index.js";
+import { createSrpSession } from "../../cognito-srp-helper.js";
+import { Credentials } from "../../types.js";
 import {
   mockCredentialsFactory,
   mockSrpSessionFactory,
@@ -11,7 +12,7 @@ import {
 import * as utils from "../../utils.js";
 import { BigInteger } from "jsbn";
 
-const positiveCredentials = {
+const positiveCredentials: Record<string, Credentials> = {
   default: mockCredentialsFactory(),
   // username
   usernameTypical: mockCredentialsFactory({
@@ -49,11 +50,10 @@ const positiveCredentials = {
   }),
 };
 
-const positiveTimestamps = {
-  random: faker.date.between(
-    "0000-01-01T00:00:00.000Z",
-    "9999-12-31T23:59:59.999Z"
-  ),
+const positiveTimestamps: Record<string, string> = {
+  random: faker.date
+    .between("0000-01-01T00:00:00.000Z", "9999-12-31T23:59:59.999Z")
+    .toString(),
   wideHours: "2000-01-02T03:04:05.000Z",
   zeroMidnight: "2000-01-02T00:00:00.000Z",
   twentyFourMidnight: "2000-01-02T24:00:00.000Z",

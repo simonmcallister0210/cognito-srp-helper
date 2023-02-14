@@ -1,10 +1,11 @@
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
-import { createPasswordHash } from "../../index.js";
+import { createPasswordHash } from "../../cognito-srp-helper.js";
+import { Credentials } from "../../types.js";
 import { mockCredentialsFactory } from "../mocks/factories.js";
 
-const positiveCredentials = {
+const positiveCredentials: Record<string, Credentials> = {
   default: mockCredentialsFactory(),
   // username
   usernameTypical: mockCredentialsFactory({

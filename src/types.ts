@@ -21,6 +21,16 @@ export type InitiateAuthRequest =
 export type RespondToAuthChallengeRequest =
   CognitoIdentityServiceProvider.RespondToAuthChallengeRequest;
 
+export type Credentials = {
+  username: string;
+  password: string;
+  poolId: string;
+  clientId: string;
+  secretId: string;
+  secretHash: string;
+  passwordHash: string;
+};
+
 /**
  * SRP session object. This object contains the user's credentials, public and
  * private keys. Using these details we can initiate an SRP request to verify

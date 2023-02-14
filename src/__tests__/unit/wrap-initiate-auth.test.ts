@@ -7,11 +7,11 @@ import {
   mockInitiateAuthRequestFactory,
   mockSrpSessionFactory,
 } from "../mocks/factories.js";
-import { InitiateAuthRequest } from "../../types.js";
+import { InitiateAuthRequest, SrpSession } from "../../types.js";
 
 const { AuthParameters } = mockInitiateAuthRequestFactory();
 
-const positiveSessions = {
+const positiveSessions: Record<string, SrpSession> = {
   default: mockSrpSessionFactory(),
   // username
   usernameTypical: mockSrpSessionFactory({
@@ -49,7 +49,7 @@ const positiveSessions = {
     poolIdAbbr: faker.random.alphaNumeric(9, { casing: "mixed" }),
   }),
   // timestamp
-  randomTimestamp: mockSrpSessionFactory({
+  timestampRandom: mockSrpSessionFactory({
     timestamp: `
       ${faker.date.weekday({ abbr: true })}
       ${faker.date.month({ abbr: true })}
@@ -104,7 +104,7 @@ const positiveSessions = {
   }),
 };
 
-const positiveRequests = {
+const positiveRequests: Record<string, InitiateAuthRequest> = {
   default: mockInitiateAuthRequestFactory(),
   // AuthFlow
   authFlowUserSrpAuth: mockInitiateAuthRequestFactory({
@@ -126,6 +126,24 @@ const positiveRequests = {
   clientIdLong: mockInitiateAuthRequestFactory({
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
+  // AuthParameters
+  authParametersOmitted: omit(
+    mockInitiateAuthRequestFactory(),
+    "AuthParameters"
+  ),
+  // CHALLENGE_NAME
+  challengeNameSrpA: mockInitiateAuthRequestFactory({
+    AuthParameters: {
+      ...AuthParameters,
+      ChallengeName: "SRP_A",
+    },
+  }),
+  challengeNameUnknown: mockInitiateAuthRequestFactory({
+    AuthParameters: {
+      ...AuthParameters,
+      ChallengeName: "UNKNOWN",
+    },
+  }),
   // SECRET_HASH
   secretHashRandom: mockInitiateAuthRequestFactory({
     AuthParameters: {
@@ -133,17 +151,13 @@ const positiveRequests = {
       SECRET_HASH: new RandExp(/^[A-Za-z0-9+=/]{44}$/).gen(),
     },
   }),
-  secretHashUndefined: mockInitiateAuthRequestFactory({
+  secretHashOmitted: mockInitiateAuthRequestFactory({
     AuthParameters: {
-      ...AuthParameters,
-      SECRET_HASH: undefined,
+      ...omit(AuthParameters, "SECRET_HASH"),
     },
   }),
-  secretHashMissing: omit(
-    mockInitiateAuthRequestFactory(),
-    "AuthParameters.SECRET_HASH"
-  ),
-  // USERNAME: needs to match session.username
+  // USERNAME
+  // ... needs to match session.username
 };
 
 describe("wrapInitiateAuth", () => {

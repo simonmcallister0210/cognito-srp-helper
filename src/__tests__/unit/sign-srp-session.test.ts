@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import omit from "lodash.omit";
 import RandExp from "randexp";
 
 import { signSrpSession } from "../../cognito-srp-helper.js";
@@ -6,17 +7,23 @@ import {
   AbortOnZeroBSrpError,
   AbortOnZeroSrpError,
   AbortOnZeroUSrpError,
+  MissingChallengeResponsesError,
+  MissingLargeBError,
+  MissingSaltError,
+  MissingSecretError,
+  SignSrpSessionError,
 } from "../../errors.js";
 import {
   mockInitiateAuthResponseFactory,
   mockSrpSessionFactory,
   mockSrpSessionSignedFactory,
 } from "../mocks/factories.js";
+import { InitiateAuthResponse, SrpSession } from "../../types.js";
 import * as utils from "../../utils.js";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
-const positiveSessions = {
+const positiveSessions: Record<string, SrpSession> = {
   default: mockSrpSessionFactory(),
   // username
   usernameTypical: mockSrpSessionFactory({
@@ -54,7 +61,7 @@ const positiveSessions = {
     poolIdAbbr: faker.random.alphaNumeric(9, { casing: "mixed" }),
   }),
   // timestamp
-  randomTimestamp: mockSrpSessionFactory({
+  timestampRandom: mockSrpSessionFactory({
     timestamp: `
       ${faker.date.weekday({ abbr: true })}
       ${faker.date.month({ abbr: true })}
@@ -109,7 +116,7 @@ const positiveSessions = {
   }),
 };
 
-const positiveInitiateAuthResponses = {
+const positiveInitiateAuthResponses: Record<string, InitiateAuthResponse> = {
   default: mockInitiateAuthResponseFactory(),
   // largeB
   largeBRandom: mockInitiateAuthResponseFactory({
@@ -170,6 +177,36 @@ const positiveInitiateAuthResponses = {
   }),
 };
 
+const negativeInitiateAuthResponses: Record<string, InitiateAuthResponse> = {
+  default: mockInitiateAuthResponseFactory(),
+  // ChallengeParameters
+  challengeParametersUndefined: mockInitiateAuthResponseFactory({
+    ChallengeParameters: undefined,
+  }),
+  challengeParametersOmitted: omit(
+    mockInitiateAuthResponseFactory(),
+    "ChallengeParameters"
+  ),
+  // salt
+  saltOmitted: mockInitiateAuthResponseFactory({
+    ChallengeParameters: {
+      ...omit(ChallengeParameters, "SALT"),
+    },
+  }),
+  // secret
+  secretOmitted: mockInitiateAuthResponseFactory({
+    ChallengeParameters: {
+      ...omit(ChallengeParameters, "SECRET_BLOCK"),
+    },
+  }),
+  // largeB
+  largeBOmitted: mockInitiateAuthResponseFactory({
+    ChallengeParameters: {
+      ...omit(ChallengeParameters, "SRP_B"),
+    },
+  }),
+};
+
 describe("signSrpSession", () => {
   describe("positive", () => {
     it("should create the correct signed SRP session", () => {
@@ -185,7 +222,8 @@ describe("signSrpSession", () => {
       (session) => {
         const response = mockInitiateAuthResponseFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters;
+        const { SRP_B, SALT, SECRET_BLOCK } =
+          response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -207,7 +245,8 @@ describe("signSrpSession", () => {
       (response) => {
         const session = mockSrpSessionFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters;
+        const { SRP_B, SALT, SECRET_BLOCK } =
+          response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -226,15 +265,18 @@ describe("signSrpSession", () => {
   });
 
   describe("negative", () => {
+    const session = mockSrpSessionFactory();
+
     it("should throw a AbortOnZeroBSrpError if SRP B is 0", () => {
-      const session = mockSrpSessionFactory();
       const responseShortZero = mockInitiateAuthResponseFactory({
         ChallengeParameters: {
+          ...ChallengeParameters,
           SRP_B: "0",
         },
       });
       const responseLongZero = mockInitiateAuthResponseFactory({
         ChallengeParameters: {
+          ...ChallengeParameters,
           SRP_B: "0000000000",
         },
       });
@@ -256,11 +298,10 @@ describe("signSrpSession", () => {
     });
 
     it("should throw a AbortOnZeroUSrpError if SRP U is 0", () => {
-      const session = mockSrpSessionFactory();
       const response = mockInitiateAuthResponseFactory();
 
       // make sure our u = H(A, B) calculation returns 0
-      session;
+
       // First check if the parent AbortOnZeroSrpError is thrown
       jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
       expect(() => {
@@ -278,6 +319,30 @@ describe("signSrpSession", () => {
       expect(() => {
         signSrpSession(session, response);
       }).toThrow(AbortOnZeroUSrpError);
+    });
+
+    it.each([
+      [
+        negativeInitiateAuthResponses.challengeParametersUndefined,
+        MissingChallengeResponsesError,
+      ],
+      [
+        negativeInitiateAuthResponses.challengeParametersOmitted,
+        MissingChallengeResponsesError,
+      ],
+      [negativeInitiateAuthResponses.saltOmitted, MissingSaltError],
+      [negativeInitiateAuthResponses.secretOmitted, MissingSecretError],
+      [negativeInitiateAuthResponses.largeBOmitted, MissingLargeBError],
+    ])("should throw a SignSrpSessionError: response %#", (response, error) => {
+      // First check if the parent SignSrpSessionError is thrown
+      expect(() => {
+        signSrpSession(session, response);
+      }).toThrow(SignSrpSessionError);
+
+      // Throw specific SignSrpSessionError error
+      expect(() => {
+        signSrpSession(session, response);
+      }).toThrow(error);
     });
   });
 });

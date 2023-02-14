@@ -1,24 +1,38 @@
-// Wrap SRP request errors
+// sign SRP session errors
 
-export class WrapSrpRequestTypeError extends TypeError {
+export class SignSrpSessionError extends Error {
+  constructor(message = "Could not sign SRP session") {
+    super(message);
+  }
+}
+
+export class MissingChallengeResponsesError extends SignSrpSessionError {
   constructor(
-    message = "Could not wrap SRP request due to invalid parameter type"
+    message = "Could not sign SRP session because of missing or undefined ChallengeResponses in response"
   ) {
     super(message);
   }
 }
 
-export class SrpSessionSignedTypeError extends WrapSrpRequestTypeError {
+export class MissingSaltError extends SignSrpSessionError {
   constructor(
-    message = "Could not wrap SRP request due to invalid SrpSessionSigned. If you are wrapping a RespondToAuthChallengeRequest make sure the session you're using is signed (SrpSessionSigned)"
+    message = "Could not sign SRP session because of missing or undefined SALT in response.ChallengeResponses"
   ) {
     super(message);
   }
 }
 
-export class CognitoSrpRequestTypeError extends WrapSrpRequestTypeError {
+export class MissingSecretError extends SignSrpSessionError {
   constructor(
-    message = "Could not wrap SRP request due to invalid Cognito request. Make sure the request you are wrapping is a valid SRP request (InitiateAuthRequest or RespondToAuthChallengeRequest)"
+    message = "Could not sign SRP session because of missing or undefined SECRET_BLOCK in response.ChallengeResponses"
+  ) {
+    super(message);
+  }
+}
+
+export class MissingLargeBError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined SRP_B in response.ChallengeResponses"
   ) {
     super(message);
   }
