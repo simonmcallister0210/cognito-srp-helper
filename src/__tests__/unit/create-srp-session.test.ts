@@ -1,65 +1,14 @@
-import { faker } from "@faker-js/faker";
-import RandExp from "randexp";
 import { Buffer } from "buffer/index.js";
+import { BigInteger } from "jsbn";
 
-import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
 import { createSrpSession } from "../../cognito-srp-helper.js";
-import { Credentials } from "../../types.js";
+import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
 import {
   mockCredentialsFactory,
   mockSrpSessionFactory,
 } from "../mocks/factories.js";
+import { positiveCredentials, positiveTimestamps } from "../inputs/index.js";
 import * as utils from "../../utils.js";
-import { BigInteger } from "jsbn";
-
-const positiveCredentials: Record<string, Credentials> = {
-  default: mockCredentialsFactory(),
-  // username
-  usernameTypical: mockCredentialsFactory({
-    username: faker.internet.userName(),
-  }),
-  usernameEmail: mockCredentialsFactory({
-    username: faker.internet.email(),
-  }),
-  usernameEmailSpecialChars: mockCredentialsFactory({
-    username: faker.internet.email("john", "doe", "example.fakerjs.dev", {
-      allowSpecialCharacters: true,
-    }),
-  }),
-  usernameUuid: mockCredentialsFactory({
-    username: faker.datatype.uuid(),
-  }),
-  usernameSymbols: mockCredentialsFactory({
-    username: faker.datatype.string(),
-  }),
-  usernameEmpty: mockCredentialsFactory({
-    username: "",
-  }),
-  // passwordHash
-  passwordHashRandom: mockCredentialsFactory({
-    passwordHash: faker.random.alphaNumeric(64, { casing: "lower" }),
-  }),
-  passwordHashEmpty: mockCredentialsFactory({
-    passwordHash: "",
-  }),
-  // poolId
-  poolIdRandom: mockCredentialsFactory({
-    poolId: new RandExp(
-      /^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_[a-zA-Z0-9]{9}$/
-    ).gen(),
-  }),
-};
-
-const positiveTimestamps: Record<string, string> = {
-  random: faker.date
-    .between("0000-01-01T00:00:00.000Z", "9999-12-31T23:59:59.999Z")
-    .toString(),
-  wideHours: "2000-01-02T03:04:05.000Z",
-  zeroMidnight: "2000-01-02T00:00:00.000Z",
-  twentyFourMidnight: "2000-01-02T24:00:00.000Z",
-  minYear: "0000-01-01T00:00:00.000Z",
-  maxYear: "9999-01-01T00:00:00.000Z",
-};
 
 describe("createSrpSession", () => {
   describe("positive", () => {
