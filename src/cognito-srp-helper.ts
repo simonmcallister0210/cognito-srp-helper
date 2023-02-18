@@ -1,22 +1,8 @@
-/*!
- * Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-
-/*
-  CHANGES:
-  The Amplify implementation uses callbacks. This implementation moves logic
-  into synchronous functions. It wraps logic used to calculate password
-  signature into its own function. The timestamp function has been re-worked
-  using toLocaleString. All SRP related functions have been placed inside the
-  CognitoSrpHelper class
-*/
-
 import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
-import { INFO_BITS, G, N, K } from "./constants.js";
+import { G, INFO_BITS, K, N } from "./constants.js";
 import {
   AbortOnZeroASrpError,
   AbortOnZeroBSrpError,
@@ -27,8 +13,8 @@ import {
   MissingSecretError,
 } from "./errors.js";
 import {
-  InitiateAuthResponse,
   InitiateAuthRequest,
+  InitiateAuthResponse,
   RespondToAuthChallengeRequest,
   SrpSession,
   SrpSessionSigned,

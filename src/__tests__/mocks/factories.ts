@@ -1,19 +1,21 @@
 import clonedeep from "lodash.clonedeep";
+
 import {
   Credentials,
-  InitiateAuthResponse,
   InitiateAuthRequest,
+  InitiateAuthResponse,
   RespondToAuthChallengeRequest,
   SrpSession,
   SrpSessionSigned,
 } from "../../types.js";
+
 import {
   mockCredentials,
-  mockSession,
-  mockSessionSigned,
   mockInitiateAuthRequest,
   mockInitiateAuthResponse,
   mockRespondToAuthChallengeRequest,
+  mockSession,
+  mockSessionSigned,
 } from "./data.js";
 
 export const mockCredentialsFactory = (

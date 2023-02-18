@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 
-import { mockSrpSessionFactory } from "../mocks/factories.js";
 import { SrpSession } from "../../types.js";
+import { mockSrpSessionFactory } from "../mocks/factories.js";
 
 export const positiveSrpSessions: Record<string, SrpSession> = {
   default: mockSrpSessionFactory(),

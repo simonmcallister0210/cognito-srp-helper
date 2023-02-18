@@ -1,10 +1,10 @@
 import {
-  InitiateAuthResponse,
+  Credentials,
   InitiateAuthRequest,
+  InitiateAuthResponse,
   RespondToAuthChallengeRequest,
   SrpSession,
   SrpSessionSigned,
-  Credentials,
 } from "../../types.js";
 
 const username = "username";

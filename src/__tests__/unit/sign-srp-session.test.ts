@@ -9,17 +9,17 @@ import {
   MissingSecretError,
   SignSrpSessionError,
 } from "../../errors.js";
+import * as utils from "../../utils.js";
+import {
+  negativeInitiateAuthResponses as negativeResponses,
+  positiveInitiateAuthResponses as positiveResponses,
+  positiveSrpSessions as positiveSessions,
+} from "../inputs/index.js";
 import {
   mockInitiateAuthResponseFactory,
   mockSrpSessionFactory,
   mockSrpSessionSignedFactory,
 } from "../mocks/factories.js";
-import {
-  positiveSrpSessions as positiveSessions,
-  positiveInitiateAuthResponses as positiveResponses,
-  negativeInitiateAuthResponses as negativeResponses,
-} from "../inputs/index.js";
-import * as utils from "../../utils.js";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 

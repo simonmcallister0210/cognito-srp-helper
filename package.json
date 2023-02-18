@@ -38,7 +38,7 @@
     "build:esm": "tsc -p config/tsconfig.esm.json && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
     "build:types": "tsc -p config/tsconfig.types.json",
     "format": "prettier 'src/**/*.ts' --write",
-    "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/* --ext .ts",
+    "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/*.ts",
     "test": "jest -c config/jest.config.json",
     "test:unit": "jest -c config/jest.config.json src/__tests__/unit",
     "test:integration": "jest -c config/jest.config.json src/__tests__/integration",

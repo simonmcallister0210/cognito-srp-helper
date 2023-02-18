@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
-import { mockCredentialsFactory } from "../mocks/factories.js";
 import { Credentials } from "../../types.js";
+import { mockCredentialsFactory } from "../mocks/factories.js";
 
 export const positiveCredentials: Record<string, Credentials> = {
   default: mockCredentialsFactory(),
