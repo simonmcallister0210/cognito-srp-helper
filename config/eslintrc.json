@@ -9,8 +9,22 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": ["@typescript-eslint", "import"],
+  "plugins": ["@typescript-eslint", "import", "simple-import-sort"],
   "rules": {
-    "import/extensions": [2, "ignorePackages"]
+    "import/extensions": ["error", "ignorePackages"],
+    "simple-import-sort/exports": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          ["^\\u0000"],
+          ["^node:"],
+          ["^@?\\w"],
+          ["^"],
+          ["^\\.\\."],
+          ["^\\."]
+        ]
+      }
+    ]
   }
 }

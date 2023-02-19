@@ -1,9 +1,15 @@
 import { CognitoIdentityServiceProvider } from "aws-sdk";
-import { createHmac } from "crypto";
 import dotenv from "dotenv";
 import path from "path";
 
-import CognitoSrpHelper from "../../cognito-srp-helper.js";
+import {
+  createPasswordHash,
+  createSecretHash,
+  createSrpSession,
+  signSrpSession,
+  wrapAuthChallenge,
+  wrapInitiateAuth,
+} from "../../cognito-srp-helper.js";
 
 // Load in env variables from .env if it / they exist..
 dotenv.config({
@@ -17,96 +23,76 @@ const {
   INT_TEST_POOL_ID: POOL_ID = "",
   INT_TEST_CLIENT_ID: CLIENT_ID = "",
   INT_TEST_SECRET_ID: SECRET_ID = "",
+  INT_TEST_AWS_REGION: AWS_REGION = "",
 } = process.env;
 
 // Assert environment variables exist before we begin
-Object.entries({ USERNAME, PASSWORD, POOL_ID, CLIENT_ID, SECRET_ID }).forEach(
-  ([key, value]) => {
-    if (value === "") {
-      throw new ReferenceError(
-        `Integration test could not run because ${key} is undefined or empty`
-      );
-    }
+Object.entries({
+  USERNAME,
+  PASSWORD,
+  POOL_ID,
+  CLIENT_ID,
+  SECRET_ID,
+  AWS_REGION,
+}).forEach(([key, value]) => {
+  if (value === "") {
+    throw new ReferenceError(
+      `Integration test could not run because ${key} is undefined or empty`
+    );
   }
-);
-
-// Calculate secret hash required for securely communicating with our userpool
-const SECRET_HASH = createHmac("SHA256", SECRET_ID)
-  .update(`${USERNAME}${CLIENT_ID}`)
-  .digest("base64");
+});
 
 const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider({
-  region: "eu-west-2",
+  region: AWS_REGION,
 });
-const cognitoSrpHelper = new CognitoSrpHelper();
 
-describe("CognitoSrpHelper integration tests", () => {
-  test("USER_SRP_AUTH authentication flow", async () => {
-    // Create client session
-    const clientSrpSession = cognitoSrpHelper.createClientSrpSession(
-      USERNAME,
-      PASSWORD,
-      POOL_ID
-    );
+test("integration test", async () => {
+  const secretHash = createSecretHash(USERNAME, CLIENT_ID, SECRET_ID);
+  const passwordHash = createPasswordHash(USERNAME, PASSWORD, POOL_ID);
+  const srpSession = createSrpSession(USERNAME, passwordHash, POOL_ID);
 
-    // Initiate SRP auth
-    const initiateAuthResponse = await cognitoIdentityServiceProvider
-      .initiateAuth({
+  // Initiate SRP auth
+  const initiateAuthResponse = await cognitoIdentityServiceProvider
+    .initiateAuth(
+      wrapInitiateAuth(srpSession, {
         AuthFlow: "USER_SRP_AUTH",
         AuthParameters: {
           CHALLENGE_NAME: "SRP_A",
-          SECRET_HASH,
-          SRP_A: clientSrpSession.largeA,
+          SECRET_HASH: secretHash,
           USERNAME,
         },
         ClientId: CLIENT_ID,
       })
-      .promise()
-      .catch((err) => {
-        throw err; // re-throwing the error will stop execution
-      });
+    )
+    .promise()
+    .catch((err) => {
+      throw err;
+    });
 
-    // Retreive Cognito SRP values, and create cognito session
-    const cognitoSrpSession =
-      cognitoSrpHelper.createCognitoSrpSession(initiateAuthResponse);
+  const signedSrpSession = signSrpSession(srpSession, initiateAuthResponse);
 
-    // Create timestamp in format required by Cognito
-    const timestamp = cognitoSrpHelper.createTimestamp();
-
-    // Compute password signature using client and cognito session
-    const passwordSignature = cognitoSrpHelper.computePasswordSignature(
-      clientSrpSession,
-      cognitoSrpSession,
-      timestamp
-    );
-
-    // Respond to PASSWORD_VERIFIER challenge with password signature
-    const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
-      .respondToAuthChallenge({
+  const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
+    .respondToAuthChallenge(
+      wrapAuthChallenge(signedSrpSession, {
         ClientId: CLIENT_ID,
         ChallengeName: "PASSWORD_VERIFIER",
         ChallengeResponses: {
-          PASSWORD_CLAIM_SECRET_BLOCK: cognitoSrpSession.secret,
-          PASSWORD_CLAIM_SIGNATURE: passwordSignature,
-          SECRET_HASH,
-          TIMESTAMP: timestamp,
+          SECRET_HASH: secretHash,
           USERNAME,
         },
       })
-      .promise()
-      .catch((err) => {
-        throw err; // re-throwing the error will stop execution
-      });
+    )
+    .promise()
+    .catch((err) => {
+      throw err;
+    });
 
-    // Ensure the response from Cognito is what we expect
-    expect(respondToAuthChallengeResponse).toHaveProperty(
-      "AuthenticationResult"
-    );
-    expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
-      "AccessToken"
-    );
-    expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
-      "RefreshToken"
-    );
-  });
+  // Ensure the response from Cognito is what we expect
+  expect(respondToAuthChallengeResponse).toHaveProperty("AuthenticationResult");
+  expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
+    "AccessToken"
+  );
+  expect(respondToAuthChallengeResponse.AuthenticationResult).toHaveProperty(
+    "RefreshToken"
+  );
 });
