@@ -27,6 +27,7 @@ jobs:
           INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
           INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
           INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
+          INT_TEST_AWS_REGION: ${{secrets.INT_TEST_AWS_REGION}}
       - run: npm run build
 
   github-release:
