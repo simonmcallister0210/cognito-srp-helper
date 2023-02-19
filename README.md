@@ -8,7 +8,19 @@ The helper works by providing functions that generate the required hashes for yo
 
 ## Usage
 
-Here is an example of how you would use the helper to implement SRP using the AWS SDK:
+This is a Hybrid package, so you can use both ES import:
+
+```js
+import CognitoSrpHelper from "cognito-srp-helper";
+```
+
+Or CommonJS require:
+
+```js
+const CognitoSrpHelper = require("cognito-srp-helper");
+```
+
+Here is an example of how you would use the helper to implement SRP authentication with Cognito:
 
 ```ts
 import {
@@ -64,23 +76,11 @@ const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
 // . . . return login tokens from respondToAuthChallengeResponse
 ```
 
-## Can I use CommonJS or ES imports?
-
-This is a Hybrid package, so you can use both ES import:
-
-```js
-import CognitoSrpHelper from "cognito-srp-helper";
-```
-
-Or CommonJS require:
-
-```js
-const CognitoSrpHelper = require("cognito-srp-helper");
-```
-
 ## Should you worry about 0 being used during the SRP calculations?
 
-According to the [safeguards of SRP](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol), if a 0 value is given for A, B, or u then the protocol must abort to avoid compromising the security of the exchange. The possible scenarios in which a 0 value is used are:
+Short answer: no!
+
+Long answer: according to the [safeguards of SRP](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol), if a 0 value is given for A, B, or u then the protocol must abort to avoid compromising the security of the exchange. The possible scenarios in which a 0 value is used are:
 
 1. A value of 0 is randomly generated via SHA256 which is _extremely_ unlikely to occur, ~1/10^77
 2. A SRP_B value of 0 is received from the Cogntio initiateAuth call, which won't happen unless someone is purposefully trying to compromise security by intercepting the response from Cognito
