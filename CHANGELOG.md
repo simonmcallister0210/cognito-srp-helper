@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v1.0.1...v2.0.0) (2023-02-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* Restructure of API to improve dev experience
+
+### Features
+
+* Restructure of API to improve dev experience ([ae52b82](https://github.com/simonmcallister0210/cognito-srp-helper/commit/ae52b828b887103b5a068eaf714fad518e4d34f0))
+
 ## [1.0.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v1.0.0...v1.0.1) (2022-12-31)
 
 
