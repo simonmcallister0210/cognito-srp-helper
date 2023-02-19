@@ -1,12 +1,14 @@
 # 🔐 Cognito SRP Helper
 
-A JavaScript helper class used to calculate the values required for SRP authentication in AWS Cognito
+JavaScript helper used to calculate the values required for SRP authentication in AWS Cognito
 
-If you've ever tried to use the in-built SRP authentication flows in Cognito (either through USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth or respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper class was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
+If you've ever tried to use the in-built SRP authentication flows in Cognito (USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth and respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
+
+The helper works by providing functions that generate the required hashes for your secret and password, and wrapping your Cogntio request and returning the same request with the required SRP fields
 
 ## Usage
 
-Here is an example of how you would use the helper class to implement SRP using the AWS SDK:
+Here is an example of how you would use the helper to implement SRP using the AWS SDK:
 
 ```ts
 import {
@@ -62,6 +64,29 @@ const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
 // . . . return login tokens from respondToAuthChallengeResponse
 ```
 
+## Can I use CommonJS or ES imports?
+
+This is a Hybrid package, so you can use both ES import:
+
+```js
+import CognitoSrpHelper from "cognito-srp-helper";
+```
+
+Or CommonJS require:
+
+```js
+const CognitoSrpHelper = require("cognito-srp-helper");
+```
+
+## Should you worry about 0 being used during the SRP calculations?
+
+According to the [safeguards of SRP](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol), if a 0 value is given for A, B, or u then the protocol must abort to avoid compromising the security of the exchange. The possible scenarios in which a 0 value is used are:
+
+1. A value of 0 is randomly generated via SHA256 which is _extremely_ unlikely to occur, ~1/10^77
+2. A SRP_B value of 0 is received from the Cogntio initiateAuth call, which won't happen unless someone is purposefully trying to compromise security by intercepting the response from Cognito
+
+If any of these scenarios occur this package will throw a `AbortOnZeroSrpError`, so you don't need to worry about the security of the exchange being compromised
+
 ## API
 
 ### `createSecretHash`
@@ -78,7 +103,7 @@ Generates the required secret hash when a secret is configured for the app clien
 
 **Returns**:
 
-_string_ - A hash string of the secret. This is passed to the SECRET_HASH field
+_string_ - A hash of the secret. This is passed to the SECRET_HASH field
 
 ---
 
@@ -86,7 +111,7 @@ _string_ - A hash string of the secret. This is passed to the SECRET_HASH field
 
 Generates the required password hash from the user's credentials and user pool ID
 
-_TIP: If you are authenticating from the backend, you can call this function from the frontend and pass the hash value to the backend. While the user's password is secure being transmitted over HTTPS, this extra step can add an extra layer of security_
+_TIP: If you are authenticating from the backend, you can call this function from the frontend and pass the hash value to the backend. While the user's password is secure being transmitted over HTTPS, this step can add an extra layer of security_
 
 **Parameters**:
 
@@ -98,13 +123,13 @@ _TIP: If you are authenticating from the backend, you can call this function fro
 
 **Returns**:
 
-_string_ - A hash string of the user's password. Used to create an SRP session
+_string_ - A hash of the user's password. Used to create an SRP session
 
 ---
 
 ### `createSrpSession`
 
-Creates an SRP session using the user's credentials and a Cognito user pool ID. This session contains the public/private SRP key for the user, and a timestamp in the unique format required by Cognito. With this session we can wrap our SRP request with the session's public key (SRP_A)
+Creates an SRP session using the user's credentials and a Cognito user pool ID. This session contains the public/private SRP key for the client, and a timestamp in the unique format required by Cognito. With this session we can add to our public key (SRP_A) to the initiateAuth request
 
 `username` - _string_ - The user's username
 
@@ -114,13 +139,13 @@ Creates an SRP session using the user's credentials and a Cognito user pool ID. 
 
 **Returns**:
 
-_SrpSession_ - An object that contains the user's credentials, public/private key, and timestamp
+_SrpSession_ - Client SRP session object containing user credentials and session keys
 
 ---
 
 ### `signSrpSession`
 
-With a successful initiateAuth call using the USER_SRP_AUTH flow (or CUSTOM_AUTH if SRP is configured), we receive values from Cognito that we can use to verify the user's password. With this response we can 'sign' our session by generating a password signature and attaching it to our session
+With a successful initiateAuth call using the USER_SRP_AUTH flow (or CUSTOM_AUTH if SRP is configured) we receive values from Cognito that we can use to verify the user's password. With this response we can 'sign' our session by generating a password signature and attaching it to our session
 
 **Parameters**:
 
@@ -156,13 +181,13 @@ Wraps a [RespondToAuthChallengeRequest](https://docs.aws.amazon.com/AWSJavaScrip
 
 **Parameters**:
 
-`session` - _SrpSessionSigned_ - Signed SRP session object containing password signature and various SRP values
+`session` - _SrpSessionSigned_ - A signed version of the SRP session object
 
-`request` - [_InitiateAuthRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthrequest.html) - The Cognito request passed into initiateAuth
+`request` - [_RespondToAuthChallengeRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html) - The Cognito request passed into initiateAuth
 
 **Returns**:
 
-[_InitiateAuthRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthrequest.html) - The same request but with the additional PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields
+[_RespondToAuthChallengeRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html) - The same request but with the additional PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields
 
 ## See Also
 

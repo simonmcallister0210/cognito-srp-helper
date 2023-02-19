@@ -234,12 +234,3 @@ export const wrapAuthChallenge = (
     TIMESTAMP: session.timestamp,
   },
 });
-
-export default {
-  createSecretHash,
-  createPasswordHash,
-  createSrpSession,
-  signSrpSession,
-  wrapInitiateAuth,
-  wrapAuthChallenge,
-};
