@@ -25,7 +25,7 @@ This projects follows the Conventional Commit specification (at least for commit
 
 https://www.conventionalcommits.org/en/v1.0.0/
 
-This allows use to categorise changes and make automated updates to our project version and change log based on the categories being merged. For example, if you commit a feature, you could set the commit message to be:
+This allows us to categorize changes and make automated updates to our project version and change log based on the categories being merged. For example, if you commit a feature, you could set the commit message to be:
 
 ```sh
 git commit -m 'feat: my new feature'
@@ -118,6 +118,6 @@ After all these steps have been completed, you should be able to run integration
 
 To release a new major version you must make sure you create a branch for the old major version. For example, if we are on v1, and we plan on releasing a braking change to v2, we must create a new branch for v1 just before we release v2
 
-After we have this branch old branch (e.g. v1) we need to update the Github workflow files to support GitHub actions for this branch. To do this, first checkout the new branch `git checkout v1` and look for comments in `.github/workflow/*` preceded by 'SUPPORTING OLDER MAJOR VERSIONS'. The comments will tell you what you need to change in order to support the old major version
+After we have this old branch (e.g. v1) we need to update the Github workflow files to support GitHub actions for this branch. To do this, first checkout the new branch `git checkout v1` and look for comments in `.github/workflow/*` preceded by 'SUPPORTING OLDER MAJOR VERSIONS'. The comments will tell you what you need to change in order to support the old major version
 
 _Update 12/2022_ - BE AWARE - At time of writing the release-please action will always tag a release as 'latest', so if you release on an old major branch you will need to manually re-tag the latest Github release

@@ -4,7 +4,7 @@ JavaScript helper used to calculate the values required for SRP authentication i
 
 If you've ever tried to use the in-built SRP authentication flows in Cognito (USER_SRP_AUTH or CUSTOM_AUTH) using initiateAuth and respondToAuthChallenge, you may have encountered holes in the documentation that don't explain specific fields (SRP_A, TIMESTAMP, PASSWORD_CLAIM_SIGNATURE). You may also notice that there are no SDK functions that will generate values for these fields, leaving you stuck and unable to progress. This helper was created to bridge the missing support for SRP authentication in AWS Cognito, providing functions that will handle the necessary calculations needed to complete the authentication flow
 
-The helper works by providing functions that generate the required hashes for your secret and password, and wrapping your Cogntio request and returning the same request with the required SRP fields
+The helper works by providing functions that generate the required hashes for your secret and password, and wrapping your Cognito request and returning the same request with the required SRP fields
 
 ## Usage
 
@@ -76,7 +76,9 @@ const respondToAuthChallengeResponse = await cognitoIdentityServiceProvider
 // . . . return login tokens from respondToAuthChallengeResponse
 ```
 
-## Should you worry about 0 being used during the SRP calculations?
+## Zero values in SRP
+
+Should you worry about 0 being used during the SRP calculations?
 
 Short answer: no!
 
@@ -175,7 +177,7 @@ Wraps a [InitiateAuthRequest](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/la
 
 ---
 
-### `respondToAuthChallenge`
+### `wrapAuthChallenge`
 
 Wraps a [RespondToAuthChallengeRequest](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html) and attaches the PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields required to complete SRP
 
@@ -183,7 +185,7 @@ Wraps a [RespondToAuthChallengeRequest](https://docs.aws.amazon.com/AWSJavaScrip
 
 `session` - _SrpSessionSigned_ - A signed version of the SRP session object
 
-`request` - [_RespondToAuthChallengeRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html) - The Cognito request passed into initiateAuth
+`request` - [_RespondToAuthChallengeRequest_](https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html) - The Cognito request passed into respondToAuthChallenge
 
 **Returns**:
 
