@@ -36,9 +36,14 @@ Object.entries({
   AWS_REGION,
 }).forEach(([key, value]) => {
   if (value === "") {
-    throw new ReferenceError(
-      `Integration test could not run because ${key} is undefined or empty`
-    );
+    throw new ReferenceError(`
+      Integration test could not run because ${key} is undefined or empty.
+
+      If you are running this project locally and you need to setup integration
+      tests make sure you follow the guide in CONTRIBUTING. Alternatively, you
+      can run just the unit tests locally as the integration tests will be
+      triggered when you push to the remote repo
+    `);
   }
 });
 
