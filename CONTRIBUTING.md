@@ -71,7 +71,7 @@ If you've just downloaded this repository and tried to run the integration tests
 ReferenceError: Integration test could not run because USERNAME is undefined or empty
 ```
 
-This is because we don't store the credentials for our Cognito user pool in code, they are stored as secrets inside Github for use in our Github actions. Integration tests will be triggered when you push your changes. There may be times when you need to fix an integration bug, or make changes to the integration test. In this case you want will want to run integration tests locally. To do this you'll need to setup a Cognito user pool on your own AWS account (or at least have access to one). To create a new user pool follow these steps...
+This is because we don't store the credentials for our Cognito user pool in code, they are stored as secrets inside Github for use in our Github actions. Integration tests will be triggered when you push your changes so there is no need to set them up locally if you don't need them. However, there may be times when you need to fix an integration bug, or make changes to the integration test. In this case you want will want to run integration tests locally. To do this you'll need to setup a Cognito user pool on your own AWS account (or at least have access to one). To create a new user pool follow these steps...
 
 ### _0. Setup an AWS account if you don't have one already_
 
