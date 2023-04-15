@@ -3,15 +3,6 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/*
-  CHANGES:
-  In the Amplify implementation, they use their own private implementation of
-  BigInteger, but this is just a small copy of JSBN:
-  http://www-cs-students.stanford.edu/~tjw/jsbn/. This code is packaged by jsbn,
-  so we'll use that instead. They also use their own implementation of WordArray
-  but we use the CryptoJS implementation for this instead
-*/
-
 import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
