@@ -53,18 +53,3 @@ jobs:
     outputs:
       releases_created: ${{steps.release.outputs.releases_created}}
 
-  npm-publish:
-    runs-on: ubuntu-latest
-    needs: [github-release]
-    if: ${{ needs.github-release.outputs.releases_created == 'true' }} # only publish to npm if a github release has been made
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16 # remember to update this when support is added/dropped
-          registry-url: "https://registry.npmjs.org"
-      - run: npm ci --production
-      - run: npm run build
-      - run: npm publish # SUPPORTING OLDER MAJOR VERSIONS: add a tag so that 'latest' tag isn't used, e.g. `npm publish --tag v1-latest`
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
