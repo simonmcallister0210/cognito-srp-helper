@@ -11,13 +11,13 @@ jobs:
     strategy:
       matrix:
         # https://what-version-of-node.js.org/
-        node-version: [14.x, 16.x, 18.x] # remember to update this when support is added/dropped
+        node-version: [16.x, 18.x, 20.x] # remember to update this when support is added/dropped
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # remember to update this when support is added/dropped
+          node-version: 18 # remember to update this when support is added/dropped
       - run: npm ci
       - run: npm run lint
       - run: npm run test
@@ -53,18 +53,3 @@ jobs:
     outputs:
       releases_created: ${{steps.release.outputs.releases_created}}
 
-  npm-publish:
-    runs-on: ubuntu-latest
-    needs: [github-release]
-    if: ${{ needs.github-release.outputs.releases_created == 'true' }} # only publish to npm if a github release has been made
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16 # remember to update this when support is added/dropped
-          registry-url: "https://registry.npmjs.org"
-      - run: npm ci --production
-      - run: npm run build
-      - run: npm publish # SUPPORTING OLDER MAJOR VERSIONS: add a tag so that 'latest' tag isn't used, e.g. `npm publish --tag v1-latest`
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
