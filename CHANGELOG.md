@@ -1,5 +1,14 @@
 # Changelog
 
+## [2.0.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.0...v2.0.1) (2023-10-22)
+
+
+### Bug Fixes
+
+* dependabot Bump @babel/traverse from 7.20.5 to 7.23.2 ([#20](https://github.com/simonmcallister0210/cognito-srp-helper/issues/20)) ([336f139](https://github.com/simonmcallister0210/cognito-srp-helper/commit/336f1398fd7e7262a41fac77199b4e2a3f442f6e))
+* dependabot Bump xml2js from 0.4.19 to 0.5.0 ([#16](https://github.com/simonmcallister0210/cognito-srp-helper/issues/16)) ([54c4f07](https://github.com/simonmcallister0210/cognito-srp-helper/commit/54c4f0732075c56216e9fed7f56e21171a8c385c))
+* dependabot Bump yaml from 2.1.3 to 2.2.2 ([#18](https://github.com/simonmcallister0210/cognito-srp-helper/issues/18)) ([0eed40b](https://github.com/simonmcallister0210/cognito-srp-helper/commit/0eed40be4b7aeaf4d4cd846ababfc1086c612f19))
+
 ## [2.0.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v1.0.1...v2.0.0) (2023-02-19)
 
 
