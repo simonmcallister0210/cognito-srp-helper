@@ -211,10 +211,10 @@ export const signSrpSession = (
   };
 };
 
-export const wrapInitiateAuth = (
+export const wrapInitiateAuth = <T extends InitiateAuthRequest>(
   session: SrpSession,
-  request: InitiateAuthRequest
-): InitiateAuthRequest => ({
+  request: T
+): T => ({
   ...request,
   AuthParameters: {
     ...request.AuthParameters, // ignored if request.AuthParameters doesn't exist
@@ -222,10 +222,10 @@ export const wrapInitiateAuth = (
   },
 });
 
-export const wrapAuthChallenge = (
+export const wrapAuthChallenge = <T extends RespondToAuthChallengeRequest>(
   session: SrpSessionSigned,
-  request: RespondToAuthChallengeRequest
-): RespondToAuthChallengeRequest => ({
+  request: T
+): T => ({
   ...request,
   ChallengeResponses: {
     ...request.ChallengeResponses, // ignored if request.ChallengeResponses doesn't exist

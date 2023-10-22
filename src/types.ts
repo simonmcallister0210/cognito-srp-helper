@@ -1,25 +1,120 @@
-import { CognitoIdentityServiceProvider } from "aws-sdk";
+import type {
+  // InitiateAuthResponse
+  InitiateAuthResponse as InitiateAuthResponseV3,
+  AdminInitiateAuthResponse as AdminInitiateAuthResponseV3,
+  InitiateAuthCommandOutput,
+  AdminInitiateAuthCommandOutput,
+  // InitiateAuthRequest
+  InitiateAuthRequest as InitiateAuthRequestV3,
+  AdminInitiateAuthRequest as AdminInitiateAuthRequestV3,
+  InitiateAuthCommandInput,
+  AdminInitiateAuthCommandInput,
+  // RespondToAuthChallengeRequest
+  RespondToAuthChallengeRequest as RespondToAuthChallengeRequestV3,
+  AdminRespondToAuthChallengeRequest as AdminRespondToAuthChallengeRequestV3,
+  RespondToAuthChallengeCommandInput,
+  AdminRespondToAuthChallengeCommandInput,
+} from "@aws-sdk/client-cognito-identity-provider";
+import type { CognitoIdentityServiceProvider } from "aws-sdk";
 
 /**
- * Type alias for CognitoIdentityServiceProvider.InitiateAuthResponse
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthresponse.html
+ * Type alias for the variations of `InitiateAuthResponse` required for the `InitiateAuth` operation in AWS SDK v2 and v3
+ * 
+ * ### SDK V2:
+ * 
+ * `CognitoIdentityServiceProvider.InitiateAuthResponse`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#initiateAuth-property
+ * 
+ * `CognitoIdentityServiceProvider.AdminInitiateAuthResponse`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminInitiateAuth-property
+ * 
+ * ### SDK V3:
+ * 
+ * `InitiateAuthResponse` (aliased as `InitiateAuthResponseV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthResponse/
+ * 
+ * `AdminInitiateAuthResponse` (aliased as `AdminInitiateAuthResponseV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthResponse/
+ * 
+ * `InitiateAuthCommandOutput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthCommandOutput/
+ * 
+ * `AdminInitiateAuthCommandOutput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthCommandOutput/
  */
 export type InitiateAuthResponse =
-  CognitoIdentityServiceProvider.InitiateAuthResponse;
+  // v2
+  CognitoIdentityServiceProvider.InitiateAuthResponse |
+  CognitoIdentityServiceProvider.AdminInitiateAuthResponse |
+  // v3
+  InitiateAuthResponseV3 | AdminInitiateAuthResponseV3 |
+  InitiateAuthCommandOutput | AdminInitiateAuthCommandOutput;
 
 /**
- * Type alias for CognitoIdentityServiceProvider.InitiateAuthRequest
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/initiateauthrequest.html
+ * Type alias for the variations of `InitiateAuthRequest` required for the `InitiateAuth` operation in AWS SDK v2 and v3
+ * 
+ * ### SDK V2:
+ * 
+ * `CognitoIdentityServiceProvider.InitiateAuthRequest`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#initiateAuth-property
+ * 
+ * `CognitoIdentityServiceProvider.AdminInitiateAuthRequest`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminInitiateAuth-property
+ * 
+ * ### SDK V3
+ * 
+ * `InitiateAuthRequest` (aliased as `InitiateAuthRequestV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthRequest/
+ * 
+ * `AdminInitiateAuthRequest` (aliased as `AdminInitiateAuthRequestV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthRequest/
+ * 
+ * `InitiateAuthCommandInput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthCommandInput/
+ * 
+ * `AdminInitiateAuthCommandInput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthCommandInput/
  */
 export type InitiateAuthRequest =
-  CognitoIdentityServiceProvider.InitiateAuthRequest;
+  // v2
+  CognitoIdentityServiceProvider.InitiateAuthRequest |
+  CognitoIdentityServiceProvider.AdminInitiateAuthRequest |
+  // v3
+  InitiateAuthRequestV3 | AdminInitiateAuthRequestV3 |
+  InitiateAuthCommandInput | AdminInitiateAuthCommandInput
 
 /**
- * Type alias for CognitoIdentityServiceProvider.RespondToAuthChallengeRequest
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/clients/client-cognito-identity-provider/modules/respondtoauthchallengerequest.html
+ * Type alias for the variations of `RespondToAuthChallengeRequest` required for the `RespondToAuthChallenge` operation in AWS SDK v2 and v3
+ * 
+ * ### SDK V2:
+ * 
+ * `CognitoIdentityServiceProvider.RespondToAuthChallengeRequest`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#respondToAuthChallenge-property
+ * 
+ * `CognitoIdentityServiceProvider.AdminRespondToAuthChallengeRequest`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminRespondToAuthChallenge-property
+ * 
+ * ### SDK V3:
+ * 
+ * `RespondToAuthChallengeRequest` (aliased as `RespondToAuthChallengeRequestV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/RespondToAuthChallengeRequest/
+ * 
+ * `AdminRespondToAuthChallengeRequest` (aliased as `AdminRespondToAuthChallengeRequestV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminRespondToAuthChallengeRequest/
+ * 
+ * `RespondToAuthChallengeCommandInput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/RespondToAuthChallengeCommandInput/
+ * 
+ * `AdminRespondToAuthChallengeCommandInput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminRespondToAuthChallengeCommandInput/
  */
 export type RespondToAuthChallengeRequest =
-  CognitoIdentityServiceProvider.RespondToAuthChallengeRequest;
+  // v2
+  CognitoIdentityServiceProvider.RespondToAuthChallengeRequest |
+  CognitoIdentityServiceProvider.AdminRespondToAuthChallengeRequest |
+  // v3
+  RespondToAuthChallengeRequestV3 | AdminRespondToAuthChallengeRequestV3 |
+  RespondToAuthChallengeCommandInput | AdminRespondToAuthChallengeCommandInput
 
 export type Credentials = {
   username: string;
