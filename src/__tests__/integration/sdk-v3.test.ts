@@ -1,4 +1,10 @@
-import { AdminInitiateAuthCommand, AdminRespondToAuthChallengeCommand, CognitoIdentityProviderClient, InitiateAuthCommand, RespondToAuthChallengeCommand } from "@aws-sdk/client-cognito-identity-provider"
+import {
+  AdminInitiateAuthCommand,
+  AdminRespondToAuthChallengeCommand,
+  CognitoIdentityProviderClient,
+  InitiateAuthCommand,
+  RespondToAuthChallengeCommand,
+} from "@aws-sdk/client-cognito-identity-provider";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -68,15 +74,15 @@ describe("SDK v3 integration", () => {
               SECRET_HASH: secretHash,
               USERNAME,
             },
-          })
-        )
+          }),
+        ),
       )
       .catch((err) => {
         throw err;
       });
-  
+
     const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
-  
+
     const respondToAuthChallengeRes = await cognitoIdentityProviderClient
       .send(
         new RespondToAuthChallengeCommand(
@@ -87,21 +93,21 @@ describe("SDK v3 integration", () => {
               SECRET_HASH: secretHash,
               USERNAME,
             },
-          })
-        )
+          }),
+        ),
       )
       .catch((err) => {
         throw err;
       });
-  
+
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken"
+      "AccessToken",
     );
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken"
+      "RefreshToken",
     );
-  })
+  });
 
   it("should work with AdminInitiateAuthCommand and AdminRespondToAuthChallengeCommand", async () => {
     const initiateAuthRes = await cognitoIdentityProviderClient
@@ -116,15 +122,15 @@ describe("SDK v3 integration", () => {
               SECRET_HASH: secretHash,
               USERNAME,
             },
-          })
-        )
+          }),
+        ),
       )
       .catch((err) => {
         throw err;
       });
-  
+
     const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
-  
+
     const respondToAuthChallengeRes = await cognitoIdentityProviderClient
       .send(
         new AdminRespondToAuthChallengeCommand(
@@ -136,19 +142,19 @@ describe("SDK v3 integration", () => {
               SECRET_HASH: secretHash,
               USERNAME,
             },
-          })
-        )
+          }),
+        ),
       )
       .catch((err) => {
         throw err;
       });
-  
+
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken"
+      "AccessToken",
     );
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken"
+      "RefreshToken",
     );
-  })
+  });
 });

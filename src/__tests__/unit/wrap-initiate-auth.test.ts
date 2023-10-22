@@ -23,7 +23,7 @@ describe("wrapInitiateAuth", () => {
             SRP_A: session.largeA,
           },
         });
-      }
+      },
     );
 
     it.each(Object.values(positiveRequests))(
@@ -38,7 +38,7 @@ describe("wrapInitiateAuth", () => {
             SRP_A: session.largeA,
           },
         });
-      }
+      },
     );
   });
 });

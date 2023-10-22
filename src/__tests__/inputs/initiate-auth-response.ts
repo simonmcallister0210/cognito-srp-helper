@@ -82,7 +82,7 @@ export const negativeInitiateAuthResponses: Record<
   }),
   challengeParametersOmitted: omit(
     mockInitiateAuthResponseFactory(),
-    "ChallengeParameters"
+    "ChallengeParameters",
   ),
   // salt
   saltOmitted: mockInitiateAuthResponseFactory({

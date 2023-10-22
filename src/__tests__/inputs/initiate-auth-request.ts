@@ -33,7 +33,7 @@ export const positiveInitiateAuthRequests: Record<string, InitiateAuthRequest> =
     // AuthParameters
     authParametersOmitted: omit(
       mockInitiateAuthRequestFactory(),
-      "AuthParameters"
+      "AuthParameters",
     ),
     // CHALLENGE_NAME
     challengeNameSrpA: mockInitiateAuthRequestFactory({

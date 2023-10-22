@@ -19,7 +19,7 @@ import {
 } from "./data.js";
 
 export const mockCredentialsFactory = (
-  credentials?: Partial<Credentials>
+  credentials?: Partial<Credentials>,
 ): Credentials =>
   clonedeep({
     ...mockCredentials,
@@ -27,7 +27,7 @@ export const mockCredentialsFactory = (
   });
 
 export const mockSrpSessionFactory = (
-  session?: Partial<SrpSession>
+  session?: Partial<SrpSession>,
 ): SrpSession =>
   clonedeep({
     ...mockSession,
@@ -35,7 +35,7 @@ export const mockSrpSessionFactory = (
   });
 
 export const mockSrpSessionSignedFactory = (
-  session?: Partial<SrpSessionSigned>
+  session?: Partial<SrpSessionSigned>,
 ): SrpSessionSigned =>
   clonedeep({
     ...mockSessionSigned,
@@ -43,7 +43,7 @@ export const mockSrpSessionSignedFactory = (
   });
 
 export const mockInitiateAuthRequestFactory = (
-  request?: Partial<InitiateAuthRequest>
+  request?: Partial<InitiateAuthRequest>,
 ): InitiateAuthRequest =>
   clonedeep({
     ...mockInitiateAuthRequest,
@@ -51,7 +51,7 @@ export const mockInitiateAuthRequestFactory = (
   });
 
 export const mockInitiateAuthResponseFactory = (
-  response?: Partial<InitiateAuthResponse>
+  response?: Partial<InitiateAuthResponse>,
 ): InitiateAuthResponse =>
   clonedeep({
     ...mockInitiateAuthResponse,
@@ -59,7 +59,7 @@ export const mockInitiateAuthResponseFactory = (
   });
 
 export const mockRespondToAuthChallengeRequestFactory = (
-  request?: Partial<RespondToAuthChallengeRequest>
+  request?: Partial<RespondToAuthChallengeRequest>,
 ): RespondToAuthChallengeRequest =>
   clonedeep({
     ...mockRespondToAuthChallengeRequest,

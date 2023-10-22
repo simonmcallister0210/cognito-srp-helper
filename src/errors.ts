@@ -8,7 +8,7 @@ export class SignSrpSessionError extends Error {
 
 export class MissingChallengeResponsesError extends SignSrpSessionError {
   constructor(
-    message = "Could not sign SRP session because of missing or undefined ChallengeResponses in response"
+    message = "Could not sign SRP session because of missing or undefined ChallengeResponses in response",
   ) {
     super(message);
   }
@@ -16,7 +16,7 @@ export class MissingChallengeResponsesError extends SignSrpSessionError {
 
 export class MissingSaltError extends SignSrpSessionError {
   constructor(
-    message = "Could not sign SRP session because of missing or undefined SALT in response.ChallengeResponses"
+    message = "Could not sign SRP session because of missing or undefined SALT in response.ChallengeResponses",
   ) {
     super(message);
   }
@@ -24,7 +24,7 @@ export class MissingSaltError extends SignSrpSessionError {
 
 export class MissingSecretError extends SignSrpSessionError {
   constructor(
-    message = "Could not sign SRP session because of missing or undefined SECRET_BLOCK in response.ChallengeResponses"
+    message = "Could not sign SRP session because of missing or undefined SECRET_BLOCK in response.ChallengeResponses",
   ) {
     super(message);
   }
@@ -32,7 +32,7 @@ export class MissingSecretError extends SignSrpSessionError {
 
 export class MissingLargeBError extends SignSrpSessionError {
   constructor(
-    message = "Could not sign SRP session because of missing or undefined SRP_B in response.ChallengeResponses"
+    message = "Could not sign SRP session because of missing or undefined SRP_B in response.ChallengeResponses",
   ) {
     super(message);
   }
@@ -48,7 +48,7 @@ export class AbortOnZeroSrpError extends Error {
 
 export class AbortOnZeroASrpError extends AbortOnZeroSrpError {
   constructor(
-    message = "Aborting SRP due to 0 value received for client public key (A)"
+    message = "Aborting SRP due to 0 value received for client public key (A)",
   ) {
     super(message);
   }
@@ -56,7 +56,7 @@ export class AbortOnZeroASrpError extends AbortOnZeroSrpError {
 
 export class AbortOnZeroBSrpError extends AbortOnZeroSrpError {
   constructor(
-    message = "Aborting SRP due to 0 value received for server public key (B)"
+    message = "Aborting SRP due to 0 value received for server public key (B)",
   ) {
     super(message);
   }
@@ -64,7 +64,7 @@ export class AbortOnZeroBSrpError extends AbortOnZeroSrpError {
 
 export class AbortOnZeroUSrpError extends AbortOnZeroSrpError {
   constructor(
-    message = "Aborting SRP due to 0 value received for public key hash (u)"
+    message = "Aborting SRP due to 0 value received for public key hash (u)",
   ) {
     super(message);
   }

@@ -40,11 +40,11 @@ describe("createSrpSession", () => {
         expect(session.passwordHash).toMatch(passwordHash);
         expect(session.poolIdAbbr).toMatch(poolId.split("_")[1]);
         expect(session.timestamp).toMatch(
-          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{1,4}/
+          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{1,4}/,
         );
         expect(session.smallA).toMatch(/^[A-Fa-f0-9]+$/);
         expect(session.largeA).toMatch(/^[A-Fa-f0-9]+$/);
-      }
+      },
     );
 
     it.each(Object.values(positiveTimestamps))(
@@ -55,10 +55,10 @@ describe("createSrpSession", () => {
         const { username, passwordHash, poolId } = credentials;
         const { timestamp } = createSrpSession(username, passwordHash, poolId);
         expect(timestamp).toMatch(
-          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{1,4}/
+          /(Sun|Mon|Tue|Wed|Thu|Fri|Sat){1} (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec){1} [1-3]?[0-9] (2[0-3]|[01]?[0-9]):([0-5]?[0-9]):([0-5]?[0-9]) UTC [0-9]{1,4}/,
         );
         jest.useRealTimers();
-      }
+      },
     );
 
     it("should not create the same SRP session on successive calls", () => {

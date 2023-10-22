@@ -44,7 +44,7 @@ const calculateLargeA = (smallA: BigInteger): BigInteger => {
 const computeHkdf = (ikm: Buffer | string, salt: Buffer | string): Buffer => {
   // Create word arrays
   const infoBitsWordArray = CryptoJS.lib.WordArray.create(
-    Buffer.concat([INFO_BITS, Buffer.from(String.fromCharCode(1), "utf8")])
+    Buffer.concat([INFO_BITS, Buffer.from(String.fromCharCode(1), "utf8")]),
   );
   const ikmWordArray =
     ikm instanceof Buffer ? CryptoJS.lib.WordArray.create(ikm) : ikm;
@@ -74,7 +74,7 @@ const calculateS = (
   x: BigInteger,
   largeB: BigInteger,
   smallA: BigInteger,
-  u: BigInteger
+  u: BigInteger,
 ): BigInteger => {
   const gModPowXN = G.modPow(x, N);
   const intValue2 = largeB.subtract(K.multiply(gModPowXN));
@@ -84,7 +84,7 @@ const calculateS = (
 
 const calculateX = (
   salt: BigInteger,
-  usernamePasswordHash: string
+  usernamePasswordHash: string,
 ): BigInteger => {
   const x = new BigInteger(hexHash(padHex(salt) + usernamePasswordHash), 16);
   return x;
@@ -114,7 +114,7 @@ const createTimestamp = (): string => {
 export const createSecretHash = (
   username: string,
   clientId: string,
-  secretId: string
+  secretId: string,
 ): string => {
   const hmac = CryptoJS.HmacSHA256(`${username}${clientId}`, secretId);
   const secretHash = hmac.toString(CryptoJS.enc.Base64);
@@ -125,7 +125,7 @@ export const createSecretHash = (
 export const createPasswordHash = (
   username: string,
   password: string,
-  poolId: string
+  poolId: string,
 ): string => {
   const poolIdAbbr = poolId.split("_")[1];
   const usernamePassword = `${poolIdAbbr}${username}:${password}`;
@@ -137,7 +137,7 @@ export const createPasswordHash = (
 export const createSrpSession = (
   username: string,
   passwordHash: string,
-  poolId: string
+  poolId: string,
 ): SrpSession => {
   const poolIdAbbr = poolId.split("_")[1];
   const timestamp = createTimestamp();
@@ -156,7 +156,7 @@ export const createSrpSession = (
 
 export const signSrpSession = (
   session: SrpSession,
-  response: InitiateAuthResponse
+  response: InitiateAuthResponse,
 ): SrpSessionSigned => {
   // Assert SRP ChallengeParameters
   if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
@@ -182,11 +182,11 @@ export const signSrpSession = (
     x,
     new BigInteger(largeB, 16),
     new BigInteger(smallA, 16),
-    u
+    u,
   );
   const hkdf = computeHkdf(
     Buffer.from(padHex(s), "hex"),
-    Buffer.from(padHex(u), "hex")
+    Buffer.from(padHex(u), "hex"),
   );
 
   const key = CryptoJS.lib.WordArray.create(hkdf);
@@ -196,10 +196,10 @@ export const signSrpSession = (
       Buffer.from(username, "utf8"),
       Buffer.from(secret, "base64"),
       Buffer.from(timestamp, "utf8"),
-    ])
+    ]),
   );
   const passwordSignature = CryptoJS.enc.Base64.stringify(
-    CryptoJS.HmacSHA256(message, key)
+    CryptoJS.HmacSHA256(message, key),
   );
 
   return {
@@ -213,7 +213,7 @@ export const signSrpSession = (
 
 export const wrapInitiateAuth = <T extends InitiateAuthRequest>(
   session: SrpSession,
-  request: T
+  request: T,
 ): T => ({
   ...request,
   AuthParameters: {
@@ -224,7 +224,7 @@ export const wrapInitiateAuth = <T extends InitiateAuthRequest>(
 
 export const wrapAuthChallenge = <T extends RespondToAuthChallengeRequest>(
   session: SrpSessionSigned,
-  request: T
+  request: T,
 ): T => ({
   ...request,
   ChallengeResponses: {

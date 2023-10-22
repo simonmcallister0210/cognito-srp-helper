@@ -22,7 +22,7 @@ describe("createPasswordHash", () => {
         const { username, password, poolId } = credentials;
         const passwordHash = createPasswordHash(username, password, poolId);
         expect(passwordHash).toMatch(/^[a-z0-9]{64}$/);
-      }
+      },
     );
   });
 });

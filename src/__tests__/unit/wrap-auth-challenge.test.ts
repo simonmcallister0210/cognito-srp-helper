@@ -25,7 +25,7 @@ describe("wrapAuthChallenge", () => {
             TIMESTAMP: session.timestamp,
           },
         });
-      }
+      },
     );
 
     it.each(Object.values(positiveRequests))(
@@ -42,7 +42,7 @@ describe("wrapAuthChallenge", () => {
             TIMESTAMP: session.timestamp,
           },
         });
-      }
+      },
     );
   });
 });

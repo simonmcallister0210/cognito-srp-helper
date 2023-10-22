@@ -67,15 +67,15 @@ describe("SDK v2 integration", () => {
             SECRET_HASH: secretHash,
             USERNAME,
           },
-        })
+        }),
       )
       .promise()
       .catch((err) => {
         throw err;
       });
-  
+
     const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
-  
+
     const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
       .respondToAuthChallenge(
         wrapAuthChallenge(signedSrpSession, {
@@ -85,21 +85,21 @@ describe("SDK v2 integration", () => {
             SECRET_HASH: secretHash,
             USERNAME,
           },
-        })
+        }),
       )
       .promise()
       .catch((err) => {
         throw err;
       });
-  
+
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken"
+      "AccessToken",
     );
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken"
+      "RefreshToken",
     );
-  })
+  });
 
   it("should work with adminInitiateAuth and adminRespondToAuthChallenge", async () => {
     const adminInitiateAuthRes = await cognitoIdentityServiceProvider
@@ -113,7 +113,7 @@ describe("SDK v2 integration", () => {
             SECRET_HASH: secretHash,
             USERNAME,
           },
-        })
+        }),
       )
       .promise()
       .catch((err) => {
@@ -132,19 +132,21 @@ describe("SDK v2 integration", () => {
             SECRET_HASH: secretHash,
             USERNAME,
           },
-        })
+        }),
       )
       .promise()
       .catch((err) => {
         throw err;
       });
 
-    expect(adminRespondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
-    expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken"
+    expect(adminRespondToAuthChallengeRes).toHaveProperty(
+      "AuthenticationResult",
     );
     expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken"
+      "AccessToken",
     );
-  })
+    expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
+      "RefreshToken",
+    );
+  });
 });

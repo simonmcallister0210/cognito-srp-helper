@@ -22,7 +22,7 @@ describe("createSecretHash", () => {
         const { username, clientId, secretId } = credentials;
         const secretHash = createSecretHash(username, clientId, secretId);
         expect(secretHash).toMatch(/^[a-zA-Z0-9+=/]+$/);
-      }
+      },
     );
   });
 });

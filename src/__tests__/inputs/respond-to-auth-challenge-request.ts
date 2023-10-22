@@ -32,7 +32,7 @@ export const positiveRespondToAuthChallengeRequests: Record<
   // ChallengeResponses
   challengeResponsesOmitted: omit(
     mockRespondToAuthChallengeRequestFactory(),
-    "ChallengeResponses"
+    "ChallengeResponses",
   ),
   // SECRET_HASH
   secretHashRandom: mockRespondToAuthChallengeRequestFactory({

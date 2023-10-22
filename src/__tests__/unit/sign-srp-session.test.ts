@@ -53,7 +53,7 @@ describe("signSrpSession", () => {
         expect(sessionSigned.secret).toMatch(SECRET_BLOCK);
         // password signature should be new value with following format
         expect(sessionSigned.passwordSignature).toMatch(/^[A-Za-z0-9+=/]+$/);
-      }
+      },
     );
 
     it.each(Object.values(positiveResponses))(
@@ -76,7 +76,7 @@ describe("signSrpSession", () => {
         expect(sessionSigned.secret).toMatch(SECRET_BLOCK);
         // password signature should be new value with following format
         expect(sessionSigned.passwordSignature).toMatch(/^[A-Za-z0-9+=/]+$/);
-      }
+      },
     );
   });
 
