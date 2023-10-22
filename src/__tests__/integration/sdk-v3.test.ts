@@ -101,12 +101,8 @@ describe("SDK v3 integration", () => {
       });
 
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
-    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken",
-    );
-    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken",
-    );
+    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
+    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
   });
 
   it("should work with AdminInitiateAuthCommand and AdminRespondToAuthChallengeCommand", async () => {
@@ -150,11 +146,7 @@ describe("SDK v3 integration", () => {
       });
 
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
-    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "AccessToken",
-    );
-    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty(
-      "RefreshToken",
-    );
+    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
+    expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
   });
 });

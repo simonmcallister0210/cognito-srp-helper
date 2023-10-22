@@ -7,9 +7,7 @@ export class SignSrpSessionError extends Error {
 }
 
 export class MissingChallengeResponsesError extends SignSrpSessionError {
-  constructor(
-    message = "Could not sign SRP session because of missing or undefined ChallengeResponses in response",
-  ) {
+  constructor(message = "Could not sign SRP session because of missing or undefined ChallengeResponses in response") {
     super(message);
   }
 }
@@ -47,25 +45,19 @@ export class AbortOnZeroSrpError extends Error {
 }
 
 export class AbortOnZeroASrpError extends AbortOnZeroSrpError {
-  constructor(
-    message = "Aborting SRP due to 0 value received for client public key (A)",
-  ) {
+  constructor(message = "Aborting SRP due to 0 value received for client public key (A)") {
     super(message);
   }
 }
 
 export class AbortOnZeroBSrpError extends AbortOnZeroSrpError {
-  constructor(
-    message = "Aborting SRP due to 0 value received for server public key (B)",
-  ) {
+  constructor(message = "Aborting SRP due to 0 value received for server public key (B)") {
     super(message);
   }
 }
 
 export class AbortOnZeroUSrpError extends AbortOnZeroSrpError {
-  constructor(
-    message = "Aborting SRP due to 0 value received for public key hash (u)",
-  ) {
+  constructor(message = "Aborting SRP due to 0 value received for public key hash (u)") {
     super(message);
   }
 }

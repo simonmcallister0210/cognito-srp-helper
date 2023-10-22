@@ -88,9 +88,7 @@ export const padHex = (bigInt: BigInteger): string => {
       .join("");
 
     // After flipping the bits, add one to get the 2's complement representation
-    const flippedBitsBI = new BigInteger(invertedNibbles, 16).add(
-      BigInteger.ONE,
-    );
+    const flippedBitsBI = new BigInteger(invertedNibbles, 16).add(BigInteger.ONE);
 
     hexStr = flippedBitsBI.toString(16);
 
@@ -118,10 +116,7 @@ export const padHex = (bigInt: BigInteger): string => {
  * @returns Fixed-length sequence of random bytes
  */
 export const randomBytes = (nBytes: number): Buffer => {
-  const bytes = Buffer.from(
-    CryptoJS.lib.WordArray.random(nBytes).toString(),
-    "hex",
-  );
+  const bytes = Buffer.from(CryptoJS.lib.WordArray.random(nBytes).toString(), "hex");
 
   return bytes;
 };

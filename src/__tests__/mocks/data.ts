@@ -13,8 +13,7 @@ const poolId = "eu-west-2_bBpjKlyj6";
 const clientId = "EPswPGbpdBLZnh9XW134hK7qYe";
 const secretId = "ps50nb7hd1umdnmlt1xa9nwiscqvdvzy5ijw63vcacd09yihc2b";
 const secretHash = "oUkNFqfm7UjLds8vXFWarT1l3gqORGoztf+EyFmoX2Q=";
-const passwordHash =
-  "266629fd96baf8f433a4f01562eea59dd99a721dac75ae600e06bc697b2016ff";
+const passwordHash = "266629fd96baf8f433a4f01562eea59dd99a721dac75ae600e06bc697b2016ff";
 const poolIdAbbr = "bBpjKlyj6";
 const timestamp = "Tue Feb 1 03:04:05 UTC 2000";
 const smallA = "abcdef0123456789";
@@ -74,12 +73,11 @@ export const mockInitiateAuthResponse: InitiateAuthResponse = {
   },
 };
 
-export const mockRespondToAuthChallengeRequest: RespondToAuthChallengeRequest =
-  {
-    ClientId: clientId,
-    ChallengeName: "PASSWORD_VERIFIER",
-    ChallengeResponses: {
-      SECRET_HASH: secretHash,
-      USERNAME: username,
-    },
-  };
+export const mockRespondToAuthChallengeRequest: RespondToAuthChallengeRequest = {
+  ClientId: clientId,
+  ChallengeName: "PASSWORD_VERIFIER",
+  ChallengeResponses: {
+    SECRET_HASH: secretHash,
+    USERNAME: username,
+  },
+};

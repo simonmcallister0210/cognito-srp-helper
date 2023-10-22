@@ -5,19 +5,14 @@ import { createSrpSession } from "../../cognito-srp-helper.js";
 import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
 import * as utils from "../../utils.js";
 import { positiveCredentials, positiveTimestamps } from "../inputs/index.js";
-import {
-  mockCredentialsFactory,
-  mockSrpSessionFactory,
-} from "../mocks/factories.js";
+import { mockCredentialsFactory, mockSrpSessionFactory } from "../mocks/factories.js";
 
 describe("createSrpSession", () => {
   describe("positive", () => {
     it("should create the correct SRP session", () => {
       // ensure randomBytes returns what we expect
       const { smallA } = mockSrpSessionFactory();
-      jest
-        .spyOn(utils, "randomBytes")
-        .mockReturnValueOnce(Buffer.from(smallA, "hex"));
+      jest.spyOn(utils, "randomBytes").mockReturnValueOnce(Buffer.from(smallA, "hex"));
       // Tue Feb 1 03:04:05 UTC 2000 in Unix timestamp
       jest.useFakeTimers().setSystemTime(new Date(949374245000));
 
@@ -78,25 +73,19 @@ describe("createSrpSession", () => {
       // make sure our A = G % a ^ N calculation returns 0
 
       // First check if the parent AbortOnZeroSrpError is thrown
-      jest
-        .spyOn(BigInteger.prototype, "modPow")
-        .mockReturnValueOnce(new BigInteger("0", 16));
+      jest.spyOn(BigInteger.prototype, "modPow").mockReturnValueOnce(new BigInteger("0", 16));
       expect(() => {
         createSrpSession(username, passwordHash, poolId);
       }).toThrow(AbortOnZeroSrpError);
 
       // Throw on single zero
-      jest
-        .spyOn(BigInteger.prototype, "modPow")
-        .mockReturnValueOnce(new BigInteger("0", 16));
+      jest.spyOn(BigInteger.prototype, "modPow").mockReturnValueOnce(new BigInteger("0", 16));
       expect(() => {
         createSrpSession(username, passwordHash, poolId);
       }).toThrow(AbortOnZeroASrpError);
 
       // Throw on multiple zeros (because 0 = 000... in hexadecimal)
-      jest
-        .spyOn(BigInteger.prototype, "modPow")
-        .mockReturnValueOnce(new BigInteger("000000", 16));
+      jest.spyOn(BigInteger.prototype, "modPow").mockReturnValueOnce(new BigInteger("000000", 16));
       expect(() => {
         createSrpSession(username, passwordHash, poolId);
       }).toThrow(AbortOnZeroASrpError);

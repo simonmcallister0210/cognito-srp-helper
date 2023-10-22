@@ -6,12 +6,7 @@ describe("createPasswordHash", () => {
   describe("positive", () => {
     it("should create the correct password hash", () => {
       const credentials = mockCredentialsFactory();
-      const {
-        username,
-        password,
-        poolId,
-        passwordHash: expected,
-      } = credentials;
+      const { username, password, poolId, passwordHash: expected } = credentials;
       const passwordHash = createPasswordHash(username, password, poolId);
       expect(passwordHash).toEqual(expected);
     });

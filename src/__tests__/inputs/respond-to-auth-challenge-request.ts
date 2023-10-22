@@ -7,10 +7,7 @@ import { mockRespondToAuthChallengeRequestFactory } from "../mocks/factories.js"
 
 const { ChallengeResponses } = mockRespondToAuthChallengeRequestFactory();
 
-export const positiveRespondToAuthChallengeRequests: Record<
-  string,
-  RespondToAuthChallengeRequest
-> = {
+export const positiveRespondToAuthChallengeRequests: Record<string, RespondToAuthChallengeRequest> = {
   default: mockRespondToAuthChallengeRequestFactory(),
   // ChallengeName
   challengeNamePasswordVerifier: mockRespondToAuthChallengeRequestFactory({
@@ -30,10 +27,7 @@ export const positiveRespondToAuthChallengeRequests: Record<
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
   // ChallengeResponses
-  challengeResponsesOmitted: omit(
-    mockRespondToAuthChallengeRequestFactory(),
-    "ChallengeResponses",
-  ),
+  challengeResponsesOmitted: omit(mockRespondToAuthChallengeRequestFactory(), "ChallengeResponses"),
   // SECRET_HASH
   secretHashRandom: mockRespondToAuthChallengeRequestFactory({
     ChallengeResponses: {

@@ -42,9 +42,7 @@ export const positiveCredentials: Record<string, Credentials> = {
   }),
   // poolId
   poolIdRandom: mockCredentialsFactory({
-    poolId: new RandExp(
-      /^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_[a-zA-Z0-9]{9}$/,
-    ).gen(),
+    poolId: new RandExp(/^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_[a-zA-Z0-9]{9}$/).gen(),
   }),
   // clientId
   clientIdRandom: mockCredentialsFactory({

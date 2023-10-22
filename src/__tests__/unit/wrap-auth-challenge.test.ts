@@ -4,10 +4,7 @@ import {
   positiveRespondToAuthChallengeRequests as positiveRequests,
   positiveSrpSessionsSigned as positiveSessions,
 } from "../inputs/index.js";
-import {
-  mockRespondToAuthChallengeRequestFactory,
-  mockSrpSessionSignedFactory,
-} from "../mocks/factories.js";
+import { mockRespondToAuthChallengeRequestFactory, mockSrpSessionSignedFactory } from "../mocks/factories.js";
 
 describe("wrapAuthChallenge", () => {
   describe("positive", () => {

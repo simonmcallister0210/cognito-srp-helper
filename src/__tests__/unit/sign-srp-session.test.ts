@@ -38,8 +38,7 @@ describe("signSrpSession", () => {
       (session) => {
         const response = mockInitiateAuthResponseFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } =
-          response.ChallengeParameters ?? {};
+        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -61,8 +60,7 @@ describe("signSrpSession", () => {
       (response) => {
         const session = mockSrpSessionFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } =
-          response.ChallengeParameters ?? {};
+        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -138,14 +136,8 @@ describe("signSrpSession", () => {
     });
 
     it.each([
-      [
-        negativeResponses.challengeParametersUndefined,
-        MissingChallengeResponsesError,
-      ],
-      [
-        negativeResponses.challengeParametersOmitted,
-        MissingChallengeResponsesError,
-      ],
+      [negativeResponses.challengeParametersUndefined, MissingChallengeResponsesError],
+      [negativeResponses.challengeParametersOmitted, MissingChallengeResponsesError],
       [negativeResponses.saltOmitted, MissingSaltError],
       [negativeResponses.secretOmitted, MissingSecretError],
       [negativeResponses.largeBOmitted, MissingLargeBError],

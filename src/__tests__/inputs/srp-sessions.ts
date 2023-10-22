@@ -46,14 +46,8 @@ export const positiveSrpSessions: Record<string, SrpSession> = {
       ${faker.date.weekday({ abbr: true })}
       ${faker.date.month({ abbr: true })}
       ${faker.datatype.number({ min: 1, max: 31 })}
-      ${faker.datatype
-        .number({ min: 0, max: 23 })
-        .toString()
-        .padStart(2, "0")}:\
-      ${faker.datatype
-        .number({ min: 0, max: 59 })
-        .toString()
-        .padStart(2, "0")}:\
+      ${faker.datatype.number({ min: 0, max: 23 }).toString().padStart(2, "0")}:\
+      ${faker.datatype.number({ min: 0, max: 59 }).toString().padStart(2, "0")}:\
       ${faker.datatype.number({ min: 0, max: 59 }).toString().padStart(2, "0")}
       UTC
       ${faker.datatype.number({ min: 0, max: 9999 })}
