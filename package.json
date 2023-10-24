@@ -34,15 +34,19 @@
   },
   "scripts": {
     "build": "npm run build:cjs && npm run build:esm && npm run build:types",
-    "build:cjs": "tsc -p config/tsconfig.cjs.json && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
-    "build:esm": "tsc -p config/tsconfig.esm.json && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
-    "build:types": "tsc -p config/tsconfig.types.json",
-    "format": "prettier 'src/**/*.ts' --write",
-    "lint": "tsc -p config/tsconfig.lint.json && eslint -c config/eslintrc.json src/**/*.ts",
+    "build:cjs": "esbuild src/index.ts --bundle --format=cjs --outfile=dist/cjs/index.js && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build:esm": "esbuild src/index.ts --bundle --format=esm --outfile=dist/esm/index.js && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc --emitDeclarationOnly --declaration src/index.ts --esModuleInterop --outDir dist/types",
+    "format": "npm run format:eslint && npm run format:prettier",
+    "format:eslint": "eslint -c .eslintrc.cjs --fix src/**",
+    "format:prettier": "prettier -c .prettierrc.cjs --write src/**",
+    "lint": "npm run lint:ts && npm run lint:eslint",
+    "lint:eslint": "eslint -c .eslintrc.cjs src/**",
+    "lint:ts": "tsc --noEmit -p .tsconfig.json",
     "test": "jest -c config/jest.config.json",
-    "test:unit": "jest -c config/jest.config.json src/__tests__/unit",
+    "test:clear": "jest --clear-cache",
     "test:integration": "jest -c config/jest.config.json src/__tests__/integration",
-    "test:clear": "jest --clear-cache"
+    "test:unit": "jest -c config/jest.config.json src/__tests__/unit"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -60,7 +64,9 @@
     "@typescript-eslint/parser": "^5.40.0",
     "aws-sdk": "^2.1248.0",
     "dotenv": "^16.0.3",
+    "esbuild": "^0.19.5",
     "eslint": "^8.25.0",
+    "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^5.0.1",
     "eslint-plugin-simple-import-sort": "^10.0.0",

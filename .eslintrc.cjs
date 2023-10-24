@@ -19,14 +19,7 @@ module.exports = {
     "simple-import-sort/imports": [
       "error",
       {
-        groups: [
-          ["^\\u0000"],
-          ["^node:"],
-          ["^@?\\w"],
-          ["^"],
-          ["^\\.\\."],
-          ["^\\."],
-        ],
+        groups: [["^\\u0000"], ["^node:"], ["^@?\\w"], ["^"], ["^\\.\\."], ["^\\."]],
       },
     ],
     // Allow only underscores to be unused
