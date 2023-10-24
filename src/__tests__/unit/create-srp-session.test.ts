@@ -4,8 +4,8 @@ import { BigInteger } from "jsbn";
 import { createSrpSession } from "../../cognito-srp-helper.js";
 import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
 import * as utils from "../../utils.js";
-import { positiveCredentials, positiveTimestamps } from "../inputs/index.js";
 import { mockCredentialsFactory, mockSrpSessionFactory } from "../mocks/factories.js";
+import { positiveCredentials, positiveTimestamps } from "../test-cases/index.js";
 
 describe("createSrpSession", () => {
   describe("positive", () => {

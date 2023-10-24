@@ -11,15 +11,15 @@ import {
 } from "../../errors.js";
 import * as utils from "../../utils.js";
 import {
-  negativeInitiateAuthResponses as negativeResponses,
-  positiveInitiateAuthResponses as positiveResponses,
-  positiveSrpSessions as positiveSessions,
-} from "../inputs/index.js";
-import {
   mockInitiateAuthResponseFactory,
   mockSrpSessionFactory,
   mockSrpSessionSignedFactory,
 } from "../mocks/factories.js";
+import {
+  negativeInitiateAuthResponses as negativeResponses,
+  positiveInitiateAuthResponses as positiveResponses,
+  positiveSrpSessions as positiveSessions,
+} from "../test-cases/index.js";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
