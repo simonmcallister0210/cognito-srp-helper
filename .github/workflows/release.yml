@@ -20,8 +20,8 @@ jobs:
           node-version: 18 # remember to update this when support is added/dropped
       - run: npm ci
       - run: npm run lint
-      - run: npm run test
       - run: npm run build
+      - run: npm run test
         env:
           AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
           AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
