@@ -30,7 +30,9 @@ export const positiveInitiateAuthRequests: Record<string, InitiateAuthRequest> =
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
   // AuthParameters
-  authParametersOmitted: omit(mockInitiateAuthRequestFactory(), "AuthParameters"),
+  authParametersOmitted: mockInitiateAuthRequestFactory({
+    AuthParameters: undefined,
+  }),
   // CHALLENGE_NAME
   challengeNameSrpA: mockInitiateAuthRequestFactory({
     AuthParameters: {

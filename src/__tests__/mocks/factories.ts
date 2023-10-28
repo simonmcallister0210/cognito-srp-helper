@@ -10,6 +10,8 @@ import {
 } from "../../types.js";
 
 import {
+  mockAdminInitiateAuthRequest,
+  mockAdminRespondToAuthChallengeRequest,
   mockCredentials,
   mockInitiateAuthRequest,
   mockInitiateAuthResponse,
@@ -36,11 +38,21 @@ export const mockSrpSessionSignedFactory = (session?: Partial<SrpSessionSigned>)
     ...session,
   });
 
+// InitiateAuthRequest
+
 export const mockInitiateAuthRequestFactory = (request?: Partial<InitiateAuthRequest>): InitiateAuthRequest =>
   clonedeep({
     ...mockInitiateAuthRequest,
     ...request,
   });
+
+export const mockAdminInitiateAuthRequestFactory = (request?: Partial<InitiateAuthRequest>): InitiateAuthRequest =>
+  clonedeep({
+    ...mockAdminInitiateAuthRequest,
+    ...request,
+  });
+
+// InitiateAuthResponse
 
 export const mockInitiateAuthResponseFactory = (response?: Partial<InitiateAuthResponse>): InitiateAuthResponse =>
   clonedeep({
@@ -48,10 +60,20 @@ export const mockInitiateAuthResponseFactory = (response?: Partial<InitiateAuthR
     ...response,
   });
 
+// RespondToAuthChallengeRequest
+
 export const mockRespondToAuthChallengeRequestFactory = (
   request?: Partial<RespondToAuthChallengeRequest>,
 ): RespondToAuthChallengeRequest =>
   clonedeep({
     ...mockRespondToAuthChallengeRequest,
+    ...request,
+  });
+
+export const mockAdminRespondToAuthChallengeRequestFactory = (
+  request?: Partial<RespondToAuthChallengeRequest>,
+): RespondToAuthChallengeRequest =>
+  clonedeep({
+    ...mockAdminRespondToAuthChallengeRequest,
     ...request,
   });

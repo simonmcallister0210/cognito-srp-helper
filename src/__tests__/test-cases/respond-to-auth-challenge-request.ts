@@ -27,7 +27,9 @@ export const positiveRespondToAuthChallengeRequests: Record<string, RespondToAut
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
   // ChallengeResponses
-  challengeResponsesOmitted: omit(mockRespondToAuthChallengeRequestFactory(), "ChallengeResponses"),
+  challengeResponsesOmitted: mockRespondToAuthChallengeRequestFactory({
+    ChallengeResponses: undefined,
+  }),
   // SECRET_HASH
   secretHashRandom: mockRespondToAuthChallengeRequestFactory({
     ChallengeResponses: {
