@@ -49,11 +49,12 @@ const initiateAuthRes = await cognitoIdentityProviderClient
           SECRET_HASH: secretHash,
           USERNAME,
         },
-      })
-    )
-  ).catch((err) => {
+      }),
+    ),
+  )
+  .catch((err) => {
     // . . .
-  })
+  });
 
 const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
 
@@ -67,8 +68,8 @@ const respondToAuthChallengeRes = await cognitoIdentityProviderClient
           SECRET_HASH: secretHash,
           USERNAME,
         },
-      })
-    )
+      }),
+    ),
   )
   .catch((err) => {
     // . . .
@@ -91,6 +92,8 @@ Long answer: according to the [safeguards of SRP](https://en.wikipedia.org/wiki/
 If any of these scenarios occur this package will throw a `AbortOnZeroSrpError`, so you don't need to worry about the security of the exchange being compromised
 
 ## API
+
+The types _InitiateAuthRequest_, _InitiateAuthResponse_, _RespondToAuthChallengeRequest_ refer to both the SDK v2 and v3 versions of these types, and their admin variants. For example _InitiateAuthRequest_ can be _AdminInitiateAuthRequest_, _InitiateAuthCommandInput_, etc.
 
 ### `createSecretHash`
 
@@ -180,7 +183,7 @@ _InitiateAuthRequest_ - The same request but with the additional SRP_A field
 
 ### `wrapAuthChallenge`
 
-Wraps a RespondToAuthChallengeRequest and attaches the PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields required to complete SRP
+Wraps a _RespondToAuthChallengeRequest_ and attaches the PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields required to complete SRP
 
 **Parameters**:
 
