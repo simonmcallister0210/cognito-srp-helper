@@ -1,10 +1,10 @@
-import { wrapAuthChallenge } from "../../cognito-srp-helper.js";
-import { RespondToAuthChallengeRequest } from "../../types.js";
-import { mockRespondToAuthChallengeRequestFactory, mockSrpSessionSignedFactory } from "../mocks/factories.js";
+import { wrapAuthChallenge } from "../../cognito-srp-helper";
+import { RespondToAuthChallengeRequest } from "../../types";
+import { mockRespondToAuthChallengeRequestFactory, mockSrpSessionSignedFactory } from "../mocks/factories";
 import {
   positiveRespondToAuthChallengeRequests as positiveRequests,
   positiveSrpSessionsSigned as positiveSessions,
-} from "../test-cases/index.js";
+} from "../test-cases/index";
 
 describe("wrapAuthChallenge", () => {
   describe("positive", () => {

@@ -45,8 +45,8 @@
     "lint:ts": "tsc --noEmit -p .tsconfig.json",
     "test": "jest -c config/jest.config.json",
     "test:clear": "jest --clear-cache",
-    "test:integration": "jest -c config/jest.config.json src/__tests__/integration",
-    "test:unit": "jest -c config/jest.config.json src/__tests__/unit"
+    "test:integration": "jest -c .jestrc.cjs src/__tests__/integration",
+    "test:unit": "jest -c .jestrc.cjs src/__tests__/unit"
   },
   "lint-staged": {
     "*.{js,ts}": [

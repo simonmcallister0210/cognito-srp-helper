@@ -1,7 +1,7 @@
-import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
+import { Buffer } from "buffer/index"; // use the browser compatible buffer library
 import { BigInteger } from "jsbn";
 
-import { hexHash, padHex } from "./utils.js";
+import { hexHash, padHex } from "./utils";
 
 export const INFO_BITS = Buffer.from("Caldera Derived Key", "utf8");
 export const G = new BigInteger("2", 16);

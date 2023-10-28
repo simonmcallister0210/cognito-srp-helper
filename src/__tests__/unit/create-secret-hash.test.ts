@@ -1,6 +1,6 @@
-import { createSecretHash } from "../../cognito-srp-helper.js";
-import { mockCredentialsFactory } from "../mocks/factories.js";
-import { positiveCredentials } from "../test-cases/index.js";
+import { createSecretHash } from "../../cognito-srp-helper";
+import { mockCredentialsFactory } from "../mocks/factories";
+import { positiveCredentials } from "../test-cases/index";
 
 describe("createSecretHash", () => {
   describe("positive", () => {

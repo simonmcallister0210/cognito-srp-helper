@@ -7,7 +7,7 @@ import {
   RespondToAuthChallengeRequest,
   SrpSession,
   SrpSessionSigned,
-} from "../../types.js";
+} from "../../types";
 
 import {
   mockAdminInitiateAuthRequest,
@@ -18,7 +18,7 @@ import {
   mockRespondToAuthChallengeRequest,
   mockSession,
   mockSessionSigned,
-} from "./data.js";
+} from "./data";
 
 export const mockCredentialsFactory = (credentials?: Partial<Credentials>): Credentials =>
   clonedeep({

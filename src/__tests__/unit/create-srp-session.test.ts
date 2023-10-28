@@ -1,11 +1,11 @@
-import { Buffer } from "buffer/index.js";
+import { Buffer } from "buffer/index";
 import { BigInteger } from "jsbn";
 
-import { createSrpSession } from "../../cognito-srp-helper.js";
-import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors.js";
-import * as utils from "../../utils.js";
-import { mockCredentialsFactory, mockSrpSessionFactory } from "../mocks/factories.js";
-import { positiveCredentials, positiveTimestamps } from "../test-cases/index.js";
+import { createSrpSession } from "../../cognito-srp-helper";
+import { AbortOnZeroASrpError, AbortOnZeroSrpError } from "../../errors";
+import * as utils from "../../utils";
+import { mockCredentialsFactory, mockSrpSessionFactory } from "../mocks/factories";
+import { positiveCredentials, positiveTimestamps } from "../test-cases/index";
 
 describe("createSrpSession", () => {
   describe("positive", () => {

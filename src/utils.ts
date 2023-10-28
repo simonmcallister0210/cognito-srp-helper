@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
+import { Buffer } from "buffer/index"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
