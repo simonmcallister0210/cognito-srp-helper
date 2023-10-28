@@ -39,9 +39,11 @@ For more information on that this works see [release-please](https://github.com/
 
 ## Releases
 
-Releases are automated by the [release-please](https://github.com/googleapis/release-please) bot. The bot creates a draft PR that updates itself everytime a branch is merged into main. When this draft PR is merged a few things happen. The change log is updated, the package.json version is updated, the project is tagged with the new version, and the project is uploaded to npm
+Releases are automated by the [release-please](https://github.com/googleapis/release-please) bot. The bot creates a draft PR that updates itself everytime a branch is merged into main. When this draft PR is merged a few things happen. The change log is updated, the package.json version is updated, the project is tagged with the new version
 
 Release-please knows what version numbers to update by reading into the Git history of the main branch (or support branch if working on previous major version). This branch will have conventional commits that can be used to figure out the content of a change, and how it should affect the version. For more info see the section on [conventional commits](#conventional-commit)
+
+The release of the NPM package is handled manually. A repo owner / admin will release to NPM after release-please PR has been merged in
 
 ## VSCode setup
 
