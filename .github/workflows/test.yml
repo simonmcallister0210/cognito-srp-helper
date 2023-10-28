@@ -23,8 +23,8 @@ jobs:
       - run: npm run build
       - run: npm run test
         env:
-          AWS_ACCESS_KEY_ID: ${{secrets.INT_TEST_USERNAME}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.INT_TEST_USERNAME}}
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
           INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
           INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
