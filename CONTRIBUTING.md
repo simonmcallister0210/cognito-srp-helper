@@ -11,13 +11,7 @@ Table of Contents:
 
 ## Steps for Implementing a Fix or Feature
 
-First you will need to open a new issue and label it 'enhancement' or 'bug', depending on if it's a feature or fix respectively. Then you can create a new branch from the 'development' tab on the right. This allows us to track the branch related to this issue in Github
-
-Ideally we want have similar naming convention to Conventional commits. So bug fix branches should have the prefix fix/..., and feature branches should have the prefix feat/..., documentation change should be docs/..., and so on. Apart from these prefixes feel free to name the branch whatever you want, as long as it's tasteful and concise. E.g:
-
-- feat/new-function
-- fix/missing-type
-- refactor/crypto-lib-change
+There's no strict requirements for adding a fix or feature, just open an issue and a PR
 
 ## Conventional Commit
 
@@ -39,29 +33,11 @@ For more information on that this works see [release-please](https://github.com/
 
 ## Releases
 
-Releases are automated by the [release-please](https://github.com/googleapis/release-please) bot. The bot creates a draft PR that updates itself everytime a branch is merged into main. When this draft PR is merged a few things happen. The change log is updated, the package.json version is updated, the project is tagged with the new version, and the project is uploaded to npm
+Releases are automated by the [release-please](https://github.com/googleapis/release-please) bot. The bot creates a draft PR that updates itself everytime a branch is merged into main. When this draft PR is merged a few things happen. The change log is updated, the package.json version is updated, the project is tagged with the new version
 
 Release-please knows what version numbers to update by reading into the Git history of the main branch (or support branch if working on previous major version). This branch will have conventional commits that can be used to figure out the content of a change, and how it should affect the version. For more info see the section on [conventional commits](#conventional-commit)
 
-## VSCode setup
-
-We don't track our VSCode workspace config in Git, so if you need to setup you project to work with prettier and our eslint config file `config/eslintrc.json` you can create a workspace file similar to this:
-
-```json
-{
-  "folders": [
-    {
-      "path": ".."
-    }
-  ],
-  "settings": {
-    "editor.tabSize": 2,
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
-    "eslint.options": { "overrideConfigFile": "./config/eslintrc.json" }
-  }
-}
-```
+The release of the NPM package is handled manually. A repo owner / admin will release to NPM after release-please PR has been merged in
 
 ## Running integration tests locally
 
@@ -71,7 +47,9 @@ If you've just downloaded this repository and tried to run the integration tests
 ReferenceError: Integration test could not run because USERNAME is undefined or empty
 ```
 
-This is because we don't store the credentials for our Cognito user pool in code, they are stored as secrets inside Github for use in our Github actions. Integration tests will be triggered when you push your changes so there is no need to set them up locally if you don't need them. However, there may be times when you need to fix an integration bug, or make changes to the integration test. In this case you want will want to run integration tests locally. To do this you'll need to setup a Cognito user pool on your own AWS account (or at least have access to one). To create a new user pool follow these steps...
+You don't need to run integration tests locally, they'll be triggered in Github when you push your changes to your branch
+
+However, there may be times when you need to fix an integration bug, or make changes to the integration test. In this case you want will want to run integration tests locally. To do this you can ask an code owner for a `.env` file so you can run the tests, or you can setup a Cognito user pool on your own AWS account (or at least have access to one). To create a new user pool follow these steps...
 
 ### _0. Setup an AWS account if you don't have one already_
 
@@ -104,6 +82,9 @@ Finally in your local repo, create a `.env` file in the root of the project. Thi
 ```sh
 # Credentials used in integration test
 
+AWS_ACCESS_KEY_ID=<aws_access_key_id>
+AWS_SECRET_ACCESS_KEY=<aws_secret_access_key>
+
 INT_TEST_USERNAME=<username_of_the_new_user>
 INT_TEST_PASSWORD=<password_of_the_new_user>
 INT_TEST_POOL_ID=<pool_id_of_the_new_userpool>
@@ -113,11 +94,3 @@ INT_TEST_AWS_REGION=<aws_region_of_userpool>
 ```
 
 After all these steps have been completed, you should be able to run integration tests locally. If you have any problems following these steps feel free to open an issue
-
-## Releasing new major version
-
-To release a new major version you must make sure you create a branch for the old major version. For example, if we are on v1, and we plan on releasing a braking change to v2, we must create a new branch for v1 just before we release v2
-
-After we have this old branch (e.g. v1) we need to update the Github workflow files to support GitHub actions for this branch. To do this, first checkout the new branch `git checkout v1` and look for comments in `.github/workflow/*` preceded by 'SUPPORTING OLDER MAJOR VERSIONS'. The comments will tell you what you need to change in order to support the old major version
-
-_Update 12/2022_ - BE AWARE - At time of writing the release-please action will always tag a release as 'latest', so if you release on an old major branch you will need to manually re-tag the latest Github release

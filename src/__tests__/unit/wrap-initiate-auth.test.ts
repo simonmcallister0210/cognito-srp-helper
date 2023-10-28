@@ -1,20 +1,46 @@
-import { wrapInitiateAuth } from "../../cognito-srp-helper.js";
-import { InitiateAuthRequest } from "../../types.js";
+import { wrapInitiateAuth } from "../../cognito-srp-helper";
+import { InitiateAuthRequest } from "../../types";
 import {
-  positiveInitiateAuthRequests as positiveRequests,
-  positiveSrpSessions as positiveSessions,
-} from "../inputs/index.js";
-import {
+  mockAdminInitiateAuthRequestFactory,
   mockInitiateAuthRequestFactory,
   mockSrpSessionFactory,
-} from "../mocks/factories.js";
+} from "../mocks/factories";
+import {
+  positiveAdminInitiateAuthRequests as positiveAdminRequests,
+  positiveInitiateAuthRequests as positiveRequests,
+  positiveSrpSessions as positiveSessions,
+} from "../test-cases";
 
 describe("wrapInitiateAuth", () => {
   describe("positive", () => {
+    it.each(Object.values(positiveSessions))("should create the correct InitiateAuthRequest: session %#", (session) => {
+      const request = mockInitiateAuthRequestFactory();
+      const srpRequest = wrapInitiateAuth(session, request);
+      expect(srpRequest).toMatchObject<InitiateAuthRequest>({
+        ...request,
+        AuthParameters: {
+          ...request.AuthParameters,
+          SRP_A: session.largeA,
+        },
+      });
+    });
+
+    it.each(Object.values(positiveRequests))("should create the correct InitiateAuthRequest: request %#", (request) => {
+      const session = mockSrpSessionFactory();
+      const srpRequest = wrapInitiateAuth(session, request);
+      expect(srpRequest).toMatchObject<InitiateAuthRequest>({
+        ...request,
+        AuthParameters: {
+          ...request.AuthParameters,
+          SRP_A: session.largeA,
+        },
+      });
+    });
+
     it.each(Object.values(positiveSessions))(
-      "should create the correct InitiateAuthRequest: session %#",
+      "should create the correct AdminInitiateAuthRequest: session %#",
       (session) => {
-        const request = mockInitiateAuthRequestFactory();
+        const request = mockAdminInitiateAuthRequestFactory();
         const srpRequest = wrapInitiateAuth(session, request);
         expect(srpRequest).toMatchObject<InitiateAuthRequest>({
           ...request,
@@ -23,11 +49,11 @@ describe("wrapInitiateAuth", () => {
             SRP_A: session.largeA,
           },
         });
-      }
+      },
     );
 
-    it.each(Object.values(positiveRequests))(
-      "should create the correct InitiateAuthRequest: request %#",
+    it.each(Object.values(positiveAdminRequests))(
+      "should create the correct AdminInitiateAuthRequest: request %#",
       (request) => {
         const session = mockSrpSessionFactory();
         const srpRequest = wrapInitiateAuth(session, request);
@@ -38,7 +64,7 @@ describe("wrapInitiateAuth", () => {
             SRP_A: session.largeA,
           },
         });
-      }
+      },
     );
   });
 });

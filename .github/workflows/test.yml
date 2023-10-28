@@ -3,7 +3,7 @@ name: test
 on:
   pull_request:
     branches:
-      - main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. v1
+      - main
 
 jobs:
   test:
@@ -20,12 +20,14 @@ jobs:
           node-version: 18 # remember to update this when support is added/dropped
       - run: npm ci
       - run: npm run lint
+      - run: npm run build
       - run: npm run test
         env:
+          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
           INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
           INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
           INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
           INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
           INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
           INT_TEST_AWS_REGION: ${{secrets.INT_TEST_AWS_REGION}}
-      - run: npm run build

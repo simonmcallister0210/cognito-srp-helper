@@ -2,15 +2,12 @@ import { faker } from "@faker-js/faker";
 import omit from "lodash.omit";
 import RandExp from "randexp";
 
-import { RespondToAuthChallengeRequest } from "../../types.js";
-import { mockRespondToAuthChallengeRequestFactory } from "../mocks/factories.js";
+import { RespondToAuthChallengeRequest } from "../../types";
+import { mockRespondToAuthChallengeRequestFactory } from "../mocks/factories";
 
 const { ChallengeResponses } = mockRespondToAuthChallengeRequestFactory();
 
-export const positiveRespondToAuthChallengeRequests: Record<
-  string,
-  RespondToAuthChallengeRequest
-> = {
+export const positiveRespondToAuthChallengeRequests: Record<string, RespondToAuthChallengeRequest> = {
   default: mockRespondToAuthChallengeRequestFactory(),
   // ChallengeName
   challengeNamePasswordVerifier: mockRespondToAuthChallengeRequestFactory({
@@ -30,10 +27,9 @@ export const positiveRespondToAuthChallengeRequests: Record<
     ClientId: faker.random.alphaNumeric(10000, { casing: "mixed" }),
   }),
   // ChallengeResponses
-  challengeResponsesOmitted: omit(
-    mockRespondToAuthChallengeRequestFactory(),
-    "ChallengeResponses"
-  ),
+  challengeResponsesOmitted: mockRespondToAuthChallengeRequestFactory({
+    ChallengeResponses: undefined,
+  }),
   // SECRET_HASH
   secretHashRandom: mockRespondToAuthChallengeRequestFactory({
     ChallengeResponses: {

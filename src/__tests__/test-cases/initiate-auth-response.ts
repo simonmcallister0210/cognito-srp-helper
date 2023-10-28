@@ -2,15 +2,12 @@ import { faker } from "@faker-js/faker";
 import omit from "lodash.omit";
 import RandExp from "randexp";
 
-import { InitiateAuthResponse } from "../../types.js";
-import { mockInitiateAuthResponseFactory } from "../mocks/factories.js";
+import { InitiateAuthResponse } from "../../types";
+import { mockInitiateAuthResponseFactory } from "../mocks/factories";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
-export const positiveInitiateAuthResponses: Record<
-  string,
-  InitiateAuthResponse
-> = {
+export const positiveInitiateAuthResponses: Record<string, InitiateAuthResponse> = {
   default: mockInitiateAuthResponseFactory(),
   // largeB
   largeBRandom: mockInitiateAuthResponseFactory({
@@ -71,19 +68,13 @@ export const positiveInitiateAuthResponses: Record<
   }),
 };
 
-export const negativeInitiateAuthResponses: Record<
-  string,
-  InitiateAuthResponse
-> = {
+export const negativeInitiateAuthResponses: Record<string, InitiateAuthResponse> = {
   default: mockInitiateAuthResponseFactory(),
   // ChallengeParameters
   challengeParametersUndefined: mockInitiateAuthResponseFactory({
     ChallengeParameters: undefined,
   }),
-  challengeParametersOmitted: omit(
-    mockInitiateAuthResponseFactory(),
-    "ChallengeParameters"
-  ),
+  challengeParametersOmitted: omit(mockInitiateAuthResponseFactory(), "ChallengeParameters"),
   // salt
   saltOmitted: mockInitiateAuthResponseFactory({
     ChallengeParameters: {

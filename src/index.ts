@@ -1,3 +1,3 @@
-export * from "./cognito-srp-helper.js";
-export * from "./errors.js";
-export * from "./types.js";
+export * from "./cognito-srp-helper";
+export * from "./errors";
+export * from "./types";

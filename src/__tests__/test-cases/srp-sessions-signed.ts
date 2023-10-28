@@ -1,8 +1,8 @@
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 
-import { SrpSessionSigned } from "../../types.js";
-import { mockSrpSessionSignedFactory } from "../mocks/factories.js";
+import { SrpSessionSigned } from "../../types";
+import { mockSrpSessionSignedFactory } from "../mocks/factories";
 
 export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
   default: mockSrpSessionSignedFactory(),
@@ -47,14 +47,8 @@ export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
       ${faker.date.weekday({ abbr: true })}
       ${faker.date.month({ abbr: true })}
       ${faker.datatype.number({ min: 1, max: 31 })}
-      ${faker.datatype
-        .number({ min: 0, max: 23 })
-        .toString()
-        .padStart(2, "0")}:\
-      ${faker.datatype
-        .number({ min: 0, max: 59 })
-        .toString()
-        .padStart(2, "0")}:\
+      ${faker.datatype.number({ min: 0, max: 23 }).toString().padStart(2, "0")}:\
+      ${faker.datatype.number({ min: 0, max: 59 }).toString().padStart(2, "0")}:\
       ${faker.datatype.number({ min: 0, max: 59 }).toString().padStart(2, "0")}
       UTC
       ${faker.datatype.number({ min: 0, max: 9999 })}

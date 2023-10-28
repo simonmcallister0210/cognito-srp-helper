@@ -1,17 +1,12 @@
-import { createPasswordHash } from "../../cognito-srp-helper.js";
-import { positiveCredentials } from "../inputs/index.js";
-import { mockCredentialsFactory } from "../mocks/factories.js";
+import { createPasswordHash } from "../../cognito-srp-helper";
+import { mockCredentialsFactory } from "../mocks/factories";
+import { positiveCredentials } from "../test-cases";
 
 describe("createPasswordHash", () => {
   describe("positive", () => {
     it("should create the correct password hash", () => {
       const credentials = mockCredentialsFactory();
-      const {
-        username,
-        password,
-        poolId,
-        passwordHash: expected,
-      } = credentials;
+      const { username, password, poolId, passwordHash: expected } = credentials;
       const passwordHash = createPasswordHash(username, password, poolId);
       expect(passwordHash).toEqual(expected);
     });
@@ -22,7 +17,7 @@ describe("createPasswordHash", () => {
         const { username, password, poolId } = credentials;
         const passwordHash = createPasswordHash(username, password, poolId);
         expect(passwordHash).toMatch(/^[a-z0-9]{64}$/);
-      }
+      },
     );
   });
 });

@@ -1,11 +1,4 @@
-import {
-  Credentials,
-  InitiateAuthRequest,
-  InitiateAuthResponse,
-  RespondToAuthChallengeRequest,
-  SrpSession,
-  SrpSessionSigned,
-} from "../../types.js";
+import { AuthFlowType, ChallengeNameType } from "@aws-sdk/client-cognito-identity-provider";
 
 const username = "username";
 const password = "password";
@@ -13,8 +6,7 @@ const poolId = "eu-west-2_bBpjKlyj6";
 const clientId = "EPswPGbpdBLZnh9XW134hK7qYe";
 const secretId = "ps50nb7hd1umdnmlt1xa9nwiscqvdvzy5ijw63vcacd09yihc2b";
 const secretHash = "oUkNFqfm7UjLds8vXFWarT1l3gqORGoztf+EyFmoX2Q=";
-const passwordHash =
-  "266629fd96baf8f433a4f01562eea59dd99a721dac75ae600e06bc697b2016ff";
+const passwordHash = "266629fd96baf8f433a4f01562eea59dd99a721dac75ae600e06bc697b2016ff";
 const poolIdAbbr = "bBpjKlyj6";
 const timestamp = "Tue Feb 1 03:04:05 UTC 2000";
 const smallA = "abcdef0123456789";
@@ -28,7 +20,7 @@ const secret =
 const passwordSignature = "AmaS40dQC4mBIgVaKNkAvWpYBmHUi/gv/XKVVCr8xyE=";
 
 // This object isn't typed because it is a collection of external inputs
-export const mockCredentials: Credentials = {
+export const mockCredentials = {
   username,
   password,
   poolId,
@@ -39,7 +31,7 @@ export const mockCredentials: Credentials = {
   passwordHash,
 };
 
-export const mockSession: SrpSession = {
+export const mockSession = {
   username,
   passwordHash,
   poolIdAbbr,
@@ -48,7 +40,7 @@ export const mockSession: SrpSession = {
   largeA,
 };
 
-export const mockSessionSigned: SrpSessionSigned = {
+export const mockSessionSigned = {
   ...mockSession,
   largeB,
   salt,
@@ -56,8 +48,10 @@ export const mockSessionSigned: SrpSessionSigned = {
   passwordSignature,
 };
 
-export const mockInitiateAuthRequest: InitiateAuthRequest = {
-  AuthFlow: "USER_SRP_AUTH",
+// InitiateAuthRequest
+
+export const mockInitiateAuthRequest = {
+  AuthFlow: AuthFlowType.USER_SRP_AUTH,
   AuthParameters: {
     CHALLENGE_NAME: "SRP_A",
     SECRET_HASH: secretHash,
@@ -66,7 +60,14 @@ export const mockInitiateAuthRequest: InitiateAuthRequest = {
   ClientId: clientId,
 };
 
-export const mockInitiateAuthResponse: InitiateAuthResponse = {
+export const mockAdminInitiateAuthRequest = {
+  ...mockInitiateAuthRequest,
+  UserPoolId: poolId,
+};
+
+// InitiateAuthResponse
+
+export const mockInitiateAuthResponse = {
   ChallengeParameters: {
     SRP_B: largeB,
     SALT: salt,
@@ -74,12 +75,18 @@ export const mockInitiateAuthResponse: InitiateAuthResponse = {
   },
 };
 
-export const mockRespondToAuthChallengeRequest: RespondToAuthChallengeRequest =
-  {
-    ClientId: clientId,
-    ChallengeName: "PASSWORD_VERIFIER",
-    ChallengeResponses: {
-      SECRET_HASH: secretHash,
-      USERNAME: username,
-    },
-  };
+// RespondToAuthChallengeRequest
+
+export const mockRespondToAuthChallengeRequest = {
+  ClientId: clientId,
+  ChallengeName: ChallengeNameType.PASSWORD_VERIFIER,
+  ChallengeResponses: {
+    SECRET_HASH: secretHash,
+    USERNAME: username,
+  },
+};
+
+export const mockAdminRespondToAuthChallengeRequest = {
+  ...mockRespondToAuthChallengeRequest,
+  UserPoolId: poolId,
+};

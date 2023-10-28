@@ -1,4 +1,4 @@
-import { signSrpSession } from "../../cognito-srp-helper.js";
+import { signSrpSession } from "../../cognito-srp-helper";
 import {
   AbortOnZeroBSrpError,
   AbortOnZeroSrpError,
@@ -8,18 +8,18 @@ import {
   MissingSaltError,
   MissingSecretError,
   SignSrpSessionError,
-} from "../../errors.js";
-import * as utils from "../../utils.js";
-import {
-  negativeInitiateAuthResponses as negativeResponses,
-  positiveInitiateAuthResponses as positiveResponses,
-  positiveSrpSessions as positiveSessions,
-} from "../inputs/index.js";
+} from "../../errors";
+import * as utils from "../../utils";
 import {
   mockInitiateAuthResponseFactory,
   mockSrpSessionFactory,
   mockSrpSessionSignedFactory,
-} from "../mocks/factories.js";
+} from "../mocks/factories";
+import {
+  negativeInitiateAuthResponses as negativeResponses,
+  positiveInitiateAuthResponses as positiveResponses,
+  positiveSrpSessions as positiveSessions,
+} from "../test-cases";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
@@ -38,8 +38,7 @@ describe("signSrpSession", () => {
       (session) => {
         const response = mockInitiateAuthResponseFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } =
-          response.ChallengeParameters ?? {};
+        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -53,7 +52,7 @@ describe("signSrpSession", () => {
         expect(sessionSigned.secret).toMatch(SECRET_BLOCK);
         // password signature should be new value with following format
         expect(sessionSigned.passwordSignature).toMatch(/^[A-Za-z0-9+=/]+$/);
-      }
+      },
     );
 
     it.each(Object.values(positiveResponses))(
@@ -61,8 +60,7 @@ describe("signSrpSession", () => {
       (response) => {
         const session = mockSrpSessionFactory();
         const sessionSigned = signSrpSession(session, response);
-        const { SRP_B, SALT, SECRET_BLOCK } =
-          response.ChallengeParameters ?? {};
+        const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
         expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
@@ -76,7 +74,7 @@ describe("signSrpSession", () => {
         expect(sessionSigned.secret).toMatch(SECRET_BLOCK);
         // password signature should be new value with following format
         expect(sessionSigned.passwordSignature).toMatch(/^[A-Za-z0-9+=/]+$/);
-      }
+      },
     );
   });
 
@@ -138,14 +136,8 @@ describe("signSrpSession", () => {
     });
 
     it.each([
-      [
-        negativeResponses.challengeParametersUndefined,
-        MissingChallengeResponsesError,
-      ],
-      [
-        negativeResponses.challengeParametersOmitted,
-        MissingChallengeResponsesError,
-      ],
+      [negativeResponses.challengeParametersUndefined, MissingChallengeResponsesError],
+      [negativeResponses.challengeParametersOmitted, MissingChallengeResponsesError],
       [negativeResponses.saltOmitted, MissingSaltError],
       [negativeResponses.secretOmitted, MissingSecretError],
       [negativeResponses.largeBOmitted, MissingLargeBError],
