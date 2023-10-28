@@ -3,7 +3,7 @@ name: release
 on:
   push:
     branches:
-      - main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. v1
+      - main
 
 jobs:
   test:
@@ -23,6 +23,8 @@ jobs:
       - run: npm run test
       - run: npm run build
         env:
+          AWS_ACCESS_KEY_ID: ${{secrets.INT_TEST_USERNAME}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.INT_TEST_USERNAME}}
           INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
           INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
           INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
@@ -37,7 +39,7 @@ jobs:
       - uses: google-github-actions/release-please-action@v3
         id: release
         with:
-          default-branch: main # SUPPORTING OLD MAJOR VERSIONS: change to major branch, e.g. v1
+          default-branch: main
           release-type: node
       - run: |
           echo releases_created: ${{steps.release.outputs.releases_created}}
