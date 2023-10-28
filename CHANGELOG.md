@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.2...v2.1.0) (2023-10-28)
+
+
+### Features
+
+* add support for AWS SDK v3 ([#23](https://github.com/simonmcallister0210/cognito-srp-helper/issues/23)) ([ecb55f1](https://github.com/simonmcallister0210/cognito-srp-helper/commit/ecb55f1ba311434e190ab80c28ab0420b60f08dd))
+
 ## [2.0.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.1...v2.0.2) (2023-10-28)
 
 
