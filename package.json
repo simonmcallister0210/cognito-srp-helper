@@ -43,7 +43,7 @@
     "lint": "npm run lint:ts && npm run lint:eslint",
     "lint:eslint": "eslint -c .eslintrc.cjs src/**",
     "lint:ts": "tsc --noEmit -p .tsconfig.json",
-    "test": "jest -c config/jest.config.json",
+    "test": "jest -c .jestrc.cjs",
     "test:clear": "jest --clear-cache",
     "test:integration": "jest -c .jestrc.cjs src/__tests__/integration",
     "test:unit": "jest -c .jestrc.cjs src/__tests__/unit"
@@ -73,7 +73,6 @@
     "husky": "^8.0.0",
     "jest": "^29.2.1",
     "lint-staged": "^13.0.3",
-    "lodash.clonedeep": "^4.5.0",
     "lodash.omit": "^4.5.0",
     "prettier": "^3.0.2",
     "randexp": "^0.5.3",

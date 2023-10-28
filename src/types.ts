@@ -7,53 +7,25 @@ import type {
   AdminRespondToAuthChallengeRequest as AdminRespondToAuthChallengeRequestV3,
   InitiateAuthCommandInput,
   InitiateAuthCommandOutput,
-  // InitiateAuthRequest
   InitiateAuthRequest as InitiateAuthRequestV3,
-  // InitiateAuthResponse
   InitiateAuthResponse as InitiateAuthResponseV3,
   RespondToAuthChallengeCommandInput,
-  // RespondToAuthChallengeRequest
   RespondToAuthChallengeRequest as RespondToAuthChallengeRequestV3,
 } from "@aws-sdk/client-cognito-identity-provider";
 import type { CognitoIdentityServiceProvider } from "aws-sdk";
 
 /**
- * Type alias for the variations of `InitiateAuthResponse` required for the `InitiateAuth` operation in AWS SDK v2 and v3
+ * The AWS SDK v2 and v3 have multiple ways of calling the `initiateAuth` operation. For example, you have ...
  *
- * ### SDK V2:
+ * - v2 InitiateAuthRequest
+ * - v3 InitiateAuthRequest
+ * - v3 InitiateAuthCommandInput
  *
- * `CognitoIdentityServiceProvider.InitiateAuthResponse`:
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#initiateAuth-property
+ * ... and they all have "Admin" versions. The good news is they all share the same shape, so to simplify the interface
+ * we've unioned all these types into a single type called InitiateAuthRequest, which can be used in place of any of
+ * these variations
  *
- * `CognitoIdentityServiceProvider.AdminInitiateAuthResponse`:
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminInitiateAuth-property
- *
- * ### SDK V3:
- *
- * `InitiateAuthResponse` (aliased as `InitiateAuthResponseV3`):
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthResponse/
- *
- * `AdminInitiateAuthResponse` (aliased as `AdminInitiateAuthResponseV3`):
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthResponse/
- *
- * `InitiateAuthCommandOutput`:
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthCommandOutput/
- *
- * `AdminInitiateAuthCommandOutput`:
- * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthCommandOutput/
- */
-export type InitiateAuthResponse =
-  // v2
-  | CognitoIdentityServiceProvider.InitiateAuthResponse
-  | CognitoIdentityServiceProvider.AdminInitiateAuthResponse
-  // v3
-  | InitiateAuthResponseV3
-  | AdminInitiateAuthResponseV3
-  | InitiateAuthCommandOutput
-  | AdminInitiateAuthCommandOutput;
-
-/**
- * Type alias for the variations of `InitiateAuthRequest` required for the `InitiateAuth` operation in AWS SDK v2 and v3
+ * Below are the types that can be used:
  *
  * ### SDK V2:
  *
@@ -88,7 +60,63 @@ export type InitiateAuthRequest =
   | AdminInitiateAuthCommandInput;
 
 /**
- * Type alias for the variations of `RespondToAuthChallengeRequest` required for the `RespondToAuthChallenge` operation in AWS SDK v2 and v3
+ * The AWS SDK v2 and v3 have multiple ways of responding to the `initiateAuth` operation. For example, you have ...
+ *
+ * - v2 InitiateAuthResponse
+ * - v3 InitiateAuthResponse
+ * - v3 InitiateAuthCommandOutput
+ *
+ * ... and they all have "Admin" versions. The good news is they all share the same shape, so to simplify the interface
+ * we've unioned all these types into a single type called InitiateAuthResponse, which can be used in place of any of
+ * these variations
+ *
+ * Below are the types that can be used:
+ *
+ * ### SDK V2:
+ *
+ * `CognitoIdentityServiceProvider.InitiateAuthResponse`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#initiateAuth-property
+ *
+ * `CognitoIdentityServiceProvider.AdminInitiateAuthResponse`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/CognitoIdentityServiceProvider.html#adminInitiateAuth-property
+ *
+ * ### SDK V3:
+ *
+ * `InitiateAuthResponse` (aliased as `InitiateAuthResponseV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthResponse/
+ *
+ * `AdminInitiateAuthResponse` (aliased as `AdminInitiateAuthResponseV3`):
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthResponse/
+ *
+ * `InitiateAuthCommandOutput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/InitiateAuthCommandOutput/
+ *
+ * `AdminInitiateAuthCommandOutput`:
+ * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/v3/latest/Package/-aws-sdk-client-cognito-identity-provider/Interface/AdminInitiateAuthCommandOutput/
+ */
+export type InitiateAuthResponse =
+  // v2
+  | CognitoIdentityServiceProvider.InitiateAuthResponse
+  | CognitoIdentityServiceProvider.AdminInitiateAuthResponse
+  // v3
+  | InitiateAuthResponseV3
+  | AdminInitiateAuthResponseV3
+  | InitiateAuthCommandOutput
+  | AdminInitiateAuthCommandOutput;
+
+/**
+ * The AWS SDK v2 and v3 have multiple ways of responding to the `respondToAuthChallenge` operation. For example, you
+ * have ...
+ *
+ * - v2 RespondToAuthChallengeRequest
+ * - v3 RespondToAuthChallengeRequest
+ * - v3 RespondToAuthChallengeCommandInput
+ *
+ * ... and they all have "Admin" versions. The good news is they all share the same shape, so to simplify the interface
+ * we've unioned all these types into a single type called RespondToAuthChallengeRequest, which can be used in place of
+ * any of these variations
+ *
+ * Below are the types that can be used:
  *
  * ### SDK V2:
  *
@@ -122,6 +150,9 @@ export type RespondToAuthChallengeRequest =
   | RespondToAuthChallengeCommandInput
   | AdminRespondToAuthChallengeCommandInput;
 
+/**
+ * Credentials needed for SRP authentication.
+ */
 export type Credentials = {
   username: string;
   password: string;

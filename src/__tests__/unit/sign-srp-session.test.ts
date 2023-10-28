@@ -19,7 +19,7 @@ import {
   negativeInitiateAuthResponses as negativeResponses,
   positiveInitiateAuthResponses as positiveResponses,
   positiveSrpSessions as positiveSessions,
-} from "../test-cases/index";
+} from "../test-cases";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 

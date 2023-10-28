@@ -1,5 +1,3 @@
-import clonedeep from "lodash.clonedeep";
-
 import {
   Credentials,
   InitiateAuthRequest,
@@ -21,19 +19,19 @@ import {
 } from "./data";
 
 export const mockCredentialsFactory = (credentials?: Partial<Credentials>): Credentials =>
-  clonedeep({
+  structuredClone({
     ...mockCredentials,
     ...credentials,
   });
 
 export const mockSrpSessionFactory = (session?: Partial<SrpSession>): SrpSession =>
-  clonedeep({
+  structuredClone({
     ...mockSession,
     ...session,
   });
 
 export const mockSrpSessionSignedFactory = (session?: Partial<SrpSessionSigned>): SrpSessionSigned =>
-  clonedeep({
+  structuredClone({
     ...mockSessionSigned,
     ...session,
   });
@@ -41,13 +39,13 @@ export const mockSrpSessionSignedFactory = (session?: Partial<SrpSessionSigned>)
 // InitiateAuthRequest
 
 export const mockInitiateAuthRequestFactory = (request?: Partial<InitiateAuthRequest>): InitiateAuthRequest =>
-  clonedeep({
+  structuredClone({
     ...mockInitiateAuthRequest,
     ...request,
   });
 
 export const mockAdminInitiateAuthRequestFactory = (request?: Partial<InitiateAuthRequest>): InitiateAuthRequest =>
-  clonedeep({
+  structuredClone({
     ...mockAdminInitiateAuthRequest,
     ...request,
   });
@@ -55,7 +53,7 @@ export const mockAdminInitiateAuthRequestFactory = (request?: Partial<InitiateAu
 // InitiateAuthResponse
 
 export const mockInitiateAuthResponseFactory = (response?: Partial<InitiateAuthResponse>): InitiateAuthResponse =>
-  clonedeep({
+  structuredClone({
     ...mockInitiateAuthResponse,
     ...response,
   });
@@ -65,7 +63,7 @@ export const mockInitiateAuthResponseFactory = (response?: Partial<InitiateAuthR
 export const mockRespondToAuthChallengeRequestFactory = (
   request?: Partial<RespondToAuthChallengeRequest>,
 ): RespondToAuthChallengeRequest =>
-  clonedeep({
+  structuredClone({
     ...mockRespondToAuthChallengeRequest,
     ...request,
   });
@@ -73,7 +71,7 @@ export const mockRespondToAuthChallengeRequestFactory = (
 export const mockAdminRespondToAuthChallengeRequestFactory = (
   request?: Partial<RespondToAuthChallengeRequest>,
 ): RespondToAuthChallengeRequest =>
-  clonedeep({
+  structuredClone({
     ...mockAdminRespondToAuthChallengeRequest,
     ...request,
   });

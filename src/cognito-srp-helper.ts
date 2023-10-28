@@ -1,4 +1,4 @@
-import { Buffer } from "buffer/index"; // use the browser compatible buffer library
+import { Buffer } from "buffer/"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
