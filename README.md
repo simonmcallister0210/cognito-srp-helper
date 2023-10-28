@@ -20,7 +20,7 @@ Or CommonJS require:
 const CognitoSrpHelper = require("cognito-srp-helper");
 ```
 
-Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK (v3):
+Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v3:
 
 ```ts
 import {
@@ -73,6 +73,62 @@ const respondToAuthChallengeRes = await cognitoIdentityProviderClient
   )
   .catch((err) => {
     // . . .
+  });
+
+// . . . return login tokens from respondToAuthChallengeResponse
+```
+
+Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v2 (deprecated):
+
+```ts
+import {
+  createSecretHash,
+  createPasswordHash,
+  createSrpSession,
+  signSrpSession,
+  wrapAuthChallenge,
+  wrapInitiateAuth,
+} from "cognito-srp-helper";
+
+// . . . obtain user credentials, IDs, and setup Cognito client
+
+const secretHash = createSecretHash(username, clientId, secretId);
+const passwordHash = createPasswordHash(username, password, poolId);
+const srpSession = createSrpSession(username, passwordHash, poolId);
+
+const initiateAuthRes = await cognitoIdentityServiceProvider
+  .initiateAuth(
+    wrapInitiateAuth(srpSession, {
+      ClientId: CLIENT_ID,
+      AuthFlow: "USER_SRP_AUTH",
+      AuthParameters: {
+        CHALLENGE_NAME: "SRP_A",
+        SECRET_HASH: secretHash,
+        USERNAME,
+      },
+    }),
+  )
+  .promise()
+  .catch((err) => {
+    throw err;
+  });
+
+const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
+
+const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
+  .respondToAuthChallenge(
+    wrapAuthChallenge(signedSrpSession, {
+      ClientId: CLIENT_ID,
+      ChallengeName: "PASSWORD_VERIFIER",
+      ChallengeResponses: {
+        SECRET_HASH: secretHash,
+        USERNAME,
+      },
+    }),
+  )
+  .promise()
+  .catch((err) => {
+    throw err;
   });
 
 // . . . return login tokens from respondToAuthChallengeResponse
