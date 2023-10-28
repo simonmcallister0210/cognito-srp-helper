@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.1...v2.0.2) (2023-10-28)
+
+
+### Bug Fixes
+
+* dependabot Bump crypto-js from 4.1.1 to 4.2.0 ([#22](https://github.com/simonmcallister0210/cognito-srp-helper/issues/22)) ([0478270](https://github.com/simonmcallister0210/cognito-srp-helper/commit/047827088cc374087ae35bf4d96a09f2b351b6f1))
+
 ## [2.0.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.0...v2.0.1) (2023-10-22)
 
 

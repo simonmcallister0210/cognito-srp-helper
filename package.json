@@ -1,6 +1,6 @@
 {
   "name": "cognito-srp-helper",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "A helper for SRP authentication in AWS Cognito",
   "author": "Simon McAllister",
   "license": "Apache-2.0",
@@ -84,7 +84,7 @@
     "@types/jsbn": "1.2.30",
     "@types/node": "^18.11.11",
     "buffer": "^6.0.3",
-    "crypto-js": "4.1.1",
+    "crypto-js": "4.2.0",
     "jsbn": "1.1.0"
   }
 }
