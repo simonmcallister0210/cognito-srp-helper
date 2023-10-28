@@ -20,6 +20,7 @@ jobs:
           node-version: 18 # remember to update this when support is added/dropped
       - run: npm ci
       - run: npm run lint
+      - run: npm run build
       - run: npm run test
         env:
           INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
@@ -28,4 +29,3 @@ jobs:
           INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
           INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
           INT_TEST_AWS_REGION: ${{secrets.INT_TEST_AWS_REGION}}
-      - run: npm run build
