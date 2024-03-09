@@ -101,8 +101,8 @@ const createTimestamp = (): string => {
   return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
 };
 
-export const createSecretHash = (username: string, clientId: string, secretId: string): string => {
-  const hmac = CryptoJS.HmacSHA256(`${username}${clientId}`, secretId);
+export const createSecretHash = (userId: string, clientId: string, secretId: string): string => {
+  const hmac = CryptoJS.HmacSHA256(`${userId}${clientId}`, secretId);
   const secretHash = hmac.toString(CryptoJS.enc.Base64);
 
   return secretHash;
