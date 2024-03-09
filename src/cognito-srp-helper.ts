@@ -108,15 +108,15 @@ export const createSecretHash = (username: string, clientId: string, secretId: s
   return secretHash;
 };
 
-export const createPasswordHash = (username: string, password: string, poolId: string): string => {
+export const createPasswordHash = (userId: string, password: string, poolId: string): string => {
   const poolIdAbbr = poolId.split("_")[1];
-  const usernamePassword = `${poolIdAbbr}${username}:${password}`;
+  const usernamePassword = `${poolIdAbbr}${userId}:${password}`;
   const passwordHash = hash(usernamePassword);
 
   return passwordHash;
 };
 
-export const createSrpSession = (username: string, passwordHash: string, poolId: string): SrpSession => {
+export const createSrpSession = (username: string, password: string, poolId: string, isHashed = true): SrpSession => {
   const poolIdAbbr = poolId.split("_")[1];
   const timestamp = createTimestamp();
   const smallA = generateSmallA();
@@ -124,8 +124,10 @@ export const createSrpSession = (username: string, passwordHash: string, poolId:
 
   return {
     username,
+    poolId,
     poolIdAbbr,
-    passwordHash,
+    password,
+    isHashed,
     timestamp,
     smallA: smallA.toString(16),
     largeA: largeA.toString(16),
@@ -139,8 +141,14 @@ export const signSrpSession = (session: SrpSession, response: InitiateAuthRespon
   if (!response.ChallengeParameters.SECRET_BLOCK) throw new MissingSecretError();
   if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
 
-  const { SALT: salt, SECRET_BLOCK: secret, SRP_B: largeB } = response.ChallengeParameters;
-  const { username, poolIdAbbr, passwordHash, timestamp, smallA, largeA } = session;
+  const {
+    SALT: salt,
+    SECRET_BLOCK: secret,
+    SRP_B: largeB,
+    USER_ID_FOR_SRP: userIdForSrp,
+  } = response.ChallengeParameters;
+  const { poolId, poolIdAbbr, password, isHashed, timestamp, smallA, largeA } = session;
+  const passwordHash = isHashed ? password : createPasswordHash(userIdForSrp, password, poolId);
 
   // Check server public key isn't 0
   if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();
@@ -154,7 +162,7 @@ export const signSrpSession = (session: SrpSession, response: InitiateAuthRespon
   const message = CryptoJS.lib.WordArray.create(
     Buffer.concat([
       Buffer.from(poolIdAbbr, "utf8"),
-      Buffer.from(username, "utf8"),
+      Buffer.from(userIdForSrp, "utf8"),
       Buffer.from(secret, "base64"),
       Buffer.from(timestamp, "utf8"),
     ]),
