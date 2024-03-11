@@ -23,7 +23,9 @@ const {
   INT_TEST_POOL_ID: POOL_ID = "",
   INT_TEST_CLIENT_ID: CLIENT_ID = "",
   INT_TEST_SECRET_ID: SECRET_ID = "",
-  INT_TEST_AWS_REGION: AWS_REGION = "",
+  AWS_REGION = "",
+  AWS_ACCESS_KEY_ID = "",
+  AWS_SECRET_ACCESS_KEY = "",
 } = process.env;
 
 // Assert environment variables exist before we begin
@@ -54,6 +56,10 @@ describe("SDK v2 integration", () => {
   const srpSession = createSrpSession(USERNAME, passwordHash, POOL_ID);
   const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider({
     region: AWS_REGION,
+    credentials: {
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    },
   });
 
   it("should work with initiateAuth and respondToAuthChallenge", async () => {
