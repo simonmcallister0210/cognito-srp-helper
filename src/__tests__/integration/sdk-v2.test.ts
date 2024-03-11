@@ -23,7 +23,7 @@ const {
   INT_TEST_POOL_ID: POOL_ID = "",
   INT_TEST_CLIENT_ID: CLIENT_ID = "",
   INT_TEST_SECRET_ID: SECRET_ID = "",
-  AWS_REGION = "",
+  INT_TEST_AWS_REGION: AWS_REGION = "",
   AWS_ACCESS_KEY_ID = "",
   AWS_SECRET_ACCESS_KEY = "",
 } = process.env;
