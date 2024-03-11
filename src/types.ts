@@ -154,7 +154,10 @@ export type RespondToAuthChallengeRequest =
  * Credentials needed for SRP authentication.
  */
 export type Credentials = {
+  sub: string;
   username: string;
+  email: string;
+  phone: string;
   password: string;
   poolId: string;
   clientId: string;

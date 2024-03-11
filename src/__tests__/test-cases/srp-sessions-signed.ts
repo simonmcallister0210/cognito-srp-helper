@@ -18,6 +18,9 @@ export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
       allowSpecialCharacters: true,
     }),
   }),
+  usernamePhone: mockSrpSessionSignedFactory({
+    username: faker.phone.number(),
+  }),
   usernameUuid: mockSrpSessionSignedFactory({
     username: faker.datatype.uuid(),
   }),
@@ -27,12 +30,15 @@ export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
   usernameEmpty: mockSrpSessionSignedFactory({
     username: "",
   }),
-  // passwordHash
+  // password
+  passwordPlain: mockSrpSessionSignedFactory({
+    password: faker.internet.password(),
+  }),
   passwordHashRandom: mockSrpSessionSignedFactory({
-    passwordHash: faker.random.alphaNumeric(64, { casing: "lower" }),
+    password: faker.random.alphaNumeric(64, { casing: "lower" }),
   }),
   passwordHashEmpty: mockSrpSessionSignedFactory({
-    passwordHash: "",
+    password: "",
   }),
   // poolIdAbbr
   poolIdAbbrRandom: mockSrpSessionSignedFactory({
