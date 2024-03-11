@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # https://what-version-of-node.js.org/
-        node-version: [16.x, 18.x, 20.x] # remember to update this when support is added/dropped
+        # https://nodejs.org/en/about/previous-releases#release-schedule
+        node-version: [16.x, 18.x, 20.x, 21.x] # remember to update this when support is added/dropped
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
