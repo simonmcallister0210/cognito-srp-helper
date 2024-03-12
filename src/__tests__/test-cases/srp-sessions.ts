@@ -89,7 +89,8 @@ export const positiveSrpSessions: Record<string, SrpSession> = {
     largeA: faker.random.alphaNumeric(1024, { casing: "lower" }),
   }),
   largeAShort: mockSrpSessionFactory({
-    largeA: faker.random.alphaNumeric(1, { casing: "lower" }),
+    // 1 / 62 chance to return "0" which will trigger a AbortOnZeroASrpError, so ban the char
+    largeA: faker.random.alphaNumeric(1, { casing: "lower", bannedChars: "0" }),
   }),
   largeALong: mockSrpSessionFactory({
     largeA: faker.random.alphaNumeric(10000, { casing: "lower" }),

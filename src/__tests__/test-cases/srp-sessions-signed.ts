@@ -90,7 +90,8 @@ export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
     largeA: faker.random.alphaNumeric(1024, { casing: "lower" }),
   }),
   largeAShort: mockSrpSessionSignedFactory({
-    largeA: faker.random.alphaNumeric(1, { casing: "lower" }),
+    // 1 / 62 chance to return "0" which will trigger a AbortOnZeroASrpError, so ban the char
+    largeA: faker.random.alphaNumeric(1, { casing: "lower", bannedChars: "0" }),
   }),
   largeALong: mockSrpSessionSignedFactory({
     largeA: faker.random.alphaNumeric(10000, { casing: "lower" }),
@@ -100,7 +101,8 @@ export const positiveSrpSessionsSigned: Record<string, SrpSessionSigned> = {
     largeB: faker.random.alphaNumeric(1024, { casing: "lower" }),
   }),
   largeBShort: mockSrpSessionSignedFactory({
-    largeB: faker.random.alphaNumeric(1, { casing: "lower" }),
+    // 1 / 62 chance to return "0" which will trigger a AbortOnZeroBSrpError, so ban the char
+    largeB: faker.random.alphaNumeric(1, { casing: "lower", bannedChars: "0" }),
   }),
   largeBLarge: mockSrpSessionSignedFactory({
     largeB: faker.random.alphaNumeric(10000, { casing: "lower" }),
