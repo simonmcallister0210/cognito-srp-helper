@@ -43,7 +43,7 @@
     "lint": "npm run lint:ts && npm run lint:eslint",
     "lint:eslint": "eslint -c .eslintrc.cjs src/**",
     "lint:ts": "tsc --noEmit -p .tsconfig.json",
-    "test": "jest -c .jestrc.cjs",
+    "test": "npm run test:unit && npm run test:integration",
     "test:clear": "jest --clear-cache",
     "test:integration": "jest -c .jestrc.cjs src/__tests__/integration",
     "test:unit": "jest -c .jestrc.cjs src/__tests__/unit"
