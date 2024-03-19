@@ -11,13 +11,15 @@ jobs:
     strategy:
       matrix:
         # https://nodejs.org/en/about/previous-releases#release-schedule
-        node-version: [16.x, 18.x, 20.x, 21.x] # remember to update this when support is added/dropped
+        node-version: [16, 18, 20, 21] # remember to update this when support is added/dropped
+    runs:
+      using: node${{ matrix.node-version }}
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: 18 # remember to update this when support is added/dropped
+          node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run lint
       - run: npm run build
