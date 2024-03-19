@@ -13,8 +13,6 @@ jobs:
       matrix:
         # https://nodejs.org/en/about/previous-releases#release-schedule
         node-version: [16, 18, 20, 21] # remember to update this when support is added/dropped
-    runs:
-      using: node${{ matrix.node-version }}
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js ${{ matrix.node-version }}
