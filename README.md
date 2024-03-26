@@ -134,19 +134,6 @@ const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
 // . . . return login tokens from respondToAuthChallengeResponse
 ```
 
-## Zero values in SRP
-
-Should you worry about 0 being used during the SRP calculations?
-
-Short answer: no!
-
-Long answer: according to the [safeguards of SRP](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol), if a 0 value is given for A, B, or u then the protocol must abort to avoid compromising the security of the exchange. The possible scenarios in which a 0 value is used are:
-
-1. A value of 0 is randomly generated via SHA256 which is _extremely_ unlikely to occur, ~1/10^77
-2. A SRP_B value of 0 is received from the Cogntio initiateAuth call, which won't happen unless someone is purposefully trying to compromise security by intercepting the response from Cognito
-
-If any of these scenarios occur this package will throw a `AbortOnZeroSrpError`, so you don't need to worry about the security of the exchange being compromised
-
 ## API
 
 The types _InitiateAuthRequest_, _InitiateAuthResponse_, _RespondToAuthChallengeRequest_ refer to both the SDK v2 and v3 versions of these types, and their admin variants. For example _InitiateAuthRequest_ can be _AdminInitiateAuthRequest_, _InitiateAuthCommandInput_, etc.
@@ -173,7 +160,7 @@ _string_ - A hash of the secret. This is passed to the SECRET_HASH field
 
 Generates the required password hash from the user's credentials and user pool ID
 
-_TIP: If you are authenticating from the backend, you can call this function from the frontend and pass the hash value to the backend. While the user's password is secure being transmitted over HTTPS, this step can add an extra layer of security_
+> NOTE: pre-hashing the password only works when you're sign-in attribute is Username. If you're using Email or Phone Number you need to use an unhashed password
 
 **Parameters**:
 
@@ -193,11 +180,15 @@ _string_ - A hash of the user's password. Used to create an SRP session
 
 Creates an SRP session using the user's credentials and a Cognito user pool ID. This session contains the public/private SRP key for the client, and a timestamp in the unique format required by Cognito. With this session we can add to our public key (SRP_A) to the initiateAuth request
 
+> NOTE: pre-hashing the password only works when you're sign-in attribute is Username. If you're using Email or Phone Number you should set `isHashed` as `false`
+
 `username` - _string_ - The user's username
 
-`passwordHash` - _string_ - A hash of the user's password
+`password` - _string_ - The user's password
 
 `poolId` - _string_ - The ID of the user pool the user's credentials are stored in
+
+`isHashed` - _boolean_ - A flag indicating whether the password has already been hashed. The default value is `true`
 
 **Returns**:
 
@@ -250,6 +241,25 @@ Wraps a _RespondToAuthChallengeRequest_ and attaches the PASSWORD_CLAIM_SECRET_B
 **Returns**:
 
 _RespondToAuthChallengeRequest_ - The same request but with the additional PASSWORD_CLAIM_SECRET_BLOCK, PASSWORD_CLAIM_SIGNATURE, and TIMESTAMP fields
+
+## Password hashing
+
+It's possible to hash the user's password before you create the SRP session. This might be useful if you're calling InitiateAuth from the backend. This step can add an extra layer of security by obfuscating the user's password. To be clear though, the user's password is perfectly secure being transmitted using a secure protocol like HTTPS, this step is entirely optional
+
+Be aware that password hashing will only work if the user's sign-in attribute is Username. If you're using Email or Phone Number the hashing function `createPasswordHash` will not generate a valid hash
+
+## Zero values in SRP
+
+Should you worry about 0 being used during the SRP calculations?
+
+Short answer: no!
+
+Long answer: according to the [safeguards of SRP](https://en.wikipedia.org/wiki/Secure_Remote_Password_protocol#Protocol), if a 0 value is given for A, B, or u then the protocol must abort to avoid compromising the security of the exchange. The possible scenarios in which a 0 value is used are:
+
+1. A value of 0 is randomly generated via SHA256 which is _extremely_ unlikely to occur, ~1/10^77
+2. A SRP_B value of 0 is received from the Cogntio initiateAuth call, which won't happen unless someone is purposefully trying to compromise security by intercepting the response from Cognito
+
+If any of these scenarios occur this package will throw a `AbortOnZeroSrpError`, so you don't need to worry about the security of the exchange being compromised
 
 ## See Also
 
