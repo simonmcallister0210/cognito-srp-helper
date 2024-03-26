@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.1.0...v2.2.0) (2024-03-26)
+
+
+### Features
+
+* allow users to defer password hasing with `isHashed` parameter in `createSrpSession` ([#29](https://github.com/simonmcallister0210/cognito-srp-helper/issues/29)) ([9d56963](https://github.com/simonmcallister0210/cognito-srp-helper/commit/9d56963baf744916401b8b14d242696d92c96939))
+
 ## [2.1.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.0.2...v2.1.0) (2023-10-28)
 
 
