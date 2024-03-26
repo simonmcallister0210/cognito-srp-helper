@@ -154,7 +154,10 @@ export type RespondToAuthChallengeRequest =
  * Credentials needed for SRP authentication.
  */
 export type Credentials = {
+  sub: string;
   username: string;
+  email: string;
+  phone: string;
   password: string;
   poolId: string;
   clientId: string;
@@ -171,8 +174,12 @@ export type Credentials = {
 export type SrpSession = {
   /** Username of the user. It is stored here for convenience when passing parameters into `computePasswordSignature` */
   username: string;
-  /** Password hash generated using the users credentials */
-  passwordHash: string;
+  /** Password used for authentication */
+  password: string;
+  /** Flag indicating whether the password has already been hashed */
+  isHashed: boolean;
+  /** Full un-abbreviated ID of the Cognito Userpool. Here it is the full ID that's used e.g. 'eu-west-2_abc123' */
+  poolId: string;
   /** Abbreviated ID of the Cognito Userpool. Here it is just the succeeding ID that's used e.g. 'eu-west-2_abc123' becomes 'abc123' */
   poolIdAbbr: string;
   /** Timestamp captured in the format requiree for Cogntio */

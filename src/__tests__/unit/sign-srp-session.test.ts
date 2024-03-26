@@ -18,18 +18,26 @@ import {
 import {
   negativeInitiateAuthResponses as negativeResponses,
   positiveInitiateAuthResponses as positiveResponses,
-  positiveSrpSessions as positiveSessions,
+  positiveSrpSessionsSigned as positiveSessions,
 } from "../test-cases";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
 describe("signSrpSession", () => {
   describe("positive", () => {
-    it("should create the correct signed SRP session", () => {
+    it("should create the correct signed SRP session for a hashed password", () => {
       const session = mockSrpSessionFactory();
       const response = mockInitiateAuthResponseFactory();
       const sessionSigned = signSrpSession(session, response);
       const expected = mockSrpSessionSignedFactory();
+      expect(sessionSigned).toEqual(expected);
+    });
+
+    it("should create the correct signed SRP session for a unhashed password", () => {
+      const session = mockSrpSessionFactory({ password: "Qwerty1!", isHashed: false });
+      const response = mockInitiateAuthResponseFactory();
+      const sessionSigned = signSrpSession(session, response);
+      const expected = mockSrpSessionSignedFactory({ password: "Qwerty1!", isHashed: false });
       expect(sessionSigned).toEqual(expected);
     });
 
@@ -41,7 +49,7 @@ describe("signSrpSession", () => {
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
-        expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
+        expect(sessionSigned.password).toMatch(session.password);
         expect(sessionSigned.poolIdAbbr).toMatch(session.poolIdAbbr);
         expect(sessionSigned.timestamp).toMatch(session.timestamp);
         expect(sessionSigned.smallA).toMatch(session.smallA);
@@ -63,7 +71,7 @@ describe("signSrpSession", () => {
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
-        expect(sessionSigned.passwordHash).toMatch(session.passwordHash);
+        expect(sessionSigned.password).toMatch(session.password);
         expect(sessionSigned.poolIdAbbr).toMatch(session.poolIdAbbr);
         expect(sessionSigned.timestamp).toMatch(session.timestamp);
         expect(sessionSigned.smallA).toMatch(session.smallA);

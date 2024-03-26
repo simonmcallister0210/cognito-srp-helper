@@ -5,18 +5,17 @@ import { positiveCredentials } from "../test-cases";
 describe("createSecretHash", () => {
   describe("positive", () => {
     it("should create the correct secret hash", () => {
-      const credentials = mockCredentialsFactory();
-      const { username, clientId, secretId, secretHash: expected } = credentials;
-      const secretHash = createSecretHash(username, clientId, secretId);
-      expect(secretHash).toEqual(expected);
+      const { sub, clientId, secretId, secretHash: expected } = mockCredentialsFactory();
+      const hash = createSecretHash(sub, clientId, secretId);
+      expect(hash).toEqual(expected);
     });
 
     it.each(Object.values(positiveCredentials))(
       "should create a secret hash with the correct format: credentials %#",
       (credentials) => {
-        const { username, clientId, secretId } = credentials;
-        const secretHash = createSecretHash(username, clientId, secretId);
-        expect(secretHash).toMatch(/^[a-zA-Z0-9+=/]+$/);
+        const { sub, clientId, secretId } = credentials;
+        const hash = createSecretHash(sub, clientId, secretId);
+        expect(hash).toMatch(/^[a-zA-Z0-9+=/]+$/);
       },
     );
   });

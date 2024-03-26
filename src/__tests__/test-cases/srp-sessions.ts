@@ -17,6 +17,9 @@ export const positiveSrpSessions: Record<string, SrpSession> = {
       allowSpecialCharacters: true,
     }),
   }),
+  usernamePhone: mockSrpSessionFactory({
+    username: faker.phone.number(),
+  }),
   usernameUuid: mockSrpSessionFactory({
     username: faker.datatype.uuid(),
   }),
@@ -26,12 +29,15 @@ export const positiveSrpSessions: Record<string, SrpSession> = {
   usernameEmpty: mockSrpSessionFactory({
     username: "",
   }),
-  // passwordHash
+  // password
+  passwordPlain: mockSrpSessionFactory({
+    password: faker.internet.password(),
+  }),
   passwordHashRandom: mockSrpSessionFactory({
-    passwordHash: faker.random.alphaNumeric(64, { casing: "lower" }),
+    password: faker.random.alphaNumeric(64, { casing: "lower" }),
   }),
   passwordHashEmpty: mockSrpSessionFactory({
-    passwordHash: "",
+    password: "",
   }),
   // poolIdAbbr
   poolIdAbbrRandom: mockSrpSessionFactory({
@@ -83,7 +89,8 @@ export const positiveSrpSessions: Record<string, SrpSession> = {
     largeA: faker.random.alphaNumeric(1024, { casing: "lower" }),
   }),
   largeAShort: mockSrpSessionFactory({
-    largeA: faker.random.alphaNumeric(1, { casing: "lower" }),
+    // 1 / 62 chance to return "0" which will trigger a AbortOnZeroASrpError, so ban the char
+    largeA: faker.random.alphaNumeric(1, { casing: "lower", bannedChars: "0" }),
   }),
   largeALong: mockSrpSessionFactory({
     largeA: faker.random.alphaNumeric(10000, { casing: "lower" }),

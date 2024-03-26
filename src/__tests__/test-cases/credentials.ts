@@ -18,6 +18,9 @@ export const positiveCredentials: Record<string, Credentials> = {
       allowSpecialCharacters: true,
     }),
   }),
+  usernamePhone: mockCredentialsFactory({
+    username: faker.phone.number(),
+  }),
   usernameUuid: mockCredentialsFactory({
     username: faker.datatype.uuid(),
   }),
