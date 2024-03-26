@@ -23,31 +23,21 @@ const CognitoSrpHelper = require("cognito-srp-helper");
 Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v3:
 
 ```ts
-import {
-  createSecretHash,
-  createPasswordHash,
-  createSrpSession,
-  signSrpSession,
-  wrapAuthChallenge,
-  wrapInitiateAuth,
-} from "cognito-srp-helper";
-
 // . . . obtain user credentials, IDs, and setup Cognito client
 
 const secretHash = createSecretHash(username, clientId, secretId);
-const passwordHash = createPasswordHash(username, password, poolId);
-const srpSession = createSrpSession(username, passwordHash, poolId);
+const srpSession = createSrpSession(username, passwordHash, poolId, false);
 
 const initiateAuthRes = await cognitoIdentityProviderClient
   .send(
     new InitiateAuthCommand(
       wrapInitiateAuth(srpSession, {
-        ClientId: CLIENT_ID,
+        ClientId: clientId,
         AuthFlow: "USER_SRP_AUTH",
         AuthParameters: {
           CHALLENGE_NAME: "SRP_A",
           SECRET_HASH: secretHash,
-          USERNAME,
+          USERNAME: username,
         },
       }),
     ),
@@ -62,11 +52,11 @@ const respondToAuthChallengeRes = await cognitoIdentityProviderClient
   .send(
     new RespondToAuthChallengeCommand(
       wrapAuthChallenge(signedSrpSession, {
-        ClientId: CLIENT_ID,
+        ClientId: clientId,
         ChallengeName: "PASSWORD_VERIFIER",
         ChallengeResponses: {
           SECRET_HASH: secretHash,
-          USERNAME,
+          USERNAME: username,
         },
       }),
     ),
@@ -78,18 +68,9 @@ const respondToAuthChallengeRes = await cognitoIdentityProviderClient
 // . . . return login tokens from respondToAuthChallengeResponse
 ```
 
-Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v2 (deprecated):
+Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v2 (deprecated) using a pre-hashed password:
 
 ```ts
-import {
-  createSecretHash,
-  createPasswordHash,
-  createSrpSession,
-  signSrpSession,
-  wrapAuthChallenge,
-  wrapInitiateAuth,
-} from "cognito-srp-helper";
-
 // . . . obtain user credentials, IDs, and setup Cognito client
 
 const secretHash = createSecretHash(username, clientId, secretId);
@@ -104,7 +85,7 @@ const initiateAuthRes = await cognitoIdentityServiceProvider
       AuthParameters: {
         CHALLENGE_NAME: "SRP_A",
         SECRET_HASH: secretHash,
-        USERNAME,
+        USERNAME: username,
       },
     }),
   )
@@ -122,7 +103,7 @@ const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
       ChallengeName: "PASSWORD_VERIFIER",
       ChallengeResponses: {
         SECRET_HASH: secretHash,
-        USERNAME,
+        USERNAME: username,
       },
     }),
   )
