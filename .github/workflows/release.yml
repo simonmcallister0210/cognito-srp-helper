@@ -21,16 +21,34 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run build
-      - run: npm run test
+      - run: npm run test:unit
+      - run: npm run test:integration
         env:
-          AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-          INT_TEST_USERNAME: ${{secrets.INT_TEST_USERNAME}}
-          INT_TEST_PASSWORD: ${{secrets.INT_TEST_PASSWORD}}
-          INT_TEST_POOL_ID: ${{secrets.INT_TEST_POOL_ID}}
-          INT_TEST_CLIENT_ID: ${{secrets.INT_TEST_CLIENT_ID}}
-          INT_TEST_SECRET_ID: ${{secrets.INT_TEST_SECRET_ID}}
-          INT_TEST_AWS_REGION: ${{secrets.INT_TEST_AWS_REGION}}
+          # Credentials
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+          # Username
+          INT_TEST__USERNAME__USERNAME: ${{ secrets.INT_TEST__USERNAME__USERNAME }}
+          INT_TEST__USERNAME__PASSWORD: ${{ secrets.INT_TEST__USERNAME__PASSWORD }}
+          INT_TEST__USERNAME__POOL_ID: ${{ secrets.INT_TEST__USERNAME__POOL_ID }}
+          INT_TEST__USERNAME__CLIENT_ID: ${{ secrets.INT_TEST__USERNAME__CLIENT_ID }}
+          INT_TEST__USERNAME__SECRET_ID: ${{ secrets.INT_TEST__USERNAME__SECRET_ID }}
+
+          # Email
+          INT_TEST__EMAIL__USERNAME: ${{ secrets.INT_TEST__EMAIL__USERNAME }}
+          INT_TEST__EMAIL__PASSWORD: ${{ secrets.INT_TEST__EMAIL__PASSWORD }}
+          INT_TEST__EMAIL__POOL_ID: ${{ secrets.INT_TEST__EMAIL__POOL_ID }}
+          INT_TEST__EMAIL__CLIENT_ID: ${{ secrets.INT_TEST__EMAIL__CLIENT_ID }}
+          INT_TEST__EMAIL__SECRET_ID: ${{ secrets.INT_TEST__EMAIL__SECRET_ID }}
+
+          # Phone
+          INT_TEST__PHONE__USERNAME: ${{ secrets.INT_TEST__PHONE__USERNAME }}
+          INT_TEST__PHONE__PASSWORD: ${{ secrets.INT_TEST__PHONE__PASSWORD }}
+          INT_TEST__PHONE__POOL_ID: ${{ secrets.INT_TEST__PHONE__POOL_ID }}
+          INT_TEST__PHONE__CLIENT_ID: ${{ secrets.INT_TEST__PHONE__CLIENT_ID }}
+          INT_TEST__PHONE__SECRET_ID: ${{ secrets.INT_TEST__PHONE__SECRET_ID }}
 
   github-release:
     runs-on: ubuntu-latest
