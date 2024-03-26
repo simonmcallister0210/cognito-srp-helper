@@ -26,7 +26,7 @@ Here is an example of how you would use the helper to implement SRP authenticati
 // . . . obtain user credentials, IDs, and setup Cognito client
 
 const secretHash = createSecretHash(username, clientId, secretId);
-const srpSession = createSrpSession(username, passwordHash, poolId, false);
+const srpSession = createSrpSession(username, password, poolId, false);
 
 const initiateAuthRes = await cognitoIdentityProviderClient
   .send(
