@@ -18,7 +18,7 @@ jobs:
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
-          node-version: ${{ matrix.node-version }} # remember to update this when support is added/dropped
+          node-version: ${{ matrix.node-version }}
       - run: npm ci
       - run: npm run lint
       - run: npm run build
