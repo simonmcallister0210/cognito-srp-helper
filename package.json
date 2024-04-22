@@ -85,6 +85,7 @@
     "@types/node": "^18.11.11",
     "buffer": "^6.0.3",
     "crypto-js": "4.2.0",
-    "jsbn": "1.1.0"
+    "jsbn": "1.1.0",
+    "totp-generator": "^1.0.0"
   }
 }

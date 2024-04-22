@@ -12,6 +12,14 @@ export class MissingChallengeResponsesError extends SignSrpSessionError {
   }
 }
 
+export class MissingDeviceKeyError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined DEVICE_KEY in response.ChallengeResponses",
+  ) {
+    super(message);
+  }
+}
+
 export class MissingSaltError extends SignSrpSessionError {
   constructor(
     message = "Could not sign SRP session because of missing or undefined SALT in response.ChallengeResponses",
