@@ -131,32 +131,34 @@ export const createDeviceHash = (userId: string, password: string, deviceGroupKe
 export const createDeviceVerifier = (
   userId: string,
   deviceGroupKey: string,
-): DeviceSecretVerifierConfigType & { FullPassword: string; RandomPassword: string } => {
-  // 40 random bytes (aka. RANDOM_PASSWORD)
+): DeviceSecretVerifierConfigType & {
+  FullPassword: string;
+  RandomPassword: string;
+} => {
+  // 40 random bytes encoded as base64 (aka. RANDOM_PASSWORD)
   const passwordRandom = randomBytes(40).toString("base64");
 
   // Device string (aka. FULL_PASSWORD)
-  const device = `${deviceGroupKey}${userId}:${passwordRandom}`;
-  const deviceHash = hash(device);
+  const devicePassword = createDeviceHash(userId, passwordRandom, deviceGroupKey);
 
   // Salt
   const salt = randomBytes(16).toString("hex");
   const saltHash = padHex(new BigInteger(salt, 16));
-  const saltBytes = Array.from(getBytesFromHex(saltHash), (byte) => String.fromCodePoint(byte)).join("");
+  const saltBytes = getBytesFromHex(saltHash);
+  const saltBase64 = Buffer.from(saltBytes).toString("base64");
 
   // Password verifier
-  const passwordSalted = hexHash(saltHash + deviceHash);
+  const passwordSalted = hexHash(saltHash + devicePassword);
   const passwordVerifier = G.modPow(new BigInteger(passwordSalted, 16), N);
   const passwordVerifierPadded = padHex(passwordVerifier);
-  const passwordVerifierBytes = Array.from(getBytesFromHex(passwordVerifierPadded), (byte) =>
-    String.fromCodePoint(byte),
-  ).join("");
+  const passwordVerifierBytes = getBytesFromHex(passwordVerifierPadded);
+  const passwordVerifierBase64 = Buffer.from(passwordVerifierBytes).toString("base64");
 
   return {
     RandomPassword: passwordRandom,
-    FullPassword: deviceHash,
-    PasswordVerifier: new Buffer(saltBytes).toString("base64"),
-    Salt: new Buffer(passwordVerifierBytes).toString("base64"),
+    FullPassword: devicePassword,
+    PasswordVerifier: passwordVerifierBase64,
+    Salt: saltBase64,
   };
 };
 
@@ -229,6 +231,7 @@ export const signSrpSessionWithDevice = (
   response: InitiateAuthResponse,
   deviceGroupKey: string,
   deviceRandomPassword: string,
+  deviceFullPassword: string,
 ): SrpSessionSigned => {
   // Assert SRP ChallengeParameters
   if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
@@ -243,11 +246,10 @@ export const signSrpSessionWithDevice = (
   // Check server public key isn't 0
   if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();
 
-  // Hash the password if it isn't already hashed
-  const passwordHash = createPasswordHash(deviceGroupKey, deviceRandomPassword, poolId);
+  const devicePassword = createDeviceHash(deviceKey, deviceRandomPassword, deviceGroupKey);
 
   const u = calculateU(new BigInteger(largeA, 16), new BigInteger(largeB, 16));
-  const x = calculateX(new BigInteger(salt, 16), passwordHash);
+  const x = calculateX(new BigInteger(salt, 16), devicePassword);
   const s = calculateS(x, new BigInteger(largeB, 16), new BigInteger(smallA, 16), u);
   const hkdf = computeHkdf(Buffer.from(padHex(s), "hex"), Buffer.from(padHex(u), "hex"));
 
