@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.2.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.1...v2.2.2) (2024-07-14)
+
+
+### Bug Fixes
+
+* correct aws request/response wrapper types ([#37](https://github.com/simonmcallister0210/cognito-srp-helper/issues/37)) ([1cd208e](https://github.com/simonmcallister0210/cognito-srp-helper/commit/1cd208ebc3a1d271f230aad6e3256ca2fc4e080d))
+
+## [2.2.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.0...v2.2.1) (2024-07-13)
+
+
+### Bug Fixes
+
+* dependabot Bump braces from 3.0.2 to 3.0.3 ([#35](https://github.com/simonmcallister0210/cognito-srp-helper/issues/35)) ([d6986ab](https://github.com/simonmcallister0210/cognito-srp-helper/commit/d6986ab09fe69ab28cc810e996c6b0cbc62deb38))
+
 ## [2.2.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.1.0...v2.2.0) (2024-03-26)
 
 
