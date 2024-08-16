@@ -1,7 +1,3 @@
-import {
-  DeviceSecretVerifierConfigType,
-  RespondToAuthChallengeResponse,
-} from "@aws-sdk/client-cognito-identity-provider";
 import { Buffer } from "buffer/"; // use the browser compatible buffer library
 import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
@@ -16,11 +12,14 @@ import {
   MissingLargeBError,
   MissingSaltError,
   MissingSecretError,
+  MissingUserIdForSrpBError,
 } from "./errors";
 import {
+  DeviceVerifier,
   InitiateAuthRequest,
   InitiateAuthResponse,
   RespondToAuthChallengeRequest,
+  RespondToAuthChallengeResponse,
   SrpSession,
   SrpSessionSigned,
 } from "./types";
@@ -121,25 +120,19 @@ export const createPasswordHash = (userId: string, password: string, poolId: str
   return passwordHash;
 };
 
-export const createDeviceHash = (userId: string, password: string, deviceGroupKey: string): string => {
-  const usernamePassword = `${deviceGroupKey}${userId}:${password}`;
-  const passwordHash = hash(usernamePassword);
+const createDeviceHash = (deviceKey: string, password: string, deviceGroupKey: string): string => {
+  const devicePassword = `${deviceGroupKey}${deviceKey}:${password}`;
+  const deviceHash = hash(devicePassword);
 
-  return passwordHash;
+  return deviceHash;
 };
 
-export const createDeviceVerifier = (
-  userId: string,
-  deviceGroupKey: string,
-): DeviceSecretVerifierConfigType & {
-  FullPassword: string;
-  RandomPassword: string;
-} => {
+export const createDeviceVerifier = (deviceKey: string, deviceGroupKey: string): DeviceVerifier => {
   // 40 random bytes encoded as base64 (aka. RANDOM_PASSWORD)
   const passwordRandom = randomBytes(40).toString("base64");
 
   // Device string (aka. FULL_PASSWORD)
-  const devicePassword = createDeviceHash(userId, passwordRandom, deviceGroupKey);
+  const deviceHash = createDeviceHash(deviceKey, passwordRandom, deviceGroupKey);
 
   // Salt
   const salt = randomBytes(16).toString("hex");
@@ -148,17 +141,18 @@ export const createDeviceVerifier = (
   const saltBase64 = Buffer.from(saltBytes).toString("base64");
 
   // Password verifier
-  const passwordSalted = hexHash(saltHash + devicePassword);
+  const passwordSalted = hexHash(saltHash + deviceHash);
   const passwordVerifier = G.modPow(new BigInteger(passwordSalted, 16), N);
   const passwordVerifierPadded = padHex(passwordVerifier);
   const passwordVerifierBytes = getBytesFromHex(passwordVerifierPadded);
   const passwordVerifierBase64 = Buffer.from(passwordVerifierBytes).toString("base64");
 
   return {
-    RandomPassword: passwordRandom,
-    FullPassword: devicePassword,
-    PasswordVerifier: passwordVerifierBase64,
-    Salt: saltBase64,
+    DeviceRandomPassword: passwordRandom,
+    DeviceSecretVerifierConfig: {
+      PasswordVerifier: passwordVerifierBase64,
+      Salt: saltBase64,
+    },
   };
 };
 
@@ -186,6 +180,7 @@ export const signSrpSession = (session: SrpSession, response: InitiateAuthRespon
   if (!response.ChallengeParameters.SALT) throw new MissingSaltError();
   if (!response.ChallengeParameters.SECRET_BLOCK) throw new MissingSecretError();
   if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
+  if (!response.ChallengeParameters.USER_ID_FOR_SRP) throw new MissingUserIdForSrpBError();
 
   const {
     SALT: salt,
@@ -228,28 +223,27 @@ export const signSrpSession = (session: SrpSession, response: InitiateAuthRespon
 
 export const signSrpSessionWithDevice = (
   session: SrpSession,
-  response: InitiateAuthResponse,
+  response: RespondToAuthChallengeResponse,
   deviceGroupKey: string,
   deviceRandomPassword: string,
-  deviceFullPassword: string,
 ): SrpSessionSigned => {
   // Assert SRP ChallengeParameters
   if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
-  if (!response.ChallengeParameters.DEVICE_KEY) throw new MissingDeviceKeyError();
   if (!response.ChallengeParameters.SALT) throw new MissingSaltError();
   if (!response.ChallengeParameters.SECRET_BLOCK) throw new MissingSecretError();
   if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
+  if (!response.ChallengeParameters.DEVICE_KEY) throw new MissingDeviceKeyError();
 
   const { DEVICE_KEY: deviceKey, SALT: salt, SECRET_BLOCK: secret, SRP_B: largeB } = response.ChallengeParameters;
-  const { poolId, timestamp, smallA, largeA } = session;
+  const { timestamp, smallA, largeA } = session;
 
   // Check server public key isn't 0
   if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();
 
-  const devicePassword = createDeviceHash(deviceKey, deviceRandomPassword, deviceGroupKey);
+  const deviceHash = createDeviceHash(deviceKey, deviceRandomPassword, deviceGroupKey);
 
   const u = calculateU(new BigInteger(largeA, 16), new BigInteger(largeB, 16));
-  const x = calculateX(new BigInteger(salt, 16), devicePassword);
+  const x = calculateX(new BigInteger(salt, 16), deviceHash);
   const s = calculateS(x, new BigInteger(largeB, 16), new BigInteger(smallA, 16), u);
   const hkdf = computeHkdf(Buffer.from(padHex(s), "hex"), Buffer.from(padHex(u), "hex"));
 

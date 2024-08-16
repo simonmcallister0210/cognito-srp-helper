@@ -12,14 +12,6 @@ export class MissingChallengeResponsesError extends SignSrpSessionError {
   }
 }
 
-export class MissingDeviceKeyError extends SignSrpSessionError {
-  constructor(
-    message = "Could not sign SRP session because of missing or undefined DEVICE_KEY in response.ChallengeResponses",
-  ) {
-    super(message);
-  }
-}
-
 export class MissingSaltError extends SignSrpSessionError {
   constructor(
     message = "Could not sign SRP session because of missing or undefined SALT in response.ChallengeResponses",
@@ -39,6 +31,22 @@ export class MissingSecretError extends SignSrpSessionError {
 export class MissingLargeBError extends SignSrpSessionError {
   constructor(
     message = "Could not sign SRP session because of missing or undefined SRP_B in response.ChallengeResponses",
+  ) {
+    super(message);
+  }
+}
+
+export class MissingUserIdForSrpBError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined USER_ID_FOR_SRP in response.ChallengeResponses",
+  ) {
+    super(message);
+  }
+}
+
+export class MissingDeviceKeyError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined DEVICE_KEY in response.ChallengeResponses",
   ) {
     super(message);
   }

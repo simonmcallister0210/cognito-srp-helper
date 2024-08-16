@@ -2,11 +2,14 @@ import type {
   AdminInitiateAuthRequest,
   AdminInitiateAuthResponse,
   AdminRespondToAuthChallengeRequest,
+  AdminRespondToAuthChallengeResponse,
   AuthFlowType,
   ChallengeNameType,
+  DeviceSecretVerifierConfigType,
   InitiateAuthRequest as ClientInitiateAuthRequest,
   InitiateAuthResponse as ClientInitiateAuthResponse,
   RespondToAuthChallengeRequest as ClientRespondToAuthChallengeRequest,
+  RespondToAuthChallengeResponse as ClientRespondToAuthChallengeResponse,
 } from "@aws-sdk/client-cognito-identity-provider";
 
 /* Things you should be aware of:
@@ -41,6 +44,17 @@ export type RespondToAuthChallengeRequest =
       ChallengeName?: ChallengeNameType | string;
     })
   | (Omit<AdminRespondToAuthChallengeRequest, "ChallengeName"> & {
+      ChallengeName?: ChallengeNameType | string;
+    });
+
+/**
+ * Either RespondToAuthChallengeResponse or AdminRespondToAuthChallengeResponse from `@aws-sdk/client-cognito-identity-provider`. Should be compatible with SDK v2 and Command forms of the response
+ */
+export type RespondToAuthChallengeResponse =
+  | (Omit<ClientRespondToAuthChallengeResponse, "ChallengeName"> & {
+      ChallengeName?: ChallengeNameType | string;
+    })
+  | (Omit<AdminRespondToAuthChallengeResponse, "ChallengeName"> & {
       ChallengeName?: ChallengeNameType | string;
     });
 
@@ -98,4 +112,15 @@ export type SrpSessionSigned = SrpSession & {
   secret: string;
   /** The signatire used to verify the user's password */
   passwordSignature: string;
+};
+
+/**
+ * An object containing the DeviceSecretVerifierConfig required for the ConfirmDeviceCommand step,
+ * and DeviceRandomPassword used for to generate the signature for the DEVICE_PASSWORD_VERIFIER step
+ */
+export type DeviceVerifier = {
+  /** The random password associated with a device. Used to generate the password signature for DEVICE_PASSWORD_VERIFIER */
+  DeviceRandomPassword: string;
+  /** The device verifier used to confirm the device in ConfirmDeviceCommand */
+  DeviceSecretVerifierConfig: DeviceSecretVerifierConfigType;
 };
