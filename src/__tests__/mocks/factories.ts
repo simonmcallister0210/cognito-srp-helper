@@ -1,8 +1,10 @@
 import {
   Credentials,
+  DeviceVerifier,
   InitiateAuthRequest,
   InitiateAuthResponse,
   RespondToAuthChallengeRequest,
+  RespondToAuthChallengeResponse,
   SrpSession,
   SrpSessionSigned,
 } from "../../types";
@@ -10,12 +12,17 @@ import {
 import {
   mockAdminInitiateAuthRequest,
   mockAdminRespondToAuthChallengeRequest,
+  mockAdminRespondToAuthChallengeResponse,
   mockCredentials,
+  mockDeviceVerifier,
   mockInitiateAuthRequest,
   mockInitiateAuthResponse,
+  mockInitiateAuthResponseWithNewDevice,
   mockRespondToAuthChallengeRequest,
+  mockRespondToAuthChallengeResponse,
   mockSession,
   mockSessionSigned,
+  mockSessionSignedWithDevice,
 } from "./data";
 
 export const mockCredentialsFactory = (credentials?: Partial<Credentials>): Credentials =>
@@ -33,6 +40,12 @@ export const mockSrpSessionFactory = (session?: Partial<SrpSession>): SrpSession
 export const mockSrpSessionSignedFactory = (session?: Partial<SrpSessionSigned>): SrpSessionSigned =>
   structuredClone({
     ...mockSessionSigned,
+    ...session,
+  });
+
+export const mockSrpSessionSignedWithDeviceFactory = (session?: Partial<SrpSessionSigned>): SrpSessionSigned =>
+  structuredClone({
+    ...mockSessionSignedWithDevice,
     ...session,
   });
 
@@ -58,6 +71,14 @@ export const mockInitiateAuthResponseFactory = (response?: Partial<InitiateAuthR
     ...response,
   });
 
+export const mockInitiateAuthResponseWithNewDeviceFactory = (
+  response?: Partial<InitiateAuthResponse>,
+): InitiateAuthResponse =>
+  structuredClone({
+    ...mockInitiateAuthResponseWithNewDevice,
+    ...response,
+  });
+
 // RespondToAuthChallengeRequest
 
 export const mockRespondToAuthChallengeRequestFactory = (
@@ -74,4 +95,30 @@ export const mockAdminRespondToAuthChallengeRequestFactory = (
   structuredClone({
     ...mockAdminRespondToAuthChallengeRequest,
     ...request,
+  });
+
+// RespondToAuthChallengeResponse
+
+export const mockRespondToAuthChallengeResponseFactory = (
+  response?: Partial<RespondToAuthChallengeResponse>,
+): RespondToAuthChallengeResponse =>
+  structuredClone({
+    ...mockRespondToAuthChallengeResponse,
+    ...response,
+  });
+
+export const mockAdminRespondToAuthChallengeResponseFactory = (
+  response?: Partial<RespondToAuthChallengeResponse>,
+): RespondToAuthChallengeResponse =>
+  structuredClone({
+    ...mockAdminRespondToAuthChallengeResponse,
+    ...response,
+  });
+
+// DeviceVerifier
+
+export const mockDeviceVerifierFactory = (verifier?: Partial<DeviceVerifier>): DeviceVerifier =>
+  structuredClone({
+    ...mockDeviceVerifier,
+    ...verifier,
   });
