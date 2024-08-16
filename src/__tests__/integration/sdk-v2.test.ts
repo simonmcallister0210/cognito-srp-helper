@@ -105,7 +105,7 @@ describe("SDK v2 integration", () => {
     },
   });
 
-  it("should work with initiateAuth and respondToAuthChallenge (hashed password)", async () => {
+  it("should work with standard client SRP auth flow (hashed password)", async () => {
     const { username, password, poolId, clientId, secretId } = positiveCredentials.username;
     const secretHash = createSecretHash(username, clientId, secretId);
     const passwordHash = createPasswordHash(username, password, poolId);
@@ -151,7 +151,7 @@ describe("SDK v2 integration", () => {
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
   });
 
-  it("should work with adminInitiateAuth and adminRespondToAuthChallenge (hashed password)", async () => {
+  it("should work with standard admin SRP auth flow (hashed password)", async () => {
     const { username, password, poolId, clientId, secretId } = positiveCredentials.username;
     const secretHash = createSecretHash(username, clientId, secretId);
     const passwordHash = createPasswordHash(username, password, poolId);
@@ -200,7 +200,7 @@ describe("SDK v2 integration", () => {
   });
 
   it.each(Object.values(positiveCredentials))(
-    "should work with initiateAuth and respondToAuthChallenge (unhashed password): credentials %#",
+    "should work with standard client SRP auth flow (unhashed password): credentials %#",
     async ({ username, password, poolId, clientId, secretId }) => {
       const secretHash = createSecretHash(username, clientId, secretId);
       const srpSession = createSrpSession(username, password, poolId, false);
@@ -247,7 +247,7 @@ describe("SDK v2 integration", () => {
   );
 
   it.each(Object.values(positiveCredentials))(
-    "should work with adminInitiateAuth and adminRespondToAuthChallenge (unhashed password): credentials %#",
+    "should work with standard admin SRP auth flow (unhashed password): credentials %#",
     async ({ username, password, poolId, clientId, secretId }) => {
       const secretHash = createSecretHash(username, clientId, secretId);
       const srpSession = createSrpSession(username, password, poolId, false);
