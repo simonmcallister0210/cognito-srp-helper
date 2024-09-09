@@ -1,18 +1,4 @@
-import {
-  AdminInitiateAuthCommand,
-  AdminRespondToAuthChallengeCommand,
-  AdminSetUserMFAPreferenceCommand,
-  AdminUpdateDeviceStatusCommand,
-  AssociateSoftwareTokenCommand,
-  CognitoIdentityProviderClient,
-  ConfirmDeviceCommand,
-  InitiateAuthCommand,
-  RespondToAuthChallengeCommand,
-  SetUserMFAPreferenceCommand,
-  SignUpCommand,
-  UpdateDeviceStatusCommand,
-  VerifySoftwareTokenCommand,
-} from "@aws-sdk/client-cognito-identity-provider";
+import { CognitoIdentityServiceProvider } from "aws-sdk";
 import dotenv from "dotenv";
 import path from "path";
 
@@ -29,7 +15,7 @@ import {
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 import { TOTP } from "totp-generator";
-import { signupV3 } from "./helpers";
+import { signupV2 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..
 
@@ -41,6 +27,8 @@ dotenv.config({
 
 const {
   AWS_REGION = "",
+  AWS_ACCESS_KEY_ID = "",
+  AWS_SECRET_ACCESS_KEY = "",
   INT_TEST__USERNAME__POOL_ID = "",
   INT_TEST__USERNAME__CLIENT_ID = "",
   INT_TEST__USERNAME__SECRET_ID = "",
@@ -54,6 +42,8 @@ const {
 
 Object.entries({
   AWS_REGION,
+  AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY,
   INT_TEST__USERNAME__POOL_ID,
   INT_TEST__USERNAME__CLIENT_ID,
   INT_TEST__USERNAME__SECRET_ID,
@@ -117,9 +107,13 @@ const createCredentials = () => [
   },
 ];
 
-describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
-  const cognitoIdentityProviderClient = new CognitoIdentityProviderClient({
-    region: "eu-west-2",
+describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
+  const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider({
+    region: AWS_REGION,
+    credentials: {
+      accessKeyId: AWS_ACCESS_KEY_ID,
+      secretAccessKey: AWS_SECRET_ACCESS_KEY,
+    },
   });
 
   describe("normal flow", () => {
@@ -129,8 +123,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
     beforeAll(async () =>
       Promise.all(
         credentials.map((creds) =>
-          signupV3({
-            cognitoIdentityProviderClient,
+          signupV2({
+            cognitoIdentityServiceProvider,
             ...creds,
           }),
         ),
@@ -148,8 +142,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 1. initiate signin attempt ----------
 
-        const initiateAuthRes1 = await cognitoIdentityProviderClient.send(
-          new InitiateAuthCommand(
+        const initiateAuthRes1 = await cognitoIdentityServiceProvider
+          .initiateAuth(
             wrapInitiateAuth(srpSession1, {
               ClientId: clientId,
               AuthFlow: "USER_SRP_AUTH",
@@ -159,15 +153,15 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 1. respond to PASSWORD_VERIFIER challenge ----------
 
         const signedSrpSession1 = signSrpSession(srpSession1, initiateAuthRes1);
 
-        const respondToAuthChallengeRes1a = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes1a = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession1, {
               ClientId: clientId,
               ChallengeName: "PASSWORD_VERIFIER",
@@ -176,19 +170,19 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Associate a TOTP token with the user ----------
 
         const AccessToken = respondToAuthChallengeRes1a.AuthenticationResult?.AccessToken;
         if (!AccessToken) throw Error("AccessToken is undefined");
 
-        const associateSoftwareTokenRes = await cognitoIdentityProviderClient.send(
-          new AssociateSoftwareTokenCommand({
+        const associateSoftwareTokenRes = await cognitoIdentityServiceProvider
+          .associateSoftwareToken({
             AccessToken,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Verify the TOTP token with the user ----------
 
@@ -196,26 +190,25 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityProviderClient.send(
-          new VerifySoftwareTokenCommand({
+        const verifySoftwareTokenRes = await cognitoIdentityServiceProvider
+          .verifySoftwareToken({
             AccessToken,
             UserCode: otp1,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityProviderClient.send(
-          new AdminSetUserMFAPreferenceCommand({
-            UserPoolId: poolId,
-            Username: username,
+        const setUserMFAPreferenceRes = await cognitoIdentityServiceProvider
+          .setUserMFAPreference({
+            AccessToken,
             SoftwareTokenMfaSettings: {
               // won't work unless we associate and verify TOTP token with user
               Enabled: true,
               PreferredMfa: true,
             },
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Wait for a new OTP to generate ----------
 
@@ -224,8 +217,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         // ---------- Signin 2. initiate signin attempt ----------
 
         const srpSession2 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
-        const initiateAuthRes2 = await cognitoIdentityProviderClient.send(
-          new InitiateAuthCommand(
+        const initiateAuthRes2 = await cognitoIdentityServiceProvider
+          .initiateAuth(
             wrapInitiateAuth(srpSession2, {
               ClientId: clientId,
               AuthFlow: "USER_SRP_AUTH",
@@ -235,8 +228,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 2. respond to PASSWORD_VERIFIER challenge ----------
 
@@ -245,8 +238,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!USER_ID_FOR_SRP) throw Error("USER_ID_FOR_SRP is undefined");
         const secretHash2 = createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
 
-        const respondToAuthChallengeRes2a = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes2a = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession2, {
               ClientId: clientId,
               ChallengeName: "PASSWORD_VERIFIER",
@@ -255,16 +248,16 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: USER_ID_FOR_SRP,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 2. respond to SOFTWARE_TOKEN_MFA challenge ----------
 
         const { otp: otp2 } = TOTP.generate(SecretCode);
         const { Session: Session2a } = respondToAuthChallengeRes2a;
 
-        const respondToAuthChallengeRes2b = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes2b = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession2, {
               ClientId: clientId,
               ChallengeName: "SOFTWARE_TOKEN_MFA",
@@ -275,8 +268,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: Session2a,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Confirm the device (for tracking) ----------
 
@@ -286,31 +279,31 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityProviderClient.send(
-          new ConfirmDeviceCommand({
+        const confirmDeviceRes = await cognitoIdentityServiceProvider
+          .confirmDevice({
             AccessToken,
             DeviceKey,
             DeviceName: "example-friendly-name", // usually this is set a User-Agent
             DeviceSecretVerifierConfig,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityProviderClient.send(
-          new UpdateDeviceStatusCommand({
+        const updateDeviceStatusRes = await cognitoIdentityServiceProvider
+          .updateDeviceStatus({
             AccessToken,
             DeviceKey,
             DeviceRememberedStatus: "remembered",
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Signin 3. initiate signin attempt ----------
 
         const srpSession3 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
-        const initiateAuthRes3 = await cognitoIdentityProviderClient.send(
-          new InitiateAuthCommand(
+        const initiateAuthRes3 = await cognitoIdentityServiceProvider
+          .initiateAuth(
             wrapInitiateAuth(srpSession3, {
               ClientId: clientId,
               AuthFlow: "USER_SRP_AUTH",
@@ -321,15 +314,15 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 DEVICE_KEY: DeviceKey,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to PASSWORD_VERIFIER challenge ----------
 
         const signedSrpSession3 = signSrpSession(srpSession3, initiateAuthRes3);
 
-        const respondToAuthChallengeRes3a = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3a = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession3, {
               ClientId: clientId,
               ChallengeName: "PASSWORD_VERIFIER",
@@ -340,13 +333,13 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: initiateAuthRes3.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to DEVICE_SRP_AUTH challenge ----------
 
-        const respondToAuthChallengeRes3b = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3b = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession3, {
               ClientId: clientId,
               ChallengeName: "DEVICE_SRP_AUTH",
@@ -357,8 +350,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: respondToAuthChallengeRes3a.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to DEVICE_PASSWORD_VERIFIER challenge ----------
 
@@ -369,8 +362,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
           DeviceRandomPassword,
         );
 
-        const respondToAuthChallengeRes3c = await cognitoIdentityProviderClient.send(
-          new RespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3c = await cognitoIdentityServiceProvider
+          .respondToAuthChallenge(
             wrapAuthChallenge(signedSrpSessionWithDevice3, {
               ClientId: clientId,
               ChallengeName: "DEVICE_PASSWORD_VERIFIER",
@@ -381,8 +374,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: respondToAuthChallengeRes3b.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         expect(respondToAuthChallengeRes3c).toHaveProperty("AuthenticationResult");
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("AccessToken");
@@ -399,8 +392,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
     beforeAll(async () =>
       Promise.all(
         credentials.map((creds) =>
-          signupV3({
-            cognitoIdentityProviderClient,
+          signupV2({
+            cognitoIdentityServiceProvider,
             ...creds,
           }),
         ),
@@ -418,8 +411,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 1. initiate signin attempt ----------
 
-        const initiateAuthRes1 = await cognitoIdentityProviderClient.send(
-          new AdminInitiateAuthCommand(
+        const initiateAuthRes1 = await cognitoIdentityServiceProvider
+          .adminInitiateAuth(
             wrapInitiateAuth(srpSession1, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -430,15 +423,15 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 1. respond to PASSWORD_VERIFIER challenge ----------
 
         const signedSrpSession1 = signSrpSession(srpSession1, initiateAuthRes1);
 
-        const respondToAuthChallengeRes1a = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes1a = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession1, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -448,19 +441,19 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Associate a TOTP token with the user ----------
 
         const AccessToken = respondToAuthChallengeRes1a.AuthenticationResult?.AccessToken;
         if (!AccessToken) throw Error("AccessToken is undefined");
 
-        const associateSoftwareTokenRes = await cognitoIdentityProviderClient.send(
-          new AssociateSoftwareTokenCommand({
+        const associateSoftwareTokenRes = await cognitoIdentityServiceProvider
+          .associateSoftwareToken({
             AccessToken,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Verify the TOTP token with the user ----------
 
@@ -468,25 +461,26 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityProviderClient.send(
-          new VerifySoftwareTokenCommand({
+        const verifySoftwareTokenRes = await cognitoIdentityServiceProvider
+          .verifySoftwareToken({
             AccessToken,
             UserCode: otp1,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityProviderClient.send(
-          new SetUserMFAPreferenceCommand({
-            AccessToken,
+        const setUserMFAPreferenceRes = await cognitoIdentityServiceProvider
+          .adminSetUserMFAPreference({
+            UserPoolId: poolId,
+            Username: username,
             SoftwareTokenMfaSettings: {
               // won't work unless we associate and verify TOTP token with user
               Enabled: true,
               PreferredMfa: true,
             },
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Wait for a new OTP to generate ----------
 
@@ -495,8 +489,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         // ---------- Signin 2. initiate signin attempt ----------
 
         const srpSession2 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
-        const initiateAuthRes2 = await cognitoIdentityProviderClient.send(
-          new AdminInitiateAuthCommand(
+        const initiateAuthRes2 = await cognitoIdentityServiceProvider
+          .adminInitiateAuth(
             wrapInitiateAuth(srpSession2, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -507,8 +501,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: username,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 2. respond to PASSWORD_VERIFIER challenge ----------
 
@@ -517,8 +511,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!USER_ID_FOR_SRP) throw Error("USER_ID_FOR_SRP is undefined");
         const secretHash2 = createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
 
-        const respondToAuthChallengeRes2a = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes2a = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession2, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -528,16 +522,16 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 USERNAME: USER_ID_FOR_SRP,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 2. respond to SOFTWARE_TOKEN_MFA challenge ----------
 
         const { otp: otp2 } = TOTP.generate(SecretCode);
         const { Session: Session2a } = respondToAuthChallengeRes2a;
 
-        const respondToAuthChallengeRes2b = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes2b = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession2, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -549,8 +543,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: Session2a,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Confirm the device (for tracking) ----------
 
@@ -560,32 +554,32 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityProviderClient.send(
-          new ConfirmDeviceCommand({
+        const confirmDeviceRes = await cognitoIdentityServiceProvider
+          .confirmDevice({
             AccessToken,
             DeviceKey,
             DeviceName: "example-friendly-name", // usually this is set a User-Agent
             DeviceSecretVerifierConfig,
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityProviderClient.send(
-          new AdminUpdateDeviceStatusCommand({
+        const updateDeviceStatusRes = await cognitoIdentityServiceProvider
+          .adminUpdateDeviceStatus({
             UserPoolId: poolId,
             Username: USER_ID_FOR_SRP,
             DeviceKey,
             DeviceRememberedStatus: "remembered",
-          }),
-        );
+          })
+          .promise();
 
         // ---------- Signin 3. initiate signin attempt ----------
 
         const srpSession3 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
-        const initiateAuthRes3 = await cognitoIdentityProviderClient.send(
-          new AdminInitiateAuthCommand(
+        const initiateAuthRes3 = await cognitoIdentityServiceProvider
+          .adminInitiateAuth(
             wrapInitiateAuth(srpSession3, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -597,15 +591,15 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
                 DEVICE_KEY: DeviceKey,
               },
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to PASSWORD_VERIFIER challenge ----------
 
         const signedSrpSession3 = signSrpSession(srpSession3, initiateAuthRes3);
 
-        const respondToAuthChallengeRes3a = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3a = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession3, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -617,13 +611,13 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: initiateAuthRes3.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to DEVICE_SRP_AUTH challenge ----------
 
-        const respondToAuthChallengeRes3b = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3b = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSession3, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -635,8 +629,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: respondToAuthChallengeRes3a.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         // ---------- Signin 3. respond to DEVICE_PASSWORD_VERIFIER challenge ----------
 
@@ -647,8 +641,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
           DeviceRandomPassword,
         );
 
-        const respondToAuthChallengeRes3c = await cognitoIdentityProviderClient.send(
-          new AdminRespondToAuthChallengeCommand(
+        const respondToAuthChallengeRes3c = await cognitoIdentityServiceProvider
+          .adminRespondToAuthChallenge(
             wrapAuthChallenge(signedSrpSessionWithDevice3, {
               UserPoolId: poolId,
               ClientId: clientId,
@@ -660,8 +654,8 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
               },
               Session: respondToAuthChallengeRes3b.Session,
             }),
-          ),
-        );
+          )
+          .promise();
 
         expect(respondToAuthChallengeRes3c).toHaveProperty("AuthenticationResult");
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("AccessToken");

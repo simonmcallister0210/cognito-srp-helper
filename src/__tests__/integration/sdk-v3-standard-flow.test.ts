@@ -19,6 +19,7 @@ import {
 } from "../../cognito-srp-helper";
 import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
+import { signupV3 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..
 
@@ -64,48 +65,6 @@ Object.entries({
     `);
   }
 });
-
-type SignupOptions = {
-  username: string;
-  password: string;
-  cognitoIdentityProviderClient: CognitoIdentityProviderClient;
-  clientId: string;
-  secretId: string;
-};
-
-const signup = async (options: SignupOptions) => {
-  const { username, password, cognitoIdentityProviderClient, clientId, secretId } = options;
-  const secretHash = createSecretHash(username, clientId, secretId);
-
-  console.log({
-    Username: username,
-    Password: password,
-    ClientId: clientId,
-    SecretHash: secretHash,
-  });
-
-  await cognitoIdentityProviderClient
-    .send(
-      // There's a pre-signup trigger to auto-confirm new users, so no need to Confirm post signup
-      new SignUpCommand({
-        ClientId: clientId,
-        Username: username,
-        Password: password,
-        SecretHash: secretHash,
-      }),
-    )
-    .catch((err) => {
-      console.log({
-        err: err,
-        ClientId: clientId,
-        Username: username,
-        Password: password,
-        SecretHash: secretHash,
-      });
-
-      throw err;
-    });
-};
 
 const credentials = [
   {
@@ -155,7 +114,7 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
   beforeAll(async () =>
     Promise.all(
       credentials.map((creds) =>
-        signup({
+        signupV3({
           cognitoIdentityProviderClient,
           ...creds,
         }),
@@ -170,42 +129,34 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
     const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
     const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
-    const initiateAuthRes = await cognitoIdentityProviderClient
-      .send(
-        new InitiateAuthCommand(
-          wrapInitiateAuth(srpSession, {
-            ClientId: clientId,
-            AuthFlow: "USER_SRP_AUTH",
-            AuthParameters: {
-              CHALLENGE_NAME: "SRP_A",
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        ),
-      )
-      .catch((err) => {
-        throw err;
-      });
+    const initiateAuthRes = await cognitoIdentityProviderClient.send(
+      new InitiateAuthCommand(
+        wrapInitiateAuth(srpSession, {
+          ClientId: clientId,
+          AuthFlow: "USER_SRP_AUTH",
+          AuthParameters: {
+            CHALLENGE_NAME: "SRP_A",
+            SECRET_HASH: secretHash,
+            USERNAME: username,
+          },
+        }),
+      ),
+    );
 
     const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
 
-    const respondToAuthChallengeRes = await cognitoIdentityProviderClient
-      .send(
-        new RespondToAuthChallengeCommand(
-          wrapAuthChallenge(signedSrpSession, {
-            ClientId: clientId,
-            ChallengeName: "PASSWORD_VERIFIER",
-            ChallengeResponses: {
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        ),
-      )
-      .catch((err) => {
-        throw err;
-      });
+    const respondToAuthChallengeRes = await cognitoIdentityProviderClient.send(
+      new RespondToAuthChallengeCommand(
+        wrapAuthChallenge(signedSrpSession, {
+          ClientId: clientId,
+          ChallengeName: "PASSWORD_VERIFIER",
+          ChallengeResponses: {
+            SECRET_HASH: secretHash,
+            USERNAME: username,
+          },
+        }),
+      ),
+    );
 
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
@@ -219,44 +170,36 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
     const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
     const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
-    const initiateAuthRes = await cognitoIdentityProviderClient
-      .send(
-        new AdminInitiateAuthCommand(
-          wrapInitiateAuth(srpSession, {
-            UserPoolId: poolId,
-            ClientId: clientId,
-            AuthFlow: "USER_SRP_AUTH",
-            AuthParameters: {
-              CHALLENGE_NAME: "SRP_A",
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        ),
-      )
-      .catch((err) => {
-        throw err;
-      });
+    const initiateAuthRes = await cognitoIdentityProviderClient.send(
+      new AdminInitiateAuthCommand(
+        wrapInitiateAuth(srpSession, {
+          UserPoolId: poolId,
+          ClientId: clientId,
+          AuthFlow: "USER_SRP_AUTH",
+          AuthParameters: {
+            CHALLENGE_NAME: "SRP_A",
+            SECRET_HASH: secretHash,
+            USERNAME: username,
+          },
+        }),
+      ),
+    );
 
     const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
 
-    const respondToAuthChallengeRes = await cognitoIdentityProviderClient
-      .send(
-        new AdminRespondToAuthChallengeCommand(
-          wrapAuthChallenge(signedSrpSession, {
-            UserPoolId: poolId,
-            ClientId: clientId,
-            ChallengeName: "PASSWORD_VERIFIER",
-            ChallengeResponses: {
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        ),
-      )
-      .catch((err) => {
-        throw err;
-      });
+    const respondToAuthChallengeRes = await cognitoIdentityProviderClient.send(
+      new AdminRespondToAuthChallengeCommand(
+        wrapAuthChallenge(signedSrpSession, {
+          UserPoolId: poolId,
+          ClientId: clientId,
+          ChallengeName: "PASSWORD_VERIFIER",
+          ChallengeResponses: {
+            SECRET_HASH: secretHash,
+            USERNAME: username,
+          },
+        }),
+      ),
+    );
 
     expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
