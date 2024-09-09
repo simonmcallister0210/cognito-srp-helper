@@ -1,6 +1,6 @@
 {
   "name": "cognito-srp-helper",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "A helper for SRP authentication in AWS Cognito",
   "author": "Simon McAllister",
   "license": "Apache-2.0",
