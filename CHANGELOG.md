@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.2.3](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.2...v2.2.3) (2024-09-09)
+
+
+### Bug Fixes
+
+* Bump fast-xml-parser from 4.2.5 to 4.4.1, and @aws-sdk/client-cognito-identity-provider from 3.438.0 to 3.632.0 ([#40](https://github.com/simonmcallister0210/cognito-srp-helper/issues/40)) ([3992e8d](https://github.com/simonmcallister0210/cognito-srp-helper/commit/3992e8d1214d86095918268310740da3fa54268f))
+
 ## [2.2.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.1...v2.2.2) (2024-07-14)
 
 
