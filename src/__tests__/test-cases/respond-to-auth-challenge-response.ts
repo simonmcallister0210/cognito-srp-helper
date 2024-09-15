@@ -78,7 +78,8 @@ export const positiveRespondToAuthChallengeResponses: Record<string, RespondToAu
   deviceKeyRandom: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
-      DEVICE_KEY: new RandExp(/^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_$/).gen() + faker.datatype.uuid(),
+      DEVICE_KEY:
+        new RandExp(/^(us(-gov)?|ap|ca|cn|eu|sa)-(central|(north|south)?(east|west)?)_$/).gen() + faker.datatype.uuid(),
     },
   }),
   // USERNAME
@@ -86,13 +87,13 @@ export const positiveRespondToAuthChallengeResponses: Record<string, RespondToAu
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: faker.internet.userName(),
-    }
+    },
   }),
   usernameEmail: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: faker.internet.email(),
-    }
+    },
   }),
   usernameEmailSpecialChars: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
@@ -100,31 +101,31 @@ export const positiveRespondToAuthChallengeResponses: Record<string, RespondToAu
       USERNAME: faker.internet.email("john", "doe", "example.fakerjs.dev", {
         allowSpecialCharacters: true,
       }),
-    }
+    },
   }),
   usernamePhone: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: faker.phone.number(),
-    }
+    },
   }),
   usernameUuid: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: faker.datatype.uuid(),
-    }
+    },
   }),
   usernameSymbols: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: faker.datatype.string(),
-    }
+    },
   }),
   usernameEmpty: mockRespondToAuthChallengeResponseFactory({
     ChallengeParameters: {
       ...ChallengeParameters,
       USERNAME: "",
-    }
+    },
   }),
 };
 
@@ -158,4 +159,4 @@ export const negativeRespondToAuthChallengeResponses: Record<string, RespondToAu
       ...omit(ChallengeParameters, "DEVICE_KEY"),
     },
   }),
-}
+};

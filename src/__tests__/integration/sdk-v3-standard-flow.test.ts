@@ -4,10 +4,11 @@ import {
   CognitoIdentityProviderClient,
   InitiateAuthCommand,
   RespondToAuthChallengeCommand,
-  SignUpCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { faker } from "@faker-js/faker";
 import dotenv from "dotenv";
 import path from "path";
+import RandExp from "randexp";
 
 import {
   createPasswordHash,
@@ -17,8 +18,7 @@ import {
   wrapAuthChallenge,
   wrapInitiateAuth,
 } from "../../cognito-srp-helper";
-import { faker } from "@faker-js/faker";
-import RandExp from "randexp";
+
 import { signupV3 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..

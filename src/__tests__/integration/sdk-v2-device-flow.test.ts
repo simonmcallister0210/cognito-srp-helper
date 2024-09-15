@@ -1,6 +1,9 @@
+import { faker } from "@faker-js/faker";
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 import dotenv from "dotenv";
 import path from "path";
+import RandExp from "randexp";
+import { TOTP } from "totp-generator";
 
 import {
   createDeviceVerifier,
@@ -12,9 +15,7 @@ import {
   wrapAuthChallenge,
   wrapInitiateAuth,
 } from "../../cognito-srp-helper";
-import { faker } from "@faker-js/faker";
-import RandExp from "randexp";
-import { TOTP } from "totp-generator";
+
 import { signupV2 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..
@@ -190,7 +191,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .verifySoftwareToken({
             AccessToken,
             UserCode: otp1,
@@ -199,7 +200,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .setUserMFAPreference({
             AccessToken,
             SoftwareTokenMfaSettings: {
@@ -279,7 +280,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .confirmDevice({
             AccessToken,
             DeviceKey,
@@ -290,7 +291,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .updateDeviceStatus({
             AccessToken,
             DeviceKey,
@@ -461,7 +462,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .verifySoftwareToken({
             AccessToken,
             UserCode: otp1,
@@ -470,7 +471,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .adminSetUserMFAPreference({
             UserPoolId: poolId,
             Username: username,
@@ -554,7 +555,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .confirmDevice({
             AccessToken,
             DeviceKey,
@@ -565,7 +566,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityServiceProvider
+        await cognitoIdentityServiceProvider
           .adminUpdateDeviceStatus({
             UserPoolId: poolId,
             Username: USER_ID_FOR_SRP,

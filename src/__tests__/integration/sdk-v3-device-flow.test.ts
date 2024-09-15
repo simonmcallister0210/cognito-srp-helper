@@ -9,12 +9,14 @@ import {
   InitiateAuthCommand,
   RespondToAuthChallengeCommand,
   SetUserMFAPreferenceCommand,
-  SignUpCommand,
   UpdateDeviceStatusCommand,
   VerifySoftwareTokenCommand,
 } from "@aws-sdk/client-cognito-identity-provider";
+import { faker } from "@faker-js/faker";
 import dotenv from "dotenv";
 import path from "path";
+import RandExp from "randexp";
+import { TOTP } from "totp-generator";
 
 import {
   createDeviceVerifier,
@@ -26,9 +28,7 @@ import {
   wrapAuthChallenge,
   wrapInitiateAuth,
 } from "../../cognito-srp-helper";
-import { faker } from "@faker-js/faker";
-import RandExp from "randexp";
-import { TOTP } from "totp-generator";
+
 import { signupV3 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..
@@ -196,7 +196,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new VerifySoftwareTokenCommand({
             AccessToken,
             UserCode: otp1,
@@ -205,7 +205,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new AdminSetUserMFAPreferenceCommand({
             UserPoolId: poolId,
             Username: username,
@@ -286,7 +286,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new ConfirmDeviceCommand({
             AccessToken,
             DeviceKey,
@@ -297,7 +297,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new UpdateDeviceStatusCommand({
             AccessToken,
             DeviceKey,
@@ -468,7 +468,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!SecretCode) throw Error("SecretCode is undefined");
         const { otp: otp1, expires } = TOTP.generate(SecretCode);
 
-        const verifySoftwareTokenRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new VerifySoftwareTokenCommand({
             AccessToken,
             UserCode: otp1,
@@ -477,7 +477,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Set MFA preference to TOTP ----------
 
-        const setUserMFAPreferenceRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new SetUserMFAPreferenceCommand({
             AccessToken,
             SoftwareTokenMfaSettings: {
@@ -560,7 +560,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
-        const confirmDeviceRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new ConfirmDeviceCommand({
             AccessToken,
             DeviceKey,
@@ -571,7 +571,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Remember the device (for easier logins) ----------
 
-        const updateDeviceStatusRes = await cognitoIdentityProviderClient.send(
+        await cognitoIdentityProviderClient.send(
           new AdminUpdateDeviceStatusCommand({
             UserPoolId: poolId,
             Username: USER_ID_FOR_SRP,
