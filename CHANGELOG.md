@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.3...v2.3.0) (2024-11-02)
+
+
+### Features
+
+* support device SRP challenge ([#44](https://github.com/simonmcallister0210/cognito-srp-helper/issues/44)) ([ce195c3](https://github.com/simonmcallister0210/cognito-srp-helper/commit/ce195c31d4026f0d06e1be78aa8b968e10c47650))
+
 ## [2.2.3](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.2...v2.2.3) (2024-09-09)
 
 
