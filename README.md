@@ -28,59 +28,10 @@ Here is an example of how you would use the helper to implement SRP authenticati
 const secretHash = createSecretHash(username, clientId, secretId);
 const srpSession = createSrpSession(username, password, poolId, false);
 
-const initiateAuthRes = await cognitoIdentityProviderClient
-  .send(
-    new InitiateAuthCommand(
-      wrapInitiateAuth(srpSession, {
-        ClientId: clientId,
-        AuthFlow: "USER_SRP_AUTH",
-        AuthParameters: {
-          CHALLENGE_NAME: "SRP_A",
-          SECRET_HASH: secretHash,
-          USERNAME: username,
-        },
-      }),
-    ),
-  )
-  .catch((err) => {
-    // . . .
-  });
-
-const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
-
-const respondToAuthChallengeRes = await cognitoIdentityProviderClient
-  .send(
-    new RespondToAuthChallengeCommand(
-      wrapAuthChallenge(signedSrpSession, {
-        ClientId: clientId,
-        ChallengeName: "PASSWORD_VERIFIER",
-        ChallengeResponses: {
-          SECRET_HASH: secretHash,
-          USERNAME: username,
-        },
-      }),
-    ),
-  )
-  .catch((err) => {
-    // . . .
-  });
-
-// . . . return login tokens from respondToAuthChallengeResponse
-```
-
-Here is an example of how you would use the helper to implement SRP authentication with Cognito using the AWS JavaScript SDK v2 (deprecated) using a pre-hashed password:
-
-```ts
-// . . . obtain user credentials, IDs, and setup Cognito client
-
-const secretHash = createSecretHash(username, clientId, secretId);
-const passwordHash = createPasswordHash(username, password, poolId);
-const srpSession = createSrpSession(username, passwordHash, poolId);
-
-const initiateAuthRes = await cognitoIdentityServiceProvider
-  .initiateAuth(
+const initiateAuthRes = await cognitoIdentityProviderClient.send(
+  new InitiateAuthCommand(
     wrapInitiateAuth(srpSession, {
-      ClientId: CLIENT_ID,
+      ClientId: clientId,
       AuthFlow: "USER_SRP_AUTH",
       AuthParameters: {
         CHALLENGE_NAME: "SRP_A",
@@ -88,31 +39,130 @@ const initiateAuthRes = await cognitoIdentityServiceProvider
         USERNAME: username,
       },
     }),
-  )
-  .promise()
-  .catch((err) => {
-    throw err;
-  });
+  ),
+);
 
 const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
 
-const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
-  .respondToAuthChallenge(
+const respondToAuthChallengeRes = await cognitoIdentityProviderClient.send(
+  new RespondToAuthChallengeCommand(
     wrapAuthChallenge(signedSrpSession, {
-      ClientId: CLIENT_ID,
+      ClientId: clientId,
       ChallengeName: "PASSWORD_VERIFIER",
       ChallengeResponses: {
         SECRET_HASH: secretHash,
         USERNAME: username,
       },
     }),
-  )
-  .promise()
-  .catch((err) => {
-    throw err;
-  });
+  ),
+);
 
-// . . . return login tokens from respondToAuthChallengeResponse
+// . . . return login tokens from respondToAuthChallengeRes
+```
+
+Here is an example of how you would use createDeviceVerifier to confirm a device:
+
+```ts
+// Calculate device verifier and a random password using the device and group key
+
+const { DeviceGroupKey, DeviceKey } = respondToAuthChallengeResponse.AuthenticationResult.NewDeviceMetadata;
+const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
+
+await cognitoIdentityProviderClient.send(
+  new ConfirmDeviceCommand({
+    AccessToken,
+    DeviceKey,
+    DeviceName: "example-friendly-name", // usually this is set a User-Agent
+    DeviceSecretVerifierConfig,
+  }),
+);
+```
+
+Here is an exampe of how you would use signSrpSessionWithDevice to complete signin with a device. Remember you need DeviceKey to complete authentication with a device, so store in on your initial signin attempt before it's required for subsequent authentication attempts with a device. DeviceGroupKey can be obtained from RespondToAuthChallenge responses:
+
+```ts
+// . . . obtain user credentials, IDs, and setup Cognito client
+
+// Initiate signin with username and password
+
+const srpSession = createSrpSession(username, password, poolId, false);
+
+const initiateAuthRes = await cognitoIdentityProviderClient.send(
+  new InitiateAuthCommand(
+    wrapInitiateAuth(srpSession, {
+      ClientId: clientId,
+      AuthFlow: "USER_SRP_AUTH",
+      AuthParameters: {
+        CHALLENGE_NAME: "SRP_A",
+        SECRET_HASH: secretHash,
+        USERNAME: username,
+        DEVICE_KEY: DeviceKey, // Fetch this from client storage
+      },
+    }),
+  ),
+);
+
+// Respond to PASSWORD_VERIFIER challenge
+
+const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
+
+const respondToAuthChallengeRes1 = await cognitoIdentityProviderClient.send(
+  new RespondToAuthChallengeCommand(
+    wrapAuthChallenge(signedSrpSession, {
+      ClientId: clientId,
+      ChallengeName: "PASSWORD_VERIFIER",
+      ChallengeResponses: {
+        SECRET_HASH: secretHash,
+        USERNAME: username,
+        DEVICE_KEY: DeviceKey,
+      },
+      Session: initiateAuthRes.Session,
+    }),
+  ),
+);
+
+// Respond to DEVICE_SRP_AUTH challenge
+
+const respondToAuthChallengeRes2 = await cognitoIdentityProviderClient.send(
+  new RespondToAuthChallengeCommand(
+    wrapAuthChallenge(signedSrpSession, {
+      ClientId: clientId,
+      ChallengeName: "DEVICE_SRP_AUTH",
+      ChallengeResponses: {
+        SECRET_HASH: secretHash,
+        USERNAME: username,
+        DEVICE_KEY: DeviceKey,
+      },
+      Session: respondToAuthChallengeRes1.Session,
+    }),
+  ),
+);
+
+// Respond to DEVICE_PASSWORD_VERIFIER challenge
+
+const signedSrpSessionWithDevice = signSrpSessionWithDevice(
+  srpSession,
+  respondToAuthChallengeRes2,
+  DeviceGroupKey,
+  DeviceRandomPassword,
+);
+
+const respondToAuthChallengeRes3 = await cognitoIdentityProviderClient.send(
+  new RespondToAuthChallengeCommand(
+    wrapAuthChallenge(signedSrpSessionWithDevice, {
+      ClientId: clientId,
+      ChallengeName: "DEVICE_PASSWORD_VERIFIER",
+      ChallengeResponses: {
+        SECRET_HASH: secretHash,
+        USERNAME: username,
+        DEVICE_KEY: DeviceKey,
+      },
+      Session: respondToAuthChallengeRes2.Session,
+    }),
+  ),
+);
+
+// . . . return login tokens from respondToAuthChallengeRes3
 ```
 
 ## API
@@ -177,6 +227,20 @@ _SrpSession_ - Client SRP session object containing user credentials and session
 
 ---
 
+### `createDeviceVerifier`
+
+When you confirm a device with ConfirmDeviceCommand you need to pass in DeviceSecretVerifierConfig. You can get this value from this function. The function will also generate a unique password DeviceRandomPassword which you will need to authenticate the device in future DEVICE_SRP_AUTH flows
+
+`deviceKey` - _string_ - The device unique key returned from a RespondToAuthChallengeResponse
+
+`deviceGroupKey` - _string_ - The device group key returned from a RespondToAuthChallengeResponse
+
+**Returns**:
+
+_DeviceVerifier_ - An object containing DeviceRandomPassword, PasswordVerifier, and Salt. Used for device verification and authentication
+
+---
+
 ### `signSrpSession`
 
 With a successful initiateAuth call using the USER_SRP_AUTH flow (or CUSTOM_AUTH if SRP is configured) we receive values from Cognito that we can use to verify the user's password. With this response we can 'sign' our session by generating a password signature and attaching it to our session
@@ -186,6 +250,26 @@ With a successful initiateAuth call using the USER_SRP_AUTH flow (or CUSTOM_AUTH
 `session` - _SrpSession_ - Client SRP session object containing user credentials and session keys
 
 `response` - _InitiateAuthResponse_ - The Cognito response from initiateAuth. This response contains SRP values (SRP_B, SALT, SECRET_BLOCK) which are used to verify the user's password
+
+**Returns**:
+
+_SrpSessionSigned_ - A signed version of the SRP session object
+
+---
+
+### `signSrpSessionWithDevice`
+
+When responding to a DEVICE_SRP_AUTH challenge, you need to sign the SRP session with a device using this function. With a RespondToAuthChallenge response we can 'sign' our session by generating a password signature and attaching it to our session
+
+**Parameters**:
+
+`session` - _SrpSession_ - Client SRP session object containing user credentials and session keys
+
+`response` - _RespondToAuthChallengeResponse_ - The Cognito response from initiateAuth. This response contains SRP values (SRP_B, SALT, SECRET_BLOCK, and DEVICE_KEY when authenticating a device) which are used to verify the user's password
+
+`deviceGroupKey` - _string_ - The device group key
+
+`deviceRandomPassword` - _string_ - The random password generated by createDeviceVerifier
 
 **Returns**:
 

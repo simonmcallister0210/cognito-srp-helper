@@ -1,6 +1,8 @@
+import { faker } from "@faker-js/faker";
 import { CognitoIdentityServiceProvider } from "aws-sdk";
 import dotenv from "dotenv";
 import path from "path";
+import RandExp from "randexp";
 
 import {
   createPasswordHash,
@@ -10,6 +12,8 @@ import {
   wrapAuthChallenge,
   wrapInitiateAuth,
 } from "../../cognito-srp-helper";
+
+import { signupV2 } from "./helpers";
 
 // Load in env variables from .env if it / they exist..
 
@@ -23,18 +27,12 @@ const {
   AWS_REGION = "",
   AWS_ACCESS_KEY_ID = "",
   AWS_SECRET_ACCESS_KEY = "",
-  INT_TEST__USERNAME__USERNAME = "",
-  INT_TEST__USERNAME__PASSWORD = "",
   INT_TEST__USERNAME__POOL_ID = "",
   INT_TEST__USERNAME__CLIENT_ID = "",
   INT_TEST__USERNAME__SECRET_ID = "",
-  INT_TEST__EMAIL__USERNAME = "",
-  INT_TEST__EMAIL__PASSWORD = "",
   INT_TEST__EMAIL__POOL_ID = "",
   INT_TEST__EMAIL__CLIENT_ID = "",
   INT_TEST__EMAIL__SECRET_ID = "",
-  INT_TEST__PHONE__USERNAME = "",
-  INT_TEST__PHONE__PASSWORD = "",
   INT_TEST__PHONE__POOL_ID = "",
   INT_TEST__PHONE__CLIENT_ID = "",
   INT_TEST__PHONE__SECRET_ID = "",
@@ -44,18 +42,12 @@ Object.entries({
   AWS_REGION,
   AWS_ACCESS_KEY_ID,
   AWS_SECRET_ACCESS_KEY,
-  INT_TEST__USERNAME__USERNAME,
-  INT_TEST__USERNAME__PASSWORD,
   INT_TEST__USERNAME__POOL_ID,
   INT_TEST__USERNAME__CLIENT_ID,
   INT_TEST__USERNAME__SECRET_ID,
-  INT_TEST__EMAIL__USERNAME,
-  INT_TEST__EMAIL__PASSWORD,
   INT_TEST__EMAIL__POOL_ID,
   INT_TEST__EMAIL__CLIENT_ID,
   INT_TEST__EMAIL__SECRET_ID,
-  INT_TEST__PHONE__USERNAME,
-  INT_TEST__PHONE__PASSWORD,
   INT_TEST__PHONE__POOL_ID,
   INT_TEST__PHONE__CLIENT_ID,
   INT_TEST__PHONE__SECRET_ID,
@@ -72,31 +64,46 @@ Object.entries({
   }
 });
 
-const positiveCredentials = {
-  username: {
-    username: INT_TEST__USERNAME__USERNAME,
-    password: INT_TEST__USERNAME__PASSWORD,
+const credentials = [
+  {
+    testCaseName: "random username and a pre-hashed password",
+    username: faker.internet.userName().replace(/\s+/g, ""),
+    password: faker.internet.password(20, true, undefined, "A1!"),
     poolId: INT_TEST__USERNAME__POOL_ID,
     clientId: INT_TEST__USERNAME__CLIENT_ID,
     secretId: INT_TEST__USERNAME__SECRET_ID,
+    isPreHashedPassword: true,
   },
-  email: {
-    username: INT_TEST__EMAIL__USERNAME,
-    password: INT_TEST__EMAIL__PASSWORD,
+  {
+    testCaseName: "random username",
+    username: faker.internet.userName().replace(/\s+/g, ""),
+    password: faker.internet.password(20, true, undefined, "A1!"),
+    poolId: INT_TEST__USERNAME__POOL_ID,
+    clientId: INT_TEST__USERNAME__CLIENT_ID,
+    secretId: INT_TEST__USERNAME__SECRET_ID,
+    isPreHashedPassword: false,
+  },
+  {
+    testCaseName: "random email",
+    username: faker.internet.email(),
+    password: faker.internet.password(20, true, undefined, "A1!"),
     poolId: INT_TEST__EMAIL__POOL_ID,
     clientId: INT_TEST__EMAIL__CLIENT_ID,
     secretId: INT_TEST__EMAIL__SECRET_ID,
+    isPreHashedPassword: false,
   },
-  phone: {
-    username: INT_TEST__PHONE__USERNAME,
-    password: INT_TEST__PHONE__PASSWORD,
+  {
+    testCaseName: "random phone",
+    username: new RandExp(/^\+1\d{10}$/).gen(),
+    password: faker.internet.password(20, true, undefined, "A1!"),
     poolId: INT_TEST__PHONE__POOL_ID,
     clientId: INT_TEST__PHONE__CLIENT_ID,
     secretId: INT_TEST__PHONE__SECRET_ID,
+    isPreHashedPassword: false,
   },
-};
+];
 
-describe("SDK v2 integration", () => {
+describe("SDK v2 integration - USER_SRP_AUTH flow", () => {
   const cognitoIdentityServiceProvider = new CognitoIdentityServiceProvider({
     region: AWS_REGION,
     credentials: {
@@ -105,11 +112,24 @@ describe("SDK v2 integration", () => {
     },
   });
 
-  it("should work with initiateAuth and respondToAuthChallenge (hashed password)", async () => {
-    const { username, password, poolId, clientId, secretId } = positiveCredentials.username;
+  // signup with all the test credentials before we begin testing
+  beforeAll(async () =>
+    Promise.all(
+      credentials.map((creds) =>
+        signupV2({
+          cognitoIdentityServiceProvider,
+          ...creds,
+        }),
+      ),
+    ),
+  );
+
+  it.each(credentials)("normal flow with $testCaseName", async (credentials) => {
+    const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
+
     const secretHash = createSecretHash(username, clientId, secretId);
-    const passwordHash = createPasswordHash(username, password, poolId);
-    const srpSession = createSrpSession(username, passwordHash, poolId);
+    const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
+    const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
     const initiateAuthRes = await cognitoIdentityServiceProvider
       .initiateAuth(
@@ -151,11 +171,11 @@ describe("SDK v2 integration", () => {
     expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
   });
 
-  it("should work with adminInitiateAuth and adminRespondToAuthChallenge (hashed password)", async () => {
-    const { username, password, poolId, clientId, secretId } = positiveCredentials.username;
+  it.each(credentials)("admin flow with $testCaseName", async (credentials) => {
+    const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
     const secretHash = createSecretHash(username, clientId, secretId);
-    const passwordHash = createPasswordHash(username, password, poolId);
-    const srpSession = createSrpSession(username, passwordHash, poolId);
+    const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
+    const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
     const adminInitiateAuthRes = await cognitoIdentityServiceProvider
       .adminInitiateAuth(
@@ -198,100 +218,4 @@ describe("SDK v2 integration", () => {
     expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
     expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
   });
-
-  it.each(Object.values(positiveCredentials))(
-    "should work with initiateAuth and respondToAuthChallenge (unhashed password): credentials %#",
-    async ({ username, password, poolId, clientId, secretId }) => {
-      const secretHash = createSecretHash(username, clientId, secretId);
-      const srpSession = createSrpSession(username, password, poolId, false);
-
-      const initiateAuthRes = await cognitoIdentityServiceProvider
-        .initiateAuth(
-          wrapInitiateAuth(srpSession, {
-            ClientId: clientId,
-            AuthFlow: "USER_SRP_AUTH",
-            AuthParameters: {
-              CHALLENGE_NAME: "SRP_A",
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        )
-        .promise()
-        .catch((err) => {
-          throw err;
-        });
-
-      const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
-
-      const respondToAuthChallengeRes = await cognitoIdentityServiceProvider
-        .respondToAuthChallenge(
-          wrapAuthChallenge(signedSrpSession, {
-            ClientId: clientId,
-            ChallengeName: "PASSWORD_VERIFIER",
-            ChallengeResponses: {
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        )
-        .promise()
-        .catch((err) => {
-          throw err;
-        });
-
-      expect(respondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
-      expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
-      expect(respondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
-    },
-  );
-
-  it.each(Object.values(positiveCredentials))(
-    "should work with adminInitiateAuth and adminRespondToAuthChallenge (unhashed password): credentials %#",
-    async ({ username, password, poolId, clientId, secretId }) => {
-      const secretHash = createSecretHash(username, clientId, secretId);
-      const srpSession = createSrpSession(username, password, poolId, false);
-
-      const adminInitiateAuthRes = await cognitoIdentityServiceProvider
-        .adminInitiateAuth(
-          wrapInitiateAuth(srpSession, {
-            UserPoolId: poolId,
-            ClientId: clientId,
-            AuthFlow: "USER_SRP_AUTH",
-            AuthParameters: {
-              CHALLENGE_NAME: "SRP_A",
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        )
-        .promise()
-        .catch((err) => {
-          throw err;
-        });
-
-      const signedSrpSession = signSrpSession(srpSession, adminInitiateAuthRes);
-
-      const adminRespondToAuthChallengeRes = await cognitoIdentityServiceProvider
-        .adminRespondToAuthChallenge(
-          wrapAuthChallenge(signedSrpSession, {
-            UserPoolId: poolId,
-            ClientId: clientId,
-            ChallengeName: "PASSWORD_VERIFIER",
-            ChallengeResponses: {
-              SECRET_HASH: secretHash,
-              USERNAME: username,
-            },
-          }),
-        )
-        .promise()
-        .catch((err) => {
-          throw err;
-        });
-
-      expect(adminRespondToAuthChallengeRes).toHaveProperty("AuthenticationResult");
-      expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty("AccessToken");
-      expect(adminRespondToAuthChallengeRes.AuthenticationResult).toHaveProperty("RefreshToken");
-    },
-  );
 });

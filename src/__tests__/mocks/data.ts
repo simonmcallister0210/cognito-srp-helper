@@ -22,6 +22,18 @@ export const secret =
   "gn7F/ENIPPk/KZ7P2xYr4S0pZhCn29Y0nxXBtEPEc8Tt2cqbQpWorIuwSAC0g3fpDW9djD5+b9v30TctMTiVt6xjGaZeuWzzgAnVrc0l0xROzJItEQM1V96ySkrfFbL4tKuZokrqiszsRkgwnu4SGBz3akVpUD8pZnAg1Ycfc3LLSyQETFTndRHjS8UFGIovw7wqQfxKNKDC1nY2XYWR1nFuEIvHXb+Tvc76IxNZcaEvl5sAuTjwpVlmfwPSOELXnYxvDxUcFYO3sNguNqahn6aH4j16ccEZ/Wqoubn7QkomXV3Qdo5khQbw4F9CWFaxCHoRZwFAc8RQ4oGiIHLvuMb/Y/JhGTL3HefSkBXQ+uvoPK7YdgY8yn3SejYv4xD8lw+KLTPy1EbCXX9Aq1uwgjzeSygLl7/tkf1C/YzhefXEOfaLk2eNRlAschYunQ7WeIZWBYzW+38+r4bQpaecj8GcH/ycAOpacfoLB+/q3E/dHsFOFlzetYO6Qll5AXEv4hzJZgNh1/2zK3N8j2JBUjZs2h60Rh8OS+ZcQGa7ICPfS7XDvSV8U6Xan3j2m0Azz2ara+1I4MYDVj5P4/BneVDh4L+6Dl3EWEAF9UO8Ur1/5seiOVcAQe3TlwN9UWgmOZHIq/UGU14ofpmZI46WWS3qB+yBPHbWWJ0MMFFtRwCTzFl+2kRGthRR5A+6MSuLCfdcQwqb6FYRZEdgXZzMa6Td0Pog/5TFqxygkRB0P3Yq4lfOnRKI6cC3+2g8uMsEmOJfzsVrsfi6GTAPrP+lIPpNe12ZquFzPGi9Z68Odj+aNDYChalBpuvJgxWR2EFuyj2MebKz6Zo/5V/w964aTTYjUt1pPHURLx3MKl7Ns1xF1lklQ1DAOQYNrVWxWJRs4TxipduEq4N02uh9XKWzXxLJuHsc1B9e1Dc+1sHs122POq7i/VYoln6LhO30o32lDHOGa56krde0N/+FY7034zB1pqL8VuDd2/8o8XZ+D/ez/1gBwQ2y1q6CRvvZmNyYBIC8an/Vgb++e5zgx6Cb43o9+PEFc8UEA8QljTgZ2m+kwjia1TSYeyYnKQOIqCKMkZa6IBIwMZ6AHIDSWk//IR/UMiq4QGfb5CJFPYOTKSGXEU9dFPYbx+pZmq/Fq7QgFCM/I7M6jKZPwn+T4/RGLEg1YNRwQS/oQI/uu5iF9sIbtWO5XTRQ8q2ld4s3tEFflYdmELHXrt1UuFaCi82iTJZAgFPeIx9mHPb0U+I7iutfEPogIE5b/2T+qJhIBgeIQUVsJuo+uLdriFm1c7YwBMBTJWC9R2mL+2x6quavpx7u0zgHrmbDxFx6+nBl0DEZxsY5h8AEDUVhyi2w+7aK9T/uh7Pz3/fH+AwXfWcA1cBueYYHX0Due6+3hRAHfOokXTbi27+YoS2AKuXDl2EibHedm5lb1Tg18V66dXtGsvpIn/OUWO2FphUGdtCMgZc51ahYTiN1m6Qqx+z1DFRM2BLw6HLxb1uT1OmDyucvCXIsMl4vNyyeIdJwstIbQrECxg1Fdow6jHrzKyJw/FKsYGSnyDRk++1jTt3J46wz16S45XaMSDG8RMH7AKKeAX/lfJ0d247ajB4U8Hei1h1kclX/DAYp7A0KyoCG7Qt9hZGsxhsloT2eYohHEKshPDs2WU48WtuHwgXydkTABvx3b1ixLp2CEuQiMyy3jZpvDD8WGaqWqbQgnH/yQw==";
 export const passwordSignature = "RrSiIBQazZkaxHQf34oRro1qjzfEvwdP6/Avltpd34E=";
 
+// device credentials
+export const deviceKey = "eu-west-2_627477ae-3631-4248-bed9-d2e934100372";
+export const deviceGroupKey = "-FDRunwQv";
+export const deviceRandomPassword = "BAUl";
+export const deviceRandomPasswordBytes =
+  "4i5q25v4vl5yvmo9oug9dqmsag3sma523agmxddk6x6p90ztms680pyrnuyqc8hmr8m8dd9ethtgtuaa";
+export const devicePasswordVerifier =
+  "AId3eNiAEuiPgZh0E2vpuui6V04+mfZvj6CuBDdiRwDDj40OhVvIPHC11mKB+ME0ErD0EXxfwAIwZ+rq6rEbrO5/ooShXSJlSfMpZFzy80cPEtCOz1DSm+GHmeBZQZeQrCMa2ryFV7Z88yBrTYGawF52eCoOfKC1eU7WKxdD1LPAxC5tkc/KFrVXNy4OnGrywYv12uyK6ZGlmtNTEBoOHrra9pRjIoiqF34dz1gEw33JEvE3Sb5DJYEUB9/OVeKhjuag1wZ+DTpdkWE+WHBMrQb9t0szhj+UTQ7bPX8jaqATtsbeNXG/f6707glGoWXCPcw8jhZkZrGfkM6PCtBnai5NCEaAZXe5Xg+gSYfbiT6hWszWqJHUURXQlSHL+qu9Wj5ZrCM5GPO+5uYUN7+AdzQXihRRu66nrW7MSIC6k4iRTyTYve9GqV2OybDSPY5CYCiNa8r5+o9tXxugAfFdlqp07aNCGARCbusksBOXqKDKc1oPjjhqoaFj/x7KBFsGbw==";
+export const deviceSalt = "AOuW";
+export const deviceSaltBytes = "eb96rmj4qcv658ulmsag3523agmxddk9";
+export const devicePasswordSignature = "or56+yUDCYxPbtknfpk2fO88rycinSHoINPLk7wpSPI=";
+
 // This object isn't typed because it is a collection of external inputs
 export const mockCredentials = {
   sub,
@@ -56,6 +68,14 @@ export const mockSessionSigned = {
   passwordSignature,
 };
 
+export const mockSessionSignedWithDevice = {
+  ...mockSession,
+  largeB,
+  salt: deviceSalt,
+  secret,
+  passwordSignature: devicePasswordSignature,
+};
+
 // InitiateAuthRequest
 
 export const mockInitiateAuthRequest = {
@@ -84,6 +104,21 @@ export const mockInitiateAuthResponse = {
   },
 };
 
+export const mockInitiateAuthResponseWithNewDevice = {
+  AuthenticationResult: {
+    NewDeviceMetadata: {
+      DeviceGroupKey: deviceGroupKey,
+      DeviceKey: deviceKey,
+    },
+  },
+  ChallengeParameters: {
+    SRP_B: largeB,
+    SALT: salt,
+    SECRET_BLOCK: secret,
+    USER_ID_FOR_SRP: sub,
+  },
+};
+
 // RespondToAuthChallengeRequest
 
 export const mockRespondToAuthChallengeRequest = {
@@ -98,4 +133,32 @@ export const mockRespondToAuthChallengeRequest = {
 export const mockAdminRespondToAuthChallengeRequest = {
   ...mockRespondToAuthChallengeRequest,
   UserPoolId: poolId,
+};
+
+// RespondToAuthChallengeResponse
+
+export const mockRespondToAuthChallengeResponse = {
+  ChallengeName: ChallengeNameType.DEVICE_PASSWORD_VERIFIER,
+  ChallengeParameters: {
+    SALT: deviceSalt,
+    SECRET_BLOCK: secret,
+    SRP_B: largeB,
+    DEVICE_KEY: deviceKey,
+    USERNAME: username,
+  },
+};
+
+export const mockAdminRespondToAuthChallengeResponse = {
+  ...mockRespondToAuthChallengeResponse,
+  UserPoolId: poolId,
+};
+
+// deviceVerifier
+
+export const mockDeviceVerifier = {
+  DeviceRandomPassword: deviceRandomPassword,
+  DeviceSecretVerifierConfig: {
+    PasswordVerifier: devicePasswordVerifier,
+    Salt: deviceSalt,
+  },
 };

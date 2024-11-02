@@ -36,6 +36,22 @@ export class MissingLargeBError extends SignSrpSessionError {
   }
 }
 
+export class MissingUserIdForSrpBError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined USER_ID_FOR_SRP in response.ChallengeResponses",
+  ) {
+    super(message);
+  }
+}
+
+export class MissingDeviceKeyError extends SignSrpSessionError {
+  constructor(
+    message = "Could not sign SRP session because of missing or undefined DEVICE_KEY in response.ChallengeResponses",
+  ) {
+    super(message);
+  }
+}
+
 // SRP calculation errors
 
 export class AbortOnZeroSrpError extends Error {
