@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.0...v2.3.1) (2024-11-02)
+
+
+### Bug Fixes
+
+* reduce bundle size ([#47](https://github.com/simonmcallister0210/cognito-srp-helper/issues/47)) ([2a21513](https://github.com/simonmcallister0210/cognito-srp-helper/commit/2a21513faa728ca7510c1c852d1492418052ad86))
+
 ## [2.3.0](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.2.3...v2.3.0) (2024-11-02)
 
 
