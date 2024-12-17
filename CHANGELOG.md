@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.1...v2.3.2) (2024-12-17)
+
+
+### Bug Fixes
+
+* for users using NodeNext TS Module ([#50](https://github.com/simonmcallister0210/cognito-srp-helper/issues/50)) ([5f09a7c](https://github.com/simonmcallister0210/cognito-srp-helper/commit/5f09a7c062ea59f371b96196c4552bd8f3fd6ed9))
+
 ## [2.3.1](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.0...v2.3.1) (2024-11-02)
 
 
