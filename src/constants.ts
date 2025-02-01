@@ -1,4 +1,4 @@
-import { Buffer } from "buffer/"; // use the browser compatible buffer library
+import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
 import { BigInteger } from "jsbn";
 
 import { hexHash, padHex } from "./utils";
