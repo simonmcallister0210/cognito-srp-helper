@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.3](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.2...v2.3.3) (2025-02-08)
+
+
+### Bug Fixes
+
+* make imports more es friendly. provide default export ([#53](https://github.com/simonmcallister0210/cognito-srp-helper/issues/53)) ([5e39e2a](https://github.com/simonmcallister0210/cognito-srp-helper/commit/5e39e2a0e8ae0a95aa0643b812522afe18a634f1))
+
 ## [2.3.2](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.1...v2.3.2) (2024-12-17)
 
 
