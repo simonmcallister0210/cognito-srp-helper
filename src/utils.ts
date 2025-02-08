@@ -3,8 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Buffer } from "buffer/"; // use the browser compatible buffer library
-import { lib, SHA256 } from "crypto-js";
+import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
+import CryptoJS from "crypto-js";
 import { BigInteger } from "jsbn";
 
 import { HEX_TO_SHORT } from "./constants";
@@ -16,8 +16,8 @@ import { HEX_TO_SHORT } from "./constants";
  * @returns Hex-encoded hash.
  */
 export const hash = (buf: Buffer | string): string => {
-  const str = buf instanceof Buffer ? lib.WordArray.create(buf) : buf;
-  const hashHex = SHA256(str).toString();
+  const str = buf instanceof Buffer ? CryptoJS.lib.WordArray.create(buf) : buf;
+  const hashHex = CryptoJS.SHA256(str).toString();
   const completeHash = new Array(64 - hashHex.length).join("0") + hashHex;
 
   return completeHash;
@@ -118,7 +118,7 @@ export const padHex = (bigInt: BigInteger): string => {
  * @returns Fixed-length sequence of random bytes
  */
 export const randomBytes = (nBytes: number): Buffer => {
-  const bytes = Buffer.from(lib.WordArray.random(nBytes).toString(), "hex");
+  const bytes = Buffer.from(CryptoJS.lib.WordArray.random(nBytes).toString(), "hex");
 
   return bytes;
 };
