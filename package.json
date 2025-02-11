@@ -63,7 +63,7 @@
     "@typescript-eslint/parser": "^5.40.0",
     "aws-sdk": "^2.1248.0",
     "dotenv": "^16.0.3",
-    "esbuild": "^0.19.5",
+    "esbuild": "^0.25.0",
     "eslint": "^8.25.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.26.0",
