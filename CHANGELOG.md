@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.3.4](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.3...v2.3.4) (2025-06-01)
+
+
+### Bug Fixes
+
+* dependabot Bump esbuild from 0.19.5 to 0.25.0 ([#55](https://github.com/simonmcallister0210/cognito-srp-helper/issues/55)) ([268da56](https://github.com/simonmcallister0210/cognito-srp-helper/commit/268da56ae0793db805a0f2d2f8ed06934c92cca0))
+
 ## [2.3.3](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.2...v2.3.3) (2025-02-08)
 
 
