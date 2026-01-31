@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.3.5](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.4...v2.3.5) (2026-01-31)
+
+
+### Bug Fixes
+
+* dependabot Bump js-yaml from 3.14.1 to 3.14.2 ([#58](https://github.com/simonmcallister0210/cognito-srp-helper/issues/58)) ([b1e350d](https://github.com/simonmcallister0210/cognito-srp-helper/commit/b1e350d959b7d7eac28fe2d00ac89b01ddcf7740))
+* roll fast-xml-parse to v4.3.4 to solve high sec issue ([#60](https://github.com/simonmcallister0210/cognito-srp-helper/issues/60)) ([7c29593](https://github.com/simonmcallister0210/cognito-srp-helper/commit/7c29593ddd074fea5cb8f49363fdffc3244d8a63))
+
 ## [2.3.4](https://github.com/simonmcallister0210/cognito-srp-helper/compare/v2.3.3...v2.3.4) (2025-06-01)
 
 
