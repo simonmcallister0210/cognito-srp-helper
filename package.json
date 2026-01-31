@@ -87,5 +87,8 @@
     "buffer": "^6.0.3",
     "crypto-js": "4.2.0",
     "jsbn": "1.1.0"
+  },
+  "overrides": {
+    "fast-xml-parser": "4.3.4"
   }
 }
