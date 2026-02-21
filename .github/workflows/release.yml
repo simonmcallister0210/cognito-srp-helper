@@ -9,6 +9,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         # https://nodejs.org/en/about/previous-releases#release-schedule
         node-version: [20, 22, 24, 25] # remember to update this when support is added/dropped
