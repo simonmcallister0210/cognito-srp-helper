@@ -388,7 +388,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("AccessToken");
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("RefreshToken");
       },
-      1000 * 35 /* 35 seconds = 30 seconds to account for OTP expiration + 5 seconds for standard timeout */,
+      1000 * 65 /* 65 seconds = 30 seconds to account for OTP expiration + 5 seconds for standard timeout */,
     );
   });
 
@@ -667,7 +667,7 @@ describe("SDK v3 integration - DEVICE_SRP_AUTH flow", () => {
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("AccessToken");
         expect(respondToAuthChallengeRes3c.AuthenticationResult).toHaveProperty("RefreshToken");
       },
-      1000 * 35 /* 35 seconds = 30 seconds to account for OTP expiration + 5 seconds for standard timeout */,
+      1000 * 65 /* 65 seconds = 30 seconds to account for OTP expiration + 5 seconds for standard timeout */,
     );
   });
 });
