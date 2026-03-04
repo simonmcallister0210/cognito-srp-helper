@@ -1,0 +1,4 @@
+
+> cognito-srp-helper@2.3.5 test
+> jest -c jest.config.mjs src/__tests__/integration/sdk-v3-standard-flow.test.ts
+

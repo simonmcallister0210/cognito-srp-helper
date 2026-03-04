@@ -1,37 +1,47 @@
-import { Buffer } from "buffer/";
+const bigIntGenerateRandomModule = { __esModule: true, default: jest.fn(() => "big int unset") };
+const base64GenerateRandomModule = { __esModule: true, default: jest.fn(() => "base64 unset") };
 
-import { createDeviceVerifier } from "../../cognito-srp-helper";
-import * as utils from "../../utils";
-import { deviceRandomPasswordBytes, deviceSaltBytes } from "../mocks/data";
-import { mockDeviceVerifierFactory, mockInitiateAuthResponseWithNewDeviceFactory } from "../mocks/factories";
-import { positiveInitiateAuthResponseWithNewDevice as positiveResponses } from "../test-cases";
+jest.mock("@/utils/hex/generate-random", () => bigIntGenerateRandomModule);
+
+jest.mock("@/utils/base64/generate-random", () => base64GenerateRandomModule);
+
+import { deviceRandomPassword, deviceSaltBytes } from "@/__tests__/mocks/data";
+import { mockDeviceVerifierFactory, mockInitiateAuthResponseWithNewDeviceFactory } from "@/__tests__/mocks/factories";
+import { positiveInitiateAuthResponseWithNewDevice as positiveResponses } from "@/__tests__/test-cases";
+import { createDeviceVerifier } from "@/cognito-srp-helper";
 
 describe("createDeviceVerifier", () => {
+  beforeEach(() => {
+    jest.resetModules();
+  });
   describe("positive", () => {
-    it("should create the correct device hash", () => {
+    it("should create the correct device hash", async () => {
       const response = mockInitiateAuthResponseWithNewDeviceFactory();
 
-      // ensure randomBytes returns what we expect
-      jest.spyOn(utils, "randomBytes").mockReturnValueOnce(Buffer.from(deviceRandomPasswordBytes, "hex"));
-      jest.spyOn(utils, "randomBytes").mockReturnValueOnce(Buffer.from(deviceSaltBytes, "hex"));
+      base64GenerateRandomModule.default.mockReturnValueOnce(deviceRandomPassword);
+      bigIntGenerateRandomModule.default.mockReturnValueOnce(deviceSaltBytes.replace(/[g-z].*$/, ""));
 
       const { DeviceKey, DeviceGroupKey } = response.AuthenticationResult?.NewDeviceMetadata ?? {};
       if (!DeviceKey) throw Error("DeviceKey is undefined");
       if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-      const verifier = createDeviceVerifier(DeviceKey, DeviceGroupKey);
+      const verifier = await createDeviceVerifier(DeviceKey, DeviceGroupKey);
       const expected = mockDeviceVerifierFactory();
+
       expect(verifier).toEqual(expected);
     });
 
     it.each(Object.values(positiveResponses))(
       "should create a device verifier with the correct format: response %#",
-      (response) => {
+      async (response) => {
         const { DeviceKey, DeviceGroupKey } = response.AuthenticationResult?.NewDeviceMetadata ?? {};
         if (!DeviceKey) throw Error("DeviceKey is undefined");
         if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-        const verifier = createDeviceVerifier(DeviceKey, DeviceGroupKey);
+        base64GenerateRandomModule.default.mockReturnValueOnce(deviceRandomPassword);
+        bigIntGenerateRandomModule.default.mockReturnValueOnce(deviceSaltBytes.replace(/[g-z].*$/, ""));
+
+        const verifier = await createDeviceVerifier(DeviceKey, DeviceGroupKey);
 
         expect(verifier.DeviceRandomPassword).toMatch(/^[A-Za-z0-9+=/]+$/);
         expect(verifier.DeviceSecretVerifierConfig.PasswordVerifier).toMatch(/^[A-Za-z0-9+=/]+$/);

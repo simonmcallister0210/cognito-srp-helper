@@ -1,4 +1,16 @@
-import { signSrpSessionWithDevice } from "../../cognito-srp-helper";
+import {
+  mockDeviceVerifierFactory,
+  mockInitiateAuthResponseWithNewDeviceFactory,
+  mockRespondToAuthChallengeResponseFactory,
+  mockSrpSessionFactory,
+  mockSrpSessionSignedWithDeviceFactory,
+} from "@/__tests__/mocks/factories";
+import {
+  negativeRespondToAuthChallengeResponses as negativeResponses,
+  positiveRespondToAuthChallengeResponses as positiveResponses,
+  positiveSrpSessionsSigned as positiveSessions,
+} from "@/__tests__/test-cases";
+import { signSrpSessionWithDevice } from "@/cognito-srp-helper";
 import {
   AbortOnZeroBSrpError,
   AbortOnZeroSrpError,
@@ -9,26 +21,14 @@ import {
   MissingSaltError,
   MissingSecretError,
   SignSrpSessionError,
-} from "../../errors";
-import * as utils from "../../utils";
-import {
-  mockDeviceVerifierFactory,
-  mockInitiateAuthResponseWithNewDeviceFactory,
-  mockRespondToAuthChallengeResponseFactory,
-  mockSrpSessionFactory,
-  mockSrpSessionSignedWithDeviceFactory,
-} from "../mocks/factories";
-import {
-  negativeRespondToAuthChallengeResponses as negativeResponses,
-  positiveRespondToAuthChallengeResponses as positiveResponses,
-  positiveSrpSessionsSigned as positiveSessions,
-} from "../test-cases";
+} from "@/errors";
+import * as utils from "@/utils";
 
 const { ChallengeParameters } = mockRespondToAuthChallengeResponseFactory();
 
 describe("signSrpSessionWithDevice", () => {
   describe("positive", () => {
-    it("should create the correct signed SRP session", () => {
+    it("should create the correct signed SRP session", async () => {
       const session = mockSrpSessionFactory();
       const response = mockRespondToAuthChallengeResponseFactory();
       const { DeviceRandomPassword } = mockDeviceVerifierFactory();
@@ -36,7 +36,7 @@ describe("signSrpSessionWithDevice", () => {
       const DeviceGroupKey = AuthenticationResult?.NewDeviceMetadata?.DeviceGroupKey;
       if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-      const sessionSigned = signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      const sessionSigned = await signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
 
       const expected = mockSrpSessionSignedWithDeviceFactory();
       expect(sessionSigned).toEqual(expected);
@@ -44,7 +44,7 @@ describe("signSrpSessionWithDevice", () => {
 
     it.each(Object.values(positiveSessions))(
       "should create a signed SRP session with the correct format: session %#",
-      (session) => {
+      async (session) => {
         const response = mockRespondToAuthChallengeResponseFactory();
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         const { DeviceRandomPassword } = mockDeviceVerifierFactory();
@@ -52,7 +52,7 @@ describe("signSrpSessionWithDevice", () => {
         const DeviceGroupKey = AuthenticationResult?.NewDeviceMetadata?.DeviceGroupKey;
         if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-        const sessionSigned = signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+        const sessionSigned = await signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
 
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
@@ -72,7 +72,7 @@ describe("signSrpSessionWithDevice", () => {
 
     it.each(Object.values(positiveResponses))(
       "should create a signed SRP session with the correct format: response %#",
-      (response) => {
+      async (response) => {
         const session = mockSrpSessionFactory();
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         const { DeviceRandomPassword } = mockDeviceVerifierFactory();
@@ -80,7 +80,7 @@ describe("signSrpSessionWithDevice", () => {
         const DeviceGroupKey = AuthenticationResult?.NewDeviceMetadata?.DeviceGroupKey;
         if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-        const sessionSigned = signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+        const sessionSigned = await signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
 
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
@@ -106,7 +106,7 @@ describe("signSrpSessionWithDevice", () => {
     const DeviceGroupKey = AuthenticationResult?.NewDeviceMetadata?.DeviceGroupKey;
     if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
 
-    it("should throw a AbortOnZeroBSrpError if SRP B is 0", () => {
+    it("should throw a AbortOnZeroBSrpError if SRP B is 0", async () => {
       const responseShortZero = mockRespondToAuthChallengeResponseFactory({
         ChallengeParameters: {
           ...ChallengeParameters,
@@ -121,43 +121,43 @@ describe("signSrpSessionWithDevice", () => {
       });
 
       // First check if the parent AbortOnZeroSrpError is thrown
-      expect(() => {
-        signSrpSessionWithDevice(session, responseShortZero, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroSrpError);
+      await expect(() => {
+        return signSrpSessionWithDevice(session, responseShortZero, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroSrpError);
 
       // Throw on single zero
-      expect(() => {
-        signSrpSessionWithDevice(session, responseShortZero, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroBSrpError);
+      await expect(() => {
+        return signSrpSessionWithDevice(session, responseShortZero, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroBSrpError);
 
       // Throw on multiple zeros (because 0 = 000... in hexadecimal)
-      expect(() => {
-        signSrpSessionWithDevice(session, responseLongZero, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroBSrpError);
+      await expect(() => {
+        return signSrpSessionWithDevice(session, responseLongZero, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroBSrpError);
     });
 
-    it("should throw a AbortOnZeroUSrpError if SRP U is 0", () => {
+    it("should throw a AbortOnZeroUSrpError if SRP U is 0", async () => {
       const response = mockRespondToAuthChallengeResponseFactory();
 
       // make sure our u = H(A, B) calculation returns 0
 
       // First check if the parent AbortOnZeroSrpError is thrown
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
-      expect(() => {
-        signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroSrpError);
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0"));
+      await expect(() => {
+        return signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroSrpError);
 
       // Throw on single zero
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
-      expect(() => {
-        signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroUSrpError);
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0"));
+      await expect(() => {
+        return signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroUSrpError);
 
       // Throw on multiple zeros (because 0 = 000... in hexadecimal)
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0000000000");
-      expect(() => {
-        signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(AbortOnZeroUSrpError);
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0000000000"));
+      await expect(() => {
+        return signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(AbortOnZeroUSrpError);
     });
 
     it.each([
@@ -167,16 +167,16 @@ describe("signSrpSessionWithDevice", () => {
       [negativeResponses.secretOmitted, MissingSecretError],
       [negativeResponses.largeBOmitted, MissingLargeBError],
       [negativeResponses.deviceKeyOmitted, MissingDeviceKeyError],
-    ])("should throw a SignSrpSessionError: response %#", (response, error) => {
+    ])("should throw a SignSrpSessionError: response %#", async (response, error) => {
       // First check if the parent SignSrpSessionError is thrown
-      expect(() => {
-        signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(SignSrpSessionError);
+      await expect(() => {
+        return signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(SignSrpSessionError);
 
       // Throw specific SignSrpSessionError error
-      expect(() => {
-        signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
-      }).toThrow(error);
+      await expect(() => {
+        return signSrpSessionWithDevice(session, response, DeviceGroupKey, DeviceRandomPassword);
+      }).rejects.toThrow(error);
     });
   });
 });

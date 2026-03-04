@@ -1,4 +1,14 @@
-import { signSrpSession } from "../../cognito-srp-helper";
+import {
+  mockInitiateAuthResponseFactory,
+  mockSrpSessionFactory,
+  mockSrpSessionSignedFactory,
+} from "@/__tests__/mocks/factories";
+import {
+  negativeInitiateAuthResponses as negativeResponses,
+  positiveInitiateAuthResponses as positiveResponses,
+  positiveSrpSessionsSigned as positiveSessions,
+} from "@/__tests__/test-cases";
+import { signSrpSession } from "@/cognito-srp-helper";
 import {
   AbortOnZeroBSrpError,
   AbortOnZeroSrpError,
@@ -8,44 +18,40 @@ import {
   MissingSaltError,
   MissingSecretError,
   SignSrpSessionError,
-} from "../../errors";
-import * as utils from "../../utils";
-import {
-  mockInitiateAuthResponseFactory,
-  mockSrpSessionFactory,
-  mockSrpSessionSignedFactory,
-} from "../mocks/factories";
-import {
-  negativeInitiateAuthResponses as negativeResponses,
-  positiveInitiateAuthResponses as positiveResponses,
-  positiveSrpSessionsSigned as positiveSessions,
-} from "../test-cases";
+} from "@/errors";
+import * as utils from "@/utils";
 
 const { ChallengeParameters } = mockInitiateAuthResponseFactory();
 
 describe("signSrpSession", () => {
   describe("positive", () => {
-    it("should create the correct signed SRP session for a hashed password", () => {
+    it("should create the correct signed SRP session for a hashed password", async () => {
       const session = mockSrpSessionFactory();
       const response = mockInitiateAuthResponseFactory();
-      const sessionSigned = signSrpSession(session, response);
+      const sessionSigned = await signSrpSession(session, response);
       const expected = mockSrpSessionSignedFactory();
       expect(sessionSigned).toEqual(expected);
     });
 
-    it("should create the correct signed SRP session for a unhashed password", () => {
-      const session = mockSrpSessionFactory({ password: "Qwerty1!", isHashed: false });
+    it("should create the correct signed SRP session for a unhashed password", async () => {
+      const session = mockSrpSessionFactory({
+        password: "Qwerty1!",
+        isHashed: false,
+      });
       const response = mockInitiateAuthResponseFactory();
-      const sessionSigned = signSrpSession(session, response);
-      const expected = mockSrpSessionSignedFactory({ password: "Qwerty1!", isHashed: false });
+      const sessionSigned = await signSrpSession(session, response);
+      const expected = mockSrpSessionSignedFactory({
+        password: "Qwerty1!",
+        isHashed: false,
+      });
       expect(sessionSigned).toEqual(expected);
     });
 
     it.each(Object.values(positiveSessions))(
       "should create a signed SRP session with the correct format: session %#",
-      (session) => {
+      async (session) => {
         const response = mockInitiateAuthResponseFactory();
-        const sessionSigned = signSrpSession(session, response);
+        const sessionSigned = await signSrpSession(session, response);
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
@@ -65,9 +71,9 @@ describe("signSrpSession", () => {
 
     it.each(Object.values(positiveResponses))(
       "should create a signed SRP session with the correct format: response %#",
-      (response) => {
+      async (response) => {
         const session = mockSrpSessionFactory();
-        const sessionSigned = signSrpSession(session, response);
+        const sessionSigned = await signSrpSession(session, response);
         const { SRP_B, SALT, SECRET_BLOCK } = response.ChallengeParameters ?? {};
         // previous session values should remain the same
         expect(sessionSigned.username).toMatch(session.username);
@@ -105,18 +111,18 @@ describe("signSrpSession", () => {
 
       // First check if the parent AbortOnZeroSrpError is thrown
       expect(() => {
-        signSrpSession(session, responseShortZero);
-      }).toThrow(AbortOnZeroSrpError);
+        return signSrpSession(session, responseShortZero);
+      }).rejects.toThrow(AbortOnZeroSrpError);
 
       // Throw on single zero
       expect(() => {
-        signSrpSession(session, responseShortZero);
-      }).toThrow(AbortOnZeroBSrpError);
+        return signSrpSession(session, responseShortZero);
+      }).rejects.toThrow(AbortOnZeroBSrpError);
 
       // Throw on multiple zeros (because 0 = 000... in hexadecimal)
       expect(() => {
-        signSrpSession(session, responseLongZero);
-      }).toThrow(AbortOnZeroBSrpError);
+        return signSrpSession(session, responseLongZero);
+      }).rejects.toThrow(AbortOnZeroBSrpError);
     });
 
     it("should throw a AbortOnZeroUSrpError if SRP U is 0", () => {
@@ -125,22 +131,22 @@ describe("signSrpSession", () => {
       // make sure our u = H(A, B) calculation returns 0
 
       // First check if the parent AbortOnZeroSrpError is thrown
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0"));
       expect(() => {
-        signSrpSession(session, response);
-      }).toThrow(AbortOnZeroSrpError);
+        return signSrpSession(session, response);
+      }).rejects.toThrow(AbortOnZeroSrpError);
 
       // Throw on single zero
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0");
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0"));
       expect(() => {
-        signSrpSession(session, response);
-      }).toThrow(AbortOnZeroUSrpError);
+        return signSrpSession(session, response);
+      }).rejects.toThrow(AbortOnZeroUSrpError);
 
       // Throw on multiple zeros (because 0 = 000... in hexadecimal)
-      jest.spyOn(utils, "hexHash").mockImplementationOnce(() => "0000000000");
+      jest.spyOn(utils, "hashHex").mockImplementationOnce(() => Promise.resolve("0000000000"));
       expect(() => {
-        signSrpSession(session, response);
-      }).toThrow(AbortOnZeroUSrpError);
+        return signSrpSession(session, response);
+      }).rejects.toThrow(AbortOnZeroUSrpError);
     });
 
     it.each([
@@ -152,13 +158,13 @@ describe("signSrpSession", () => {
     ])("should throw a SignSrpSessionError: response %#", (response, error) => {
       // First check if the parent SignSrpSessionError is thrown
       expect(() => {
-        signSrpSession(session, response);
-      }).toThrow(SignSrpSessionError);
+        return signSrpSession(session, response);
+      }).rejects.toThrow(SignSrpSessionError);
 
       // Throw specific SignSrpSessionError error
       expect(() => {
-        signSrpSession(session, response);
-      }).toThrow(error);
+        return signSrpSession(session, response);
+      }).rejects.toThrow(error);
     });
   });
 });

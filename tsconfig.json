@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowSyntheticDefaultImports": true,
+    "declaration": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["jest"],
+    "lib": ["esnext", "dom"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "rootDir": "src/",
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "esnext",
+    "paths": {
+        "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}

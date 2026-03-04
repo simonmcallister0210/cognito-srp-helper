@@ -15,7 +15,7 @@ import type {
 /* Things you should be aware of:
    - In v2 of the SDK AuthFlow and ChallengeName can be specified as a string, but can't be undefined
    - In v3 they have to be a AuthFlowType, but can be undefined
-   
+
    Here we're just making the types more flexibile so that our request/response wrappers don't complain in TS
 
    Apart from that the request and response types are identical between SDK versions, including their command variants
@@ -26,15 +26,23 @@ import type {
  * Either InitiateAuthRequest or AdminInitiateAuthRequest from `@aws-sdk/client-cognito-identity-provider`. Should be compatible with SDK v2 and Command forms of the request
  */
 export type InitiateAuthRequest =
-  | (Omit<ClientInitiateAuthRequest, "AuthFlow"> & { AuthFlow?: AuthFlowType | string })
-  | (Omit<AdminInitiateAuthRequest, "AuthFlow"> & { AuthFlow?: AuthFlowType | string });
+  | (Omit<ClientInitiateAuthRequest, "AuthFlow"> & {
+      AuthFlow?: AuthFlowType | string;
+    })
+  | (Omit<AdminInitiateAuthRequest, "AuthFlow"> & {
+      AuthFlow?: AuthFlowType | string;
+    });
 
 /**
  * Either InitiateAuthResponse or AdminInitiateAuthResponse from `@aws-sdk/client-cognito-identity-provider`. Should be compatible with SDK v2 and Command forms of the request
  */
 export type InitiateAuthResponse =
-  | (Omit<ClientInitiateAuthResponse, "ChallengeName"> & { ChallengeName?: ChallengeNameType | string })
-  | (Omit<AdminInitiateAuthResponse, "ChallengeName"> & { ChallengeName?: ChallengeNameType | string });
+  | (Omit<ClientInitiateAuthResponse, "ChallengeName"> & {
+      ChallengeName?: ChallengeNameType | string;
+    })
+  | (Omit<AdminInitiateAuthResponse, "ChallengeName"> & {
+      ChallengeName?: ChallengeNameType | string;
+    });
 
 /**
  * Either RespondToAuthChallengeRequest or AdminRespondToAuthChallengeRequest from `@aws-sdk/client-cognito-identity-provider`. Should be compatible with SDK v2 and Command forms of the request

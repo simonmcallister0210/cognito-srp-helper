@@ -4,6 +4,9 @@
   "description": "A helper for SRP authentication in AWS Cognito",
   "author": "Simon McAllister",
   "license": "Apache-2.0",
+  "engines": {
+    "node": ">=25.0.0"
+  },
   "private": false,
   "repository": "https://github.com/simonmcallister0210/cognito-srp-helper",
   "homepage": "https://github.com/simonmcallister0210/cognito-srp-helper",
@@ -27,26 +30,26 @@
   "types": "dist/types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "require": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js",
-      "types": "./dist/types/index.d.ts"
+      "import": "./dist/esm/index.js"
     }
   },
   "scripts": {
     "build": "npm run build:cjs && npm run build:esm && npm run build:types",
-    "build:cjs": "esbuild src/index.ts --bundle --packages=external --minify --format=cjs --outfile=dist/cjs/index.js && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
-    "build:esm": "esbuild src/index.ts --bundle --packages=external --minify  --format=esm --outfile=dist/esm/index.js && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
-    "build:types": "tsc --emitDeclarationOnly --declaration src/index.ts --esModuleInterop --outFile dist/types/index.d.ts",
+    "build:cjs": "esbuild src/index.ts --bundle --minify --tsconfig=tsconfig.cjs.json --outfile=dist/cjs/index.js && echo '{ \"type\": \"commonjs\" }' > dist/cjs/package.json",
+    "build:esm": "esbuild src/index.ts --bundle --minify --tsconfig=tsconfig.json --format=esm --outfile=dist/esm/index.js && echo '{ \"type\": \"module\" }' > dist/esm/package.json",
+    "build:types": "tsc --emitDeclarationOnly -p tsconfig.json --outFile dist/types/index.d.ts",
     "format": "npm run format:eslint && npm run format:prettier",
     "format:eslint": "eslint -c .eslintrc.cjs --fix src/**",
     "format:prettier": "prettier -c .prettierrc.cjs --write src/**",
     "lint": "npm run lint:ts && npm run lint:eslint",
     "lint:eslint": "eslint -c .eslintrc.cjs src/**",
-    "lint:ts": "tsc --noEmit -p .tsconfig.json",
-    "test": "jest -c .jestrc.cjs",
+    "lint:ts": "tsc --noEmit -p tsconfig.json",
+    "test": "jest -c jest.config.mjs",
     "test:clear": "jest --clear-cache",
-    "test:integration": "jest -c .jestrc.cjs src/__tests__/integration",
-    "test:unit": "jest -c .jestrc.cjs src/__tests__/unit"
+    "test:integration": "jest -c jest.config.mjs src/__tests__/integration",
+    "test:unit": "jest -c jest.config.mjs src/__tests__/unit"
   },
   "lint-staged": {
     "*.{js,ts}": [
@@ -75,18 +78,14 @@
     "lodash.omit": "^4.5.0",
     "prettier": "^3.0.2",
     "randexp": "^0.5.3",
+    "totp-generator": "^1.0.0",
     "ts-jest": "^29.0.3",
-    "typescript": "^4.8.4",
-    "totp-generator": "^1.0.0"
+    "typescript": "^4.8.4"
   },
   "dependencies": {
     "@aws-sdk/client-cognito-identity-provider": "^3.433.0",
-    "@types/crypto-js": "3.1.47",
-    "@types/jsbn": "1.2.30",
-    "@types/node": "^18.11.11",
-    "buffer": "^6.0.3",
-    "crypto-js": "4.2.0",
-    "jsbn": "1.1.0"
+    "@types/node": "^25.3.0",
+    "bigint-mod-arith": "^3.3.1"
   },
   "overrides": {
     "fast-xml-parser": "4.3.4"

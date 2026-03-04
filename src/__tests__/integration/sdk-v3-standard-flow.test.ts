@@ -17,7 +17,7 @@ import {
   signSrpSession,
   wrapAuthChallenge,
   wrapInitiateAuth,
-} from "../../cognito-srp-helper";
+} from "@/cognito-srp-helper";
 
 import { signupV3 } from "./helpers";
 
@@ -125,9 +125,9 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
   it.each(credentials)("normal flow with $testCaseName", async (credentials) => {
     const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
 
-    const secretHash = createSecretHash(username, clientId, secretId);
-    const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
-    const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+    const secretHash = await createSecretHash(username, clientId, secretId);
+    const passwordHash = isPreHashedPassword ? await createPasswordHash(username, password, poolId) : password;
+    const srpSession = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
     const initiateAuthRes = await cognitoIdentityProviderClient.send(
       new InitiateAuthCommand(
@@ -143,7 +143,7 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
       ),
     );
 
-    const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
+    const signedSrpSession = await signSrpSession(srpSession, initiateAuthRes);
 
     const respondToAuthChallengeRes = await cognitoIdentityProviderClient.send(
       new RespondToAuthChallengeCommand(
@@ -166,9 +166,9 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
   it.each(credentials)("admin flow with $testCaseName", async (credentials) => {
     const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
 
-    const secretHash = createSecretHash(username, clientId, secretId);
-    const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
-    const srpSession = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+    const secretHash = await createSecretHash(username, clientId, secretId);
+    const passwordHash = isPreHashedPassword ? await createPasswordHash(username, password, poolId) : password;
+    const srpSession = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
     const initiateAuthRes = await cognitoIdentityProviderClient.send(
       new AdminInitiateAuthCommand(
@@ -185,7 +185,7 @@ describe("SDK v3 integration - USER_SRP_AUTH flow", () => {
       ),
     );
 
-    const signedSrpSession = signSrpSession(srpSession, initiateAuthRes);
+    const signedSrpSession = await signSrpSession(srpSession, initiateAuthRes);
 
     const respondToAuthChallengeRes = await cognitoIdentityProviderClient.send(
       new AdminRespondToAuthChallengeCommand(

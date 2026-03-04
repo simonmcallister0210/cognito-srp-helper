@@ -2,8 +2,8 @@ import { faker } from "@faker-js/faker";
 import omit from "lodash.omit";
 import RandExp from "randexp";
 
-import { InitiateAuthRequest } from "../../types";
-import { mockAdminInitiateAuthRequestFactory } from "../mocks/factories";
+import { mockAdminInitiateAuthRequestFactory } from "@/__tests__/mocks/factories";
+import { InitiateAuthRequest } from "@/types";
 
 const { AuthParameters } = mockAdminInitiateAuthRequestFactory();
 

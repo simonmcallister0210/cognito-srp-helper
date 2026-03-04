@@ -7,7 +7,7 @@ import {
   RespondToAuthChallengeResponse,
   SrpSession,
   SrpSessionSigned,
-} from "../../types";
+} from "@/types";
 
 import {
   mockAdminInitiateAuthRequest,

@@ -1,8 +1,4 @@
-import { Buffer } from "buffer/index.js"; // use the browser compatible buffer library
-import CryptoJS from "crypto-js";
-import { BigInteger } from "jsbn";
-
-import { G, INFO_BITS, K, N } from "./constants";
+import { G, INFO_BITS, N, ZERO } from "./constants";
 import {
   AbortOnZeroASrpError,
   AbortOnZeroBSrpError,
@@ -23,65 +19,62 @@ import {
   SrpSession,
   SrpSessionSigned,
 } from "./types";
-import { getBytesFromHex, hash, hexHash, padHex, randomBytes } from "./utils";
+import {
+  base64FromUint8Array,
+  bigIntFromHex,
+  computeHkdf,
+  computeHmacSha256,
+  generateRandomBase64,
+  generateRandomBigInt,
+  hashHex,
+  hashString,
+  hexFromBigInt,
+  modPowBigInt,
+  uint8ArrayFromBase64,
+  uint8ArrayFromHex,
+  uint8ArrayFromString,
+} from "./utils";
 
-const generateSmallA = (): BigInteger => {
-  // This will be interpreted as a postive 128-bit integer
-  const hexRandom = randomBytes(128).toString("hex");
-  const randomBigInt = new BigInteger(hexRandom, 16);
-
-  // There is no need to do randomBigInt.mod(N - 1) as N (3072-bit) is > 128 bytes (1024-bit)
-
-  return randomBigInt;
+const generateSmallA = (): bigint => {
+  return generateRandomBigInt(128);
 };
 
-const calculateLargeA = (smallA: BigInteger): BigInteger => {
-  const largeA = G.modPow(smallA, N);
+export const calculateLargeK = async (): Promise<bigint> =>
+  bigIntFromHex(await hashHex(`${hexFromBigInt(N, true)}${hexFromBigInt(G, true)}`));
 
-  if (largeA.equals(BigInteger.ZERO)) {
+const calculateLargeA = (smallA: bigint): bigint => {
+  const largeA = modPowBigInt(G, smallA, N);
+
+  if (largeA === ZERO) {
     throw new AbortOnZeroASrpError();
   }
 
   return largeA;
 };
 
-const computeHkdf = (ikm: Buffer | string, salt: Buffer | string): Buffer => {
-  // Create word arrays
-  const infoBitsWordArray = CryptoJS.lib.WordArray.create(
-    Buffer.concat([INFO_BITS, Buffer.from(String.fromCharCode(1), "utf8")]),
-  );
-  const ikmWordArray = ikm instanceof Buffer ? CryptoJS.lib.WordArray.create(ikm) : ikm;
-  const saltWordArray = salt instanceof Buffer ? CryptoJS.lib.WordArray.create(salt) : salt;
+const calculateU = async (largeA: bigint, largeB: bigint): Promise<bigint> => {
+  const uHexHash = await hashHex(hexFromBigInt(largeA, true) + hexFromBigInt(largeB, true));
+  const u = bigIntFromHex(uHexHash);
 
-  // Create Hmacs
-  const prk = CryptoJS.HmacSHA256(ikmWordArray, saltWordArray);
-  const hmac = CryptoJS.HmacSHA256(infoBitsWordArray, prk);
-  const hkdf = Buffer.from(hmac.toString(), "hex").slice(0, 16);
-
-  return hkdf;
-};
-
-const calculateU = (largeA: BigInteger, largeB: BigInteger): BigInteger => {
-  const uHexHash = hexHash(padHex(largeA) + padHex(largeB));
-  const u = new BigInteger(uHexHash, 16);
-
-  if (u.equals(BigInteger.ZERO)) {
+  if (u === ZERO) {
     throw new AbortOnZeroUSrpError();
   }
 
   return u;
 };
 
-const calculateS = (x: BigInteger, largeB: BigInteger, smallA: BigInteger, u: BigInteger): BigInteger => {
-  const gModPowXN = G.modPow(x, N);
-  const intValue2 = largeB.subtract(K.multiply(gModPowXN));
-  const s = intValue2.modPow(smallA.add(u.multiply(x)), N);
+const calculateS = async (x: bigint, largeB: bigint, smallA: bigint, u: bigint): Promise<bigint> => {
+  const gModPowXN = modPowBigInt(G, x, N);
+  const K = await calculateLargeK();
+  const intValue2 = largeB - K * gModPowXN;
+  const b = smallA + u * x;
+  const s = modPowBigInt(intValue2, b, N);
+
   return s;
 };
 
-const calculateX = (salt: BigInteger, usernamePasswordHash: string): BigInteger => {
-  const x = new BigInteger(hexHash(padHex(salt) + usernamePasswordHash), 16);
-  return x;
+const calculateX = async (salt: bigint, usernamePasswordHash: string): Promise<bigint> => {
+  return bigIntFromHex(await hashHex(hexFromBigInt(salt, true) + usernamePasswordHash));
 };
 
 const createTimestamp = (): string => {
@@ -105,47 +98,48 @@ const createTimestamp = (): string => {
   return `${weekDay} ${month} ${day} ${time} UTC ${year}`;
 };
 
-export const createSecretHash = (userId: string, clientId: string, secretId: string): string => {
-  const hmac = CryptoJS.HmacSHA256(`${userId}${clientId}`, secretId);
-  const secretHash = hmac.toString(CryptoJS.enc.Base64);
-
-  return secretHash;
+const createSecretHashUint8Array = async (userId: string, clientId: string, secretId: string): Promise<Uint8Array> => {
+  const messageArray = uint8ArrayFromString(`${userId}${clientId}`);
+  const keyArray = uint8ArrayFromString(secretId);
+  return await computeHmacSha256(messageArray, keyArray);
 };
 
-export const createPasswordHash = (userId: string, password: string, poolId: string): string => {
+export const createSecretHash = async (userId: string, clientId: string, secretId: string): Promise<string> => {
+  return base64FromUint8Array(await createSecretHashUint8Array(userId, clientId, secretId));
+};
+
+export const createPasswordHash = async (userId: string, password: string, poolId: string): Promise<string> => {
   const poolIdAbbr = poolId.split("_")[1];
   const usernamePassword = `${poolIdAbbr}${userId}:${password}`;
-  const passwordHash = hash(usernamePassword);
+  const passwordHash = await hashString(usernamePassword);
 
   return passwordHash;
 };
 
-const createDeviceHash = (deviceKey: string, password: string, deviceGroupKey: string): string => {
+const createDeviceHash = async (deviceKey: string, password: string, deviceGroupKey: string): Promise<string> => {
   const devicePassword = `${deviceGroupKey}${deviceKey}:${password}`;
-  const deviceHash = hash(devicePassword);
+  const deviceHash = await hashString(devicePassword);
 
   return deviceHash;
 };
 
-export const createDeviceVerifier = (deviceKey: string, deviceGroupKey: string): DeviceVerifier => {
+export const createDeviceVerifier = async (deviceKey: string, deviceGroupKey: string): Promise<DeviceVerifier> => {
   // 40 random bytes encoded as base64 (aka. RANDOM_PASSWORD)
-  const passwordRandom = randomBytes(40).toString("base64");
+  const passwordRandom = generateRandomBase64(40);
 
   // Device string (aka. FULL_PASSWORD)
-  const deviceHash = createDeviceHash(deviceKey, passwordRandom, deviceGroupKey);
+  const deviceHash = await createDeviceHash(deviceKey, passwordRandom, deviceGroupKey);
 
   // Salt
-  const salt = randomBytes(16).toString("hex");
-  const saltHash = padHex(new BigInteger(salt, 16));
-  const saltBytes = getBytesFromHex(saltHash);
-  const saltBase64 = Buffer.from(saltBytes).toString("base64");
+  const salt = generateRandomBigInt(16);
+  const saltHash = hexFromBigInt(salt, true);
+  const saltBase64 = base64FromUint8Array(uint8ArrayFromHex(saltHash));
 
   // Password verifier
-  const passwordSalted = hexHash(saltHash + deviceHash);
-  const passwordVerifier = G.modPow(new BigInteger(passwordSalted, 16), N);
-  const passwordVerifierPadded = padHex(passwordVerifier);
-  const passwordVerifierBytes = getBytesFromHex(passwordVerifierPadded);
-  const passwordVerifierBase64 = Buffer.from(passwordVerifierBytes).toString("base64");
+  const passwordSalted = await hashHex(saltHash + deviceHash);
+  const passwordVerifier = modPowBigInt(G, bigIntFromHex(passwordSalted), N);
+  const passwordVerifierHex = hexFromBigInt(passwordVerifier, true);
+  const passwordVerifierBase64 = base64FromUint8Array(uint8ArrayFromHex(passwordVerifierHex));
 
   return {
     DeviceRandomPassword: passwordRandom,
@@ -169,100 +163,108 @@ export const createSrpSession = (username: string, password: string, poolId: str
     password,
     isHashed,
     timestamp,
-    smallA: smallA.toString(16),
-    largeA: largeA.toString(16),
+    smallA: hexFromBigInt(smallA, false),
+    largeA: hexFromBigInt(largeA, false),
   };
 };
 
-export const signSrpSession = (session: SrpSession, response: InitiateAuthResponse): SrpSessionSigned => {
+export const signSrpSession = async (
+  session: SrpSession,
+  response: InitiateAuthResponse,
+): Promise<SrpSessionSigned> => {
   // Assert SRP ChallengeParameters
   if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
   if (!response.ChallengeParameters.SALT) throw new MissingSaltError();
-  if (!response.ChallengeParameters.SECRET_BLOCK) throw new MissingSecretError();
+  if (!response.ChallengeParameters.SECRET_BLOCK) {
+    throw new MissingSecretError();
+  }
   if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
-  if (!response.ChallengeParameters.USER_ID_FOR_SRP) throw new MissingUserIdForSrpBError();
+  if (!response.ChallengeParameters.USER_ID_FOR_SRP) {
+    throw new MissingUserIdForSrpBError();
+  }
 
   const {
-    SALT: salt,
+    SALT: saltHex,
     SECRET_BLOCK: secret,
-    SRP_B: largeB,
+    SRP_B: largeBHex,
     USER_ID_FOR_SRP: userIdForSrp,
   } = response.ChallengeParameters;
-  const { poolId, poolIdAbbr, password, isHashed, timestamp, smallA, largeA } = session;
+  const { poolId, poolIdAbbr, password, isHashed, timestamp, smallA: smallAHex, largeA: largeAHex } = session;
+  const largeA = bigIntFromHex(largeAHex);
+  const smallA = bigIntFromHex(smallAHex);
+  const largeB = bigIntFromHex(largeBHex);
+  const salt = bigIntFromHex(saltHex);
 
   // Check server public key isn't 0
-  if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();
+  if (largeB === 0n) throw new AbortOnZeroBSrpError();
 
   // Hash the password if it isn't already hashed
-  const passwordHash = isHashed ? password : createPasswordHash(userIdForSrp, password, poolId);
-
-  const u = calculateU(new BigInteger(largeA, 16), new BigInteger(largeB, 16));
-  const x = calculateX(new BigInteger(salt, 16), passwordHash);
-  const s = calculateS(x, new BigInteger(largeB, 16), new BigInteger(smallA, 16), u);
-  const hkdf = computeHkdf(Buffer.from(padHex(s), "hex"), Buffer.from(padHex(u), "hex"));
-
-  const key = CryptoJS.lib.WordArray.create(hkdf);
-  const message = CryptoJS.lib.WordArray.create(
-    Buffer.concat([
-      Buffer.from(poolIdAbbr, "utf8"),
-      Buffer.from(userIdForSrp, "utf8"),
-      Buffer.from(secret, "base64"),
-      Buffer.from(timestamp, "utf8"),
-    ]),
-  );
-  const passwordSignature = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(message, key));
+  const passwordHash = isHashed ? password : await createPasswordHash(userIdForSrp, password, poolId);
+  const [u, x] = await Promise.all([calculateU(largeA, largeB), calculateX(salt, passwordHash)]);
+  const s = await calculateS(x, largeB, smallA, u);
+  const hkdfKey = await computeHkdf({ ikm: s, salt: u, info: INFO_BITS });
+  const message = new Uint8Array([
+    ...uint8ArrayFromString(poolIdAbbr),
+    ...uint8ArrayFromString(userIdForSrp),
+    ...uint8ArrayFromBase64(secret),
+    ...uint8ArrayFromString(timestamp),
+  ]);
+  const passwordSignature = base64FromUint8Array(await computeHmacSha256(message, hkdfKey));
 
   return {
     ...session,
-    salt,
+    salt: saltHex,
     secret,
-    largeB,
+    largeB: largeBHex,
     passwordSignature,
   };
 };
 
-export const signSrpSessionWithDevice = (
+export const signSrpSessionWithDevice = async (
   session: SrpSession,
   response: RespondToAuthChallengeResponse,
   deviceGroupKey: string,
   deviceRandomPassword: string,
-): SrpSessionSigned => {
+): Promise<SrpSessionSigned> => {
   // Assert SRP ChallengeParameters
   if (!response.ChallengeParameters) throw new MissingChallengeResponsesError();
   if (!response.ChallengeParameters.SALT) throw new MissingSaltError();
-  if (!response.ChallengeParameters.SECRET_BLOCK) throw new MissingSecretError();
+  if (!response.ChallengeParameters.SECRET_BLOCK) {
+    throw new MissingSecretError();
+  }
   if (!response.ChallengeParameters.SRP_B) throw new MissingLargeBError();
-  if (!response.ChallengeParameters.DEVICE_KEY) throw new MissingDeviceKeyError();
+  if (!response.ChallengeParameters.DEVICE_KEY) {
+    throw new MissingDeviceKeyError();
+  }
 
-  const { DEVICE_KEY: deviceKey, SALT: salt, SECRET_BLOCK: secret, SRP_B: largeB } = response.ChallengeParameters;
-  const { timestamp, smallA, largeA } = session;
+  const { DEVICE_KEY: deviceKey, SALT: saltHex, SECRET_BLOCK: secret, SRP_B: largeBHex } = response.ChallengeParameters;
+  const { timestamp, largeA: largeAHex, smallA: smallAHex } = session;
+  const largeB = bigIntFromHex(largeBHex);
+  const largeA = bigIntFromHex(largeAHex);
+  const smallA = bigIntFromHex(smallAHex);
+  const salt = bigIntFromHex(saltHex);
 
   // Check server public key isn't 0
-  if (largeB.replace(/^0+/, "") === "") throw new AbortOnZeroBSrpError();
+  if (largeB === 0n) throw new AbortOnZeroBSrpError();
 
-  const deviceHash = createDeviceHash(deviceKey, deviceRandomPassword, deviceGroupKey);
+  const deviceHash = await createDeviceHash(deviceKey, deviceRandomPassword, deviceGroupKey);
 
-  const u = calculateU(new BigInteger(largeA, 16), new BigInteger(largeB, 16));
-  const x = calculateX(new BigInteger(salt, 16), deviceHash);
-  const s = calculateS(x, new BigInteger(largeB, 16), new BigInteger(smallA, 16), u);
-  const hkdf = computeHkdf(Buffer.from(padHex(s), "hex"), Buffer.from(padHex(u), "hex"));
-
-  const key = CryptoJS.lib.WordArray.create(hkdf);
-  const message = CryptoJS.lib.WordArray.create(
-    Buffer.concat([
-      Buffer.from(deviceGroupKey, "utf8"),
-      Buffer.from(deviceKey, "utf8"),
-      Buffer.from(secret, "base64"),
-      Buffer.from(timestamp, "utf8"),
-    ]),
-  );
-  const passwordSignature = CryptoJS.enc.Base64.stringify(CryptoJS.HmacSHA256(message, key));
+  const [u, x] = await Promise.all([calculateU(largeA, largeB), calculateX(salt, deviceHash)]);
+  const s = await calculateS(x, largeB, smallA, u);
+  const hkdfKey = await computeHkdf({ ikm: s, salt: u, info: INFO_BITS });
+  const message = new Uint8Array([
+    ...uint8ArrayFromString(deviceGroupKey),
+    ...uint8ArrayFromString(deviceKey),
+    ...uint8ArrayFromBase64(secret),
+    ...uint8ArrayFromString(timestamp),
+  ]);
+  const passwordSignature = base64FromUint8Array(await computeHmacSha256(message, hkdfKey));
 
   return {
     ...session,
-    salt,
+    salt: saltHex,
     secret,
-    largeB,
+    largeB: largeBHex,
     passwordSignature,
   };
 };

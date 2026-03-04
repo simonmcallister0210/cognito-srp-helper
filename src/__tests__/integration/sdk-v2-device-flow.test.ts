@@ -14,7 +14,7 @@ import {
   signSrpSessionWithDevice,
   wrapAuthChallenge,
   wrapInitiateAuth,
-} from "../../cognito-srp-helper";
+} from "@/cognito-srp-helper";
 
 import { signupV2 } from "./helpers";
 
@@ -137,9 +137,9 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
       async (credentials) => {
         const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
 
-        const secretHash = createSecretHash(username, clientId, secretId);
-        const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
-        const srpSession1 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const secretHash = await createSecretHash(username, clientId, secretId);
+        const passwordHash = isPreHashedPassword ? await createPasswordHash(username, password, poolId) : password;
+        const srpSession1 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
         // ---------- Signin 1. initiate signin attempt ----------
 
@@ -159,7 +159,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 1. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession1 = signSrpSession(srpSession1, initiateAuthRes1);
+        const signedSrpSession1 = await signSrpSession(srpSession1, initiateAuthRes1);
 
         const respondToAuthChallengeRes1a = await cognitoIdentityServiceProvider
           .respondToAuthChallenge(
@@ -217,7 +217,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 2. initiate signin attempt ----------
 
-        const srpSession2 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const srpSession2 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
         const initiateAuthRes2 = await cognitoIdentityServiceProvider
           .initiateAuth(
             wrapInitiateAuth(srpSession2, {
@@ -234,10 +234,10 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 2. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession2 = signSrpSession(srpSession2, initiateAuthRes2);
+        const signedSrpSession2 = await signSrpSession(srpSession2, initiateAuthRes2);
         const USER_ID_FOR_SRP = initiateAuthRes2.ChallengeParameters?.USER_ID_FOR_SRP;
         if (!USER_ID_FOR_SRP) throw Error("USER_ID_FOR_SRP is undefined");
-        const secretHash2 = createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
+        const secretHash2 = await createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
 
         const respondToAuthChallengeRes2a = await cognitoIdentityServiceProvider
           .respondToAuthChallenge(
@@ -278,7 +278,10 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         const DeviceKey = respondToAuthChallengeRes2b?.AuthenticationResult?.NewDeviceMetadata?.DeviceKey;
         if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
         if (!DeviceKey) throw Error("DeviceKey is undefined");
-        const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
+        const { DeviceSecretVerifierConfig, DeviceRandomPassword } = await createDeviceVerifier(
+          DeviceKey,
+          DeviceGroupKey,
+        );
 
         await cognitoIdentityServiceProvider
           .confirmDevice({
@@ -301,7 +304,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. initiate signin attempt ----------
 
-        const srpSession3 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const srpSession3 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
         const initiateAuthRes3 = await cognitoIdentityServiceProvider
           .initiateAuth(
@@ -320,7 +323,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession3 = signSrpSession(srpSession3, initiateAuthRes3);
+        const signedSrpSession3 = await signSrpSession(srpSession3, initiateAuthRes3);
 
         const respondToAuthChallengeRes3a = await cognitoIdentityServiceProvider
           .respondToAuthChallenge(
@@ -356,7 +359,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. respond to DEVICE_PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSessionWithDevice3 = signSrpSessionWithDevice(
+        const signedSrpSessionWithDevice3 = await signSrpSessionWithDevice(
           srpSession3,
           respondToAuthChallengeRes3b,
           DeviceGroupKey,
@@ -406,9 +409,9 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
       async (credentials) => {
         const { username, password, poolId, clientId, secretId, isPreHashedPassword } = credentials;
 
-        const secretHash = createSecretHash(username, clientId, secretId);
-        const passwordHash = isPreHashedPassword ? createPasswordHash(username, password, poolId) : password;
-        const srpSession1 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const secretHash = await createSecretHash(username, clientId, secretId);
+        const passwordHash = isPreHashedPassword ? await createPasswordHash(username, password, poolId) : password;
+        const srpSession1 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
         // ---------- Signin 1. initiate signin attempt ----------
 
@@ -429,7 +432,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 1. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession1 = signSrpSession(srpSession1, initiateAuthRes1);
+        const signedSrpSession1 = await signSrpSession(srpSession1, initiateAuthRes1);
 
         const respondToAuthChallengeRes1a = await cognitoIdentityServiceProvider
           .adminRespondToAuthChallenge(
@@ -489,7 +492,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 2. initiate signin attempt ----------
 
-        const srpSession2 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const srpSession2 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
         const initiateAuthRes2 = await cognitoIdentityServiceProvider
           .adminInitiateAuth(
             wrapInitiateAuth(srpSession2, {
@@ -507,10 +510,10 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 2. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession2 = signSrpSession(srpSession2, initiateAuthRes2);
+        const signedSrpSession2 = await signSrpSession(srpSession2, initiateAuthRes2);
         const USER_ID_FOR_SRP = initiateAuthRes2.ChallengeParameters?.USER_ID_FOR_SRP;
         if (!USER_ID_FOR_SRP) throw Error("USER_ID_FOR_SRP is undefined");
-        const secretHash2 = createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
+        const secretHash2 = await createSecretHash(USER_ID_FOR_SRP, clientId, secretId);
 
         const respondToAuthChallengeRes2a = await cognitoIdentityServiceProvider
           .adminRespondToAuthChallenge(
@@ -553,7 +556,10 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
         const DeviceKey = respondToAuthChallengeRes2b?.AuthenticationResult?.NewDeviceMetadata?.DeviceKey;
         if (!DeviceGroupKey) throw Error("DeviceGroupKey is undefined");
         if (!DeviceKey) throw Error("DeviceKey is undefined");
-        const { DeviceSecretVerifierConfig, DeviceRandomPassword } = createDeviceVerifier(DeviceKey, DeviceGroupKey);
+        const { DeviceSecretVerifierConfig, DeviceRandomPassword } = await createDeviceVerifier(
+          DeviceKey,
+          DeviceGroupKey,
+        );
 
         await cognitoIdentityServiceProvider
           .confirmDevice({
@@ -577,7 +583,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. initiate signin attempt ----------
 
-        const srpSession3 = createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
+        const srpSession3 = await createSrpSession(username, passwordHash, poolId, isPreHashedPassword);
 
         const initiateAuthRes3 = await cognitoIdentityServiceProvider
           .adminInitiateAuth(
@@ -597,7 +603,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. respond to PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSession3 = signSrpSession(srpSession3, initiateAuthRes3);
+        const signedSrpSession3 = await signSrpSession(srpSession3, initiateAuthRes3);
 
         const respondToAuthChallengeRes3a = await cognitoIdentityServiceProvider
           .adminRespondToAuthChallenge(
@@ -635,7 +641,7 @@ describe("SDK v2 integration - DEVICE_SRP_AUTH flow", () => {
 
         // ---------- Signin 3. respond to DEVICE_PASSWORD_VERIFIER challenge ----------
 
-        const signedSrpSessionWithDevice3 = signSrpSessionWithDevice(
+        const signedSrpSessionWithDevice3 = await signSrpSessionWithDevice(
           srpSession3,
           respondToAuthChallengeRes3b,
           DeviceGroupKey,
